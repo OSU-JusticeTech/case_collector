@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 
-class Scrapes(models.Model):
+class Page(models.Model):
     CVG = "CVG"
     CVF ="CVF"
     CVR = "CVR"
@@ -18,7 +18,7 @@ class Scrapes(models.Model):
     category = models.CharField(choices=CATEGORIES)
     case_number = models.IntegerField()
     scraped_at = models.DateTimeField(auto_now_add=True)
-    content = models.BinaryField(null=True)
+    content = models.CharField(null=True)
     return_code = models.IntegerField()
 
     class Meta:
