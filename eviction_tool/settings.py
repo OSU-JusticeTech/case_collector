@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps.fcmcclerk.apps.FCMCclerkConfig'
+    'apps.fcmcclerk.apps.FCMCclerkConfig',
+    'apps.cases.apps.CasesConfig',
 ]
 
 MIDDLEWARE = [
