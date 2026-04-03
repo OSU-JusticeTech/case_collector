@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class GrantsConfig(AppConfig):
-    name = 'grants'
+class FCMCclerkConfig(AppConfig):
+    name = 'apps.fcmcclerk'
