@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'apps.fcmcclerk.apps.FCMCclerkConfig',
+    'apps.fcmcclerk_mock.apps.FcmcclerkMockConfig',
     'apps.cases.apps.CasesConfig',
 ]
 
