@@ -38,8 +38,9 @@ def report_csv(request, start,end):
     writer.writeheader()
 
     for case in fake_state.EVICTION_FIXTURE:
-        if start <= case.docket[-1].date <= end:
-            writer.writerow({"CASE_NUMBER": case.case_number,
+        if start <= case.docket[-1].date <= end:  #min(end, datetime.now().date()):
+            if case.docket[-1].date < datetime.now().date():
+                writer.writerow({"CASE_NUMBER": case.case_number,
                              "CASE_FILE_DATE": case.docket[-1].date})
 
     return response
