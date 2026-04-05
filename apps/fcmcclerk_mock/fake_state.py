@@ -9,7 +9,7 @@ from apps.fcmcclerk_mock.pyschema import Case
 EVICTION_FIXTURE = {}  # will be populated on startup
 
 
-def generate_year(year, total_cases=100):
+def generate_year(year, total_cases=500):
 
     CASE_WEEKEND_RATIO = 0.0194938
     CASE_WORKDAY_RATIO = 0.912828
@@ -48,8 +48,9 @@ def generate_year(year, total_cases=100):
             case_number += 1
 
         day += timedelta(days=1)
-    print(cases)
-    print(len(cases))
+    #print(cases)
+    print("generated for year", year, len(cases))
+    return cases
 
 
 def generate_random_fixture(months=12):
@@ -72,6 +73,6 @@ def generate_random_fixture(months=12):
 
     fixture = []
     now = datetime.now(timezone.utc)
-    for i in range(370):
-        pass
+    for i in range(now.year-2,now.year+1):
+        fixture += generate_year(i)
     return fixture

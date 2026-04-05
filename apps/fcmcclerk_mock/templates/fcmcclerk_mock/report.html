@@ -252,58 +252,12 @@
 
                         <ul class="list-unstyled">
                                                             <ul>
+                                                                {% for csv in csvs %}
                                                                             <li>
                                             <i class="fa fa-file-excel-o fa-fw"></i>
-                                            <a href="/storage/shared/civil-fed/FCMC Civil F.E.D. (Eviction) Case List 2026-04-01 to 2026-04-30.csv?265193" target="_blank">FCMC Civil F.E.D. (Eviction) Case List 2026-04-01 to 2026-04-30.csv</a>
+                                            <a href="/fcmcclerk.com/storage/shared/civil-fed/FCMC Civil F.E.D. (Eviction) Case List {{ csv.0 }} to {{ csv.1 }}.csv?{{ csv.2 }}" target="_blank">FCMC Civil F.E.D. (Eviction) Case List {{ csv.0 }} to {{ csv.1 }}.csv</a>
                                         </li>
-                                                                            <li>
-                                            <i class="fa fa-file-excel-o fa-fw"></i>
-                                            <a href="/storage/shared/civil-fed/FCMC Civil F.E.D. (Eviction) Case List 2026-03-01 to 2026-03-31.csv?693616" target="_blank">FCMC Civil F.E.D. (Eviction) Case List 2026-03-01 to 2026-03-31.csv</a>
-                                        </li>
-                                                                            <li>
-                                            <i class="fa fa-file-excel-o fa-fw"></i>
-                                            <a href="/storage/shared/civil-fed/FCMC Civil F.E.D. (Eviction) Case List 2026-02-01 to 2026-02-28.csv?129504" target="_blank">FCMC Civil F.E.D. (Eviction) Case List 2026-02-01 to 2026-02-28.csv</a>
-                                        </li>
-                                                                            <li>
-                                            <i class="fa fa-file-excel-o fa-fw"></i>
-                                            <a href="/storage/shared/civil-fed/FCMC Civil F.E.D. (Eviction) Case List 2026-01-01 to 2026-01-31.csv?290346" target="_blank">FCMC Civil F.E.D. (Eviction) Case List 2026-01-01 to 2026-01-31.csv</a>
-                                        </li>
-                                                                            <li>
-                                            <i class="fa fa-file-excel-o fa-fw"></i>
-                                            <a href="/storage/shared/civil-fed/FCMC Civil F.E.D. (Eviction) Case List 2025-12-01 to 2025-12-31.csv?390492" target="_blank">FCMC Civil F.E.D. (Eviction) Case List 2025-12-01 to 2025-12-31.csv</a>
-                                        </li>
-                                                                            <li>
-                                            <i class="fa fa-file-excel-o fa-fw"></i>
-                                            <a href="/storage/shared/civil-fed/FCMC Civil F.E.D. (Eviction) Case List 2025-11-01 to 2025-11-30.csv?617929" target="_blank">FCMC Civil F.E.D. (Eviction) Case List 2025-11-01 to 2025-11-30.csv</a>
-                                        </li>
-                                                                            <li>
-                                            <i class="fa fa-file-excel-o fa-fw"></i>
-                                            <a href="/storage/shared/civil-fed/FCMC Civil F.E.D. (Eviction) Case List 2025-10-01 to 2025-10-31.csv?406185" target="_blank">FCMC Civil F.E.D. (Eviction) Case List 2025-10-01 to 2025-10-31.csv</a>
-                                        </li>
-                                                                            <li>
-                                            <i class="fa fa-file-excel-o fa-fw"></i>
-                                            <a href="/storage/shared/civil-fed/FCMC Civil F.E.D. (Eviction) Case List 2025-09-01 to 2025-09-30.csv?349208" target="_blank">FCMC Civil F.E.D. (Eviction) Case List 2025-09-01 to 2025-09-30.csv</a>
-                                        </li>
-                                                                            <li>
-                                            <i class="fa fa-file-excel-o fa-fw"></i>
-                                            <a href="/storage/shared/civil-fed/FCMC Civil F.E.D. (Eviction) Case List 2025-08-01 to 2025-08-31.csv?793476" target="_blank">FCMC Civil F.E.D. (Eviction) Case List 2025-08-01 to 2025-08-31.csv</a>
-                                        </li>
-                                                                            <li>
-                                            <i class="fa fa-file-excel-o fa-fw"></i>
-                                            <a href="/storage/shared/civil-fed/FCMC Civil F.E.D. (Eviction) Case List 2025-07-01 to 2025-07-31.csv?205631" target="_blank">FCMC Civil F.E.D. (Eviction) Case List 2025-07-01 to 2025-07-31.csv</a>
-                                        </li>
-                                                                            <li>
-                                            <i class="fa fa-file-excel-o fa-fw"></i>
-                                            <a href="/storage/shared/civil-fed/FCMC Civil F.E.D. (Eviction) Case List 2025-06-01 to 2025-06-30.csv?426888" target="_blank">FCMC Civil F.E.D. (Eviction) Case List 2025-06-01 to 2025-06-30.csv</a>
-                                        </li>
-                                                                            <li>
-                                            <i class="fa fa-file-excel-o fa-fw"></i>
-                                            <a href="/storage/shared/civil-fed/FCMC Civil F.E.D. (Eviction) Case List 2025-05-01 to 2025-05-31.csv?661823" target="_blank">FCMC Civil F.E.D. (Eviction) Case List 2025-05-01 to 2025-05-31.csv</a>
-                                        </li>
-                                                                            <li>
-                                            <i class="fa fa-file-excel-o fa-fw"></i>
-                                            <a href="/storage/shared/civil-fed/FCMC Civil F.E.D. (Eviction) Case List 2025-04-01 to 2025-04-30.csv?241042" target="_blank">FCMC Civil F.E.D. (Eviction) Case List 2025-04-01 to 2025-04-30.csv</a>
-                                        </li>
+                                                                {% endfor %}
                                                                     </ul>
                                                     </ul>
                     </div>

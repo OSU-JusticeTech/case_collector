@@ -222,10 +222,11 @@ class Case(BaseModel):
     @staticmethod
     def generate(num, filed):
         disp = Disposition.generate(filed)
+        filing = DocketEntry(date=filed, text='PETITION IN FE&D FILED')
         return Case(
             case_number=num,
             parties=[],
-            docket=[],
+            docket=[filing],
             attorneys=[],
             finances=[],
             events=[],
