@@ -1,6 +1,8 @@
 from django.test import TestCase
 from .fake_state import generate_year
+
 # Create your tests here.
+
 
 class FixtureTest(TestCase):
 

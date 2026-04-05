@@ -1,9 +1,12 @@
+import random
+from datetime import timedelta
+
+import numpy as np
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Literal, Union
 import datetime
 from enum import Enum
 from decimal import Decimal
-
 
 state_abbreviations = [
     "AL",
@@ -75,13 +78,13 @@ class Sides(Enum):
     ALIAS = "ALIAS"
     OFFICER = "OFFICER"
     OFFICER_COMPLAINANT = "OFFICER COMPLAINANT"
-    CITY_SOLICITOR = 'CITY SOLICITOR'
-    PARTY_COMPLAINANT = 'PARTY COMPLAINANT'
-    VICTIM = 'VICTIM'
-    PROBATION_OFFICER = 'PROBATION OFFICER'
-    PROSECUTING_WITNESS = 'PROSECUTING WITNESS'
-    BOND_DEPOSITOR = 'BOND DEPOSITOR'
-    ALERT_ON_ATTORNEY = 'ALERT ON ATTORNEY'
+    CITY_SOLICITOR = "CITY SOLICITOR"
+    PARTY_COMPLAINANT = "PARTY COMPLAINANT"
+    VICTIM = "VICTIM"
+    PROBATION_OFFICER = "PROBATION OFFICER"
+    PROSECUTING_WITNESS = "PROSECUTING WITNESS"
+    BOND_DEPOSITOR = "BOND DEPOSITOR"
+    ALERT_ON_ATTORNEY = "ALERT ON ATTORNEY"
 
 
 class SideName(BaseModel):
@@ -109,17 +112,25 @@ class SideAddress(SideName):
     def __hash__(self):
         return hash(str(self))
 
+
 class Attorney(SideAddress):
     role: Literal["PRIMARY ATTORNEY", "Secondary Attorney", "DO NOT USE"]
+
 
 class FakeAttorney(SideName):
     address: Literal[["DO NOT USE"]]
 
+
 class RunningAttorney(SideName):
-    address: Literal[["WWR", "***runners will pick up daily***"], ["WWW", "***runners will pick up daily***"]]
+    address: Literal[
+        ["WWR", "***runners will pick up daily***"],
+        ["WWW", "***runners will pick up daily***"],
+    ]
+
 
 class PublicAttorney(SideName):
     address: list[str]
+
 
 class DocketEntry(BaseModel):
     date: datetime.date
@@ -145,18 +156,58 @@ class Finance(BaseModel):
     dismissed: Decimal
     balance: Decimal
 
+
 class Disposition(BaseModel):
     code: str
     date: datetime.date | None = None
     judge: str
-    status: Literal["CLOSED", "OPEN", "REOPEN (RO)", "POST SENTENCE HEARING", "INACTIVE", "POST JUDGMENT STATUS"]
+    status: Literal[
+        "CLOSED",
+        "OPEN",
+        "REOPEN (RO)",
+        "POST SENTENCE HEARING",
+        "INACTIVE",
+        "POST JUDGMENT STATUS",
+    ]
     status_date: datetime.date | None = None
 
-    #@model_validator(mode="after")
-    #def check_disposition(self) -> Self:
+    # @model_validator(mode="after")
+    # def check_disposition(self) -> Self:
     #    if self.code != "UNDISPOSED" and self.date is None:
     #        raise ValueError("Invalid Disposition")
     #    return self
+
+    @staticmethod
+    def generate(filed):
+        future_days = np.random.exponential(5) + 14
+        code = random.choices(
+            [
+                "NOTICE OF DISMISSAL FILED",
+                "JUDGMENT HEARD BY MAGISTRATE",
+                "DISMISSAL HEARD BY MAGISTRATE",
+                "OTHER TERMINATION - ADMIN JUDGE",
+                "UNDISPOSED",
+                "DEFAULT JUDGMENTS",
+                "AGREED JUDGMENT BOTH CAUSE OF ACTION",
+                "BANKRUPTCY",
+                "OTHER TERMINATIONS",
+                "TRANSFER TO COURT OF COMMON PLEAS - ADMIN JUDGE",
+                "DISMISSED BY PLAINTIFF",
+                "AGREED JUDGMENT",
+                "JUDGMENT FOR DAMAGES",
+                "DISMISSED BY JUDGE",
+            ],
+            weights=[7976, 7493, 616, 6495, 27, 13, 10, 15, 4, 12, 30, 3, 7, 1],
+            k=1,
+        )
+
+        return Disposition(
+            code=code[0],
+            date=filed + timedelta(days=future_days),
+            judge="ADMINISTRATIVE",
+            status="CLOSED",
+            status_date=filed,
+        )
 
 
 class Case(BaseModel):
@@ -167,3 +218,16 @@ class Case(BaseModel):
     finances: list[Finance]
     events: list[Event]
     dispositions: list[Disposition]
+
+    @staticmethod
+    def generate(num, filed):
+        disp = Disposition.generate(filed)
+        return Case(
+            case_number=num,
+            parties=[],
+            docket=[],
+            attorneys=[],
+            finances=[],
+            events=[],
+            dispositions=[disp],
+        )
