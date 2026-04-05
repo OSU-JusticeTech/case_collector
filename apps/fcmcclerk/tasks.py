@@ -11,6 +11,7 @@ CACHE_KEY = "fcmc_eviction_reports"
 
 BASE_URL = "https://www.fcmcclerk.com"
 
+
 def load_case_csvs():
 
     cases = cache.get(CACHE_KEY)

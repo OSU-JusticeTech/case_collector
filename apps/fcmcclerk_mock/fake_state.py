@@ -48,7 +48,7 @@ def generate_year(year, total_cases=500):
             case_number += 1
 
         day += timedelta(days=1)
-    #print(cases)
+    # print(cases)
     print("generated for year", year, len(cases))
     return cases
 
@@ -73,6 +73,6 @@ def generate_random_fixture(months=12):
 
     fixture = []
     now = datetime.now(timezone.utc)
-    for i in range(now.year-2,now.year+1):
+    for i in range(now.year - 2, now.year + 1):
         fixture += generate_year(i)
     return fixture
