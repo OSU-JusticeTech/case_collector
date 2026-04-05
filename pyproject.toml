@@ -7,5 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "beautifulsoup4>=4.14.3",
     "django>=6.0.3",
+    "numpy>=2.4.4",
+    "pydantic>=2.12.5",
     "requests[socks]>=2.33.1",
 ]
