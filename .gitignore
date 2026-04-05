@@ -8,7 +8,6 @@ wheels/
 .idea
 
 uv.lock
-.python-version
 
 db/
 
