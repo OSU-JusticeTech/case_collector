@@ -2,9 +2,10 @@ from django.db import models
 
 # Create your models here.
 
+
 class Page(models.Model):
     CVG = "CVG"
-    CVF ="CVF"
+    CVF = "CVF"
     CVR = "CVR"
     CVE = "CVE"
     CATEGORIES = {
@@ -22,4 +23,4 @@ class Page(models.Model):
     return_code = models.IntegerField()
 
     class Meta:
-        unique_together = ('year', 'category', 'case_number','scraped_at')
+        unique_together = ("year", "category", "case_number", "scraped_at")

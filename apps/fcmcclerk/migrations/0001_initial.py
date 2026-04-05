@@ -7,23 +7,40 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Page',
+            name="Page",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('year', models.IntegerField()),
-                ('category', models.CharField(choices=[('CVG', 'Forcible Entry and Detainer'), ('CVF', 'Contract'), ('CVR', 'Rent Escrow'), ('CVE', 'Personal Injury')])),
-                ('case_number', models.IntegerField()),
-                ('scraped_at', models.DateTimeField(auto_now_add=True)),
-                ('content', models.CharField(null=True)),
-                ('return_code', models.IntegerField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("year", models.IntegerField()),
+                (
+                    "category",
+                    models.CharField(
+                        choices=[
+                            ("CVG", "Forcible Entry and Detainer"),
+                            ("CVF", "Contract"),
+                            ("CVR", "Rent Escrow"),
+                            ("CVE", "Personal Injury"),
+                        ]
+                    ),
+                ),
+                ("case_number", models.IntegerField()),
+                ("scraped_at", models.DateTimeField(auto_now_add=True)),
+                ("content", models.CharField(null=True)),
+                ("return_code", models.IntegerField()),
             ],
             options={
-                'unique_together': {('year', 'category', 'case_number', 'scraped_at')},
+                "unique_together": {("year", "category", "case_number", "scraped_at")},
             },
         ),
     ]

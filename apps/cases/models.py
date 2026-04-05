@@ -2,17 +2,21 @@ from django.db import models
 
 # Create your models here.
 
+
 class Source(models.Model):
     name = models.CharField(unique=True)
+
 
 class CourtCase(models.Model):
     case_number: str
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
 
+
 class CaseSnapshot(models.Model):
     state_hash = models.BinaryField()
     created_at = models.DateTimeField(auto_now_add=True)
     case = models.ForeignKey(CourtCase, on_delete=models.CASCADE)
+
 
 class Party(models.Model):
     side = models.CharField()
@@ -24,6 +28,7 @@ class Party(models.Model):
     role = models.CharField()
     snapshot = models.ForeignKey(CaseSnapshot, on_delete=models.CASCADE)
 
+
 class DocketEntry(models.Model):
     date = models.DateField()
     text = models.CharField()
@@ -31,6 +36,7 @@ class DocketEntry(models.Model):
     amount = models.DecimalField(null=True, max_digits=10, decimal_places=2)
     balance = models.DecimalField(null=True, max_digits=10, decimal_places=2)
     snapshot = models.ForeignKey(CaseSnapshot, on_delete=models.CASCADE)
+
 
 class Event(models.Model):
     room = models.CharField()

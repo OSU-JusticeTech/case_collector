@@ -8,98 +8,217 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='CourtCase',
+            name="CourtCase",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Source',
+            name="Source",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(unique=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(unique=True)),
             ],
         ),
         migrations.CreateModel(
-            name='CaseSnapshot',
+            name="CaseSnapshot",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('state_hash', models.BinaryField()),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('case', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cases.courtcase')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("state_hash", models.BinaryField()),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "case",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="cases.courtcase",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Disposition',
+            name="Disposition",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('code', models.CharField()),
-                ('date', models.DateTimeField(null=True)),
-                ('judge', models.CharField()),
-                ('status', models.CharField()),
-                ('status_date', models.DateField()),
-                ('snapshot', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cases.casesnapshot')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("code", models.CharField()),
+                ("date", models.DateTimeField(null=True)),
+                ("judge", models.CharField()),
+                ("status", models.CharField()),
+                ("status_date", models.DateField()),
+                (
+                    "snapshot",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="cases.casesnapshot",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='DocketEntry',
+            name="DocketEntry",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField()),
-                ('text', models.CharField()),
-                ('extra', models.CharField(null=True)),
-                ('amount', models.DecimalField(decimal_places=2, max_digits=10, null=True)),
-                ('balance', models.DecimalField(decimal_places=2, max_digits=10, null=True)),
-                ('snapshot', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cases.casesnapshot')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateField()),
+                ("text", models.CharField()),
+                ("extra", models.CharField(null=True)),
+                (
+                    "amount",
+                    models.DecimalField(decimal_places=2, max_digits=10, null=True),
+                ),
+                (
+                    "balance",
+                    models.DecimalField(decimal_places=2, max_digits=10, null=True),
+                ),
+                (
+                    "snapshot",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="cases.casesnapshot",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Event',
+            name="Event",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('room', models.CharField()),
-                ('start', models.DateTimeField()),
-                ('end', models.DateTimeField()),
-                ('event', models.CharField()),
-                ('judge', models.CharField()),
-                ('result', models.CharField()),
-                ('snapshot', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cases.casesnapshot')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("room", models.CharField()),
+                ("start", models.DateTimeField()),
+                ("end", models.DateTimeField()),
+                ("event", models.CharField()),
+                ("judge", models.CharField()),
+                ("result", models.CharField()),
+                (
+                    "snapshot",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="cases.casesnapshot",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Finance',
+            name="Finance",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('application', models.CharField()),
-                ('owed', models.DecimalField(decimal_places=2, max_digits=10, null=True)),
-                ('paid', models.DecimalField(decimal_places=2, max_digits=10, null=True)),
-                ('dismissed', models.DecimalField(decimal_places=2, max_digits=10, null=True)),
-                ('balance', models.DecimalField(decimal_places=2, max_digits=10, null=True)),
-                ('snapshot', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cases.casesnapshot')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("application", models.CharField()),
+                (
+                    "owed",
+                    models.DecimalField(decimal_places=2, max_digits=10, null=True),
+                ),
+                (
+                    "paid",
+                    models.DecimalField(decimal_places=2, max_digits=10, null=True),
+                ),
+                (
+                    "dismissed",
+                    models.DecimalField(decimal_places=2, max_digits=10, null=True),
+                ),
+                (
+                    "balance",
+                    models.DecimalField(decimal_places=2, max_digits=10, null=True),
+                ),
+                (
+                    "snapshot",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="cases.casesnapshot",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Party',
+            name="Party",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('side', models.CharField()),
-                ('name', models.CharField()),
-                ('address', models.CharField()),
-                ('city', models.CharField(null=True)),
-                ('state', models.CharField(null=True)),
-                ('zip_code', models.CharField(null=True)),
-                ('role', models.CharField()),
-                ('snapshot', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cases.casesnapshot')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("side", models.CharField()),
+                ("name", models.CharField()),
+                ("address", models.CharField()),
+                ("city", models.CharField(null=True)),
+                ("state", models.CharField(null=True)),
+                ("zip_code", models.CharField(null=True)),
+                ("role", models.CharField()),
+                (
+                    "snapshot",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="cases.casesnapshot",
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='courtcase',
-            name='source',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cases.source'),
+            model_name="courtcase",
+            name="source",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="cases.source"
+            ),
         ),
     ]
