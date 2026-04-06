@@ -1,0 +1,507 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html lang="en" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html lang="en" class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html lang="en" class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en" class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- http://realfavicongenerator.net/ -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=WGaEXQLByx">
+    <link rel="icon" type="image/png" href="/favicon-32x32.png?v=WGaEXQLByx" sizes="32x32">
+    <link rel="icon" type="image/png" href="/favicon-16x16.png?v=WGaEXQLByx" sizes="16x16">
+    <link rel="manifest" href="/manifest.json?v=WGaEXQLByx">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg?v=WGaEXQLByx" color="#333333">
+    <link rel="shortcut icon" href="/favicon.ico?v=WGaEXQLByx">
+    <meta name="apple-mobile-web-app-title" content="FCMC Clerk">
+    <meta name="application-name" content="FCMC Clerk">
+    <meta name="theme-color" content="#eeeeee">
+
+    <title>Search Results | Franklin County Municipal Court Clerk Records Search</title>
+
+
+    <link rel="stylesheet" href="/css/combined.css?id=e77692f11e1473fb94e2b75f58f3900c">
+    <link rel="stylesheet" href="/css/patch.css?v=1775232769">
+
+        <link rel="stylesheet" href="//cdn.datatables.net/1.10.13/css/dataTables.bootstrap.min.css"/>
+    <link rel="stylesheet" href="//cdn.datatables.net/plug-ins/1.10.13/integration/font-awesome/dataTables.fontAwesome.css"/>
+    <style type="text/css" media="screen">
+        @media (max-width: 800px) {
+            .form-group, .form-inline .form-control {
+                display: inline-block;
+                width: auto;
+                vertical-align: middle;
+                margin-bottom: 0;
+            }
+
+            .panel-form-inline {
+                padding-top: 3px;
+                padding-bottom: 3px;
+            }
+        }
+    </style>
+
+
+    <style type="text/css" media="print">
+
+        .visible-print-override {
+            display: block !important;
+            visibility: visible !important;
+        }
+
+        td, th { padding: 0 !important; }
+        .panel { margin-bottom: 0px; border: none; }
+        .panel-body { padding: 5px; }
+        .table { margin-bottom: 0px; }
+        .public-access { font-size: 12pt; }
+        h2.anchored { font-size: 14pt; }
+        h4 { font-size: 13pt; }
+
+    </style>
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="/js/html5shiv.min.js"></script>
+        <script src="/js/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <div id="top"></div>
+
+    <a href="#page" class="sr-only sr-only-focusable">Skip to main content</a>
+
+	        <nav class="navbar-main navbar navbar-default navbar-inverse">
+    <div class="container">
+
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">FCMC Clerk</a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li><a href="../../case/search" style="margin-left: 0; margin-right: 0;">Search Records</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="margin-left: 0; margin-right: 0;">Departments <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="../../lori-m-tyack">Clerk Lori M. Tyack</a></li>
+                        <li class="divider"></li>
+                        <li class="dropdown-header">Departments</li>
+                        <li><a href="../../clerk/accounting-finance">Accounting/Finance</a></li>
+                        <li><a href="../../clerk/audit-and-internal-controls">Audit &amp; Internal Controls</a></li>
+                        <li><a href="../../clerk/civil">Civil</a></li>
+                        <li><a href="../../clerk/clerk-of-court">Clerk of Court</a></li>
+                        <li><a href="../../clerk/collections">Collections</a></li>
+                        <li><a href="../../clerk/criminal">Criminal</a></li>
+                        <li><a href="../../clerk/information-services">Information Services</a></li>
+                        <li><a href="../../clerk/traffic-violations">Traffic Violations</a></li>
+                        <li class="divider"></li>
+                        <li><a href="../../clerk/employment">Employment</a></li>
+                        <li><a href="../../clerk/contact-information">Contact Us</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="margin-left: 0; margin-right: 0;">Reports <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="../../reports/4d-list">4D List</a></li>
+                        <li><a href="../../reports/annual-reports">Annual Reports</a></li>
+                        <li><a href="../../reports/daily-arraignment">Daily Arraignment</a></li>
+                        <li><a href="../../reports/evictions">Monthly Evictions</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="margin-left: 0; margin-right: 0;">Documents <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li class="dropdown-header">Forms</li>
+                        <li><a href="../../forms/attorney">Attorney</a></li>
+                        <li><a href="../../forms/civil">Civil</a></li>
+                        <li><a href="../../forms/criminal-traffic">Criminal/Traffic</a></li>
+                        <li><a href="../../forms/mayors-court">Mayor&#039;s Court</a></li>
+                        <li><a href="../../forms/miscellaneous">Miscellaneous</a></li>
+                        <li><a href="../../forms/small-claims">Small Claims</a></li>
+                        <li class="divider"></li>
+                        <li class="dropdown-header">Additional</li>
+                        <li><a href="../../founding-documents">Founding Documents</a></li>
+                        <li><a href="../../court/local-rules">Local Rules</a></li>
+                        <li><a href="../../media-releases">Media Releases</a></li>
+                        <li><a href="../../clerk/retention-and-public-records">Retention &amp; Public Records</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="margin-left: 0; margin-right: 0;">More <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li class="dropdown-header">Getting Around</li>
+                        <li><a href="../../directions">Directions</a></li>
+                        <li><a href="../../building-directory">Building Directory</a></li>
+                        <li><a href="../../office-hours">Hours of Operation &amp; Holidays</a></li>
+                        <li class="divider"></li>
+                        <li class="dropdown-header">Knowledge Base</li>
+                        <!--<li><a href="../../faq">Articles</a></li>-->
+                        <li><a href="../../faq">FAQ</a></li>
+                        <li><a href="../../history">History</a></li>
+                        <li><a href="../../links">Links to Associated Agencies</a></li>
+                        <li><a href="../../mission-and-privacy-statements">Mission &amp; Privacy Statements</a></li>
+                        <li><a href="../../search-website">Search Website</a></li>
+                        <li class="divider"></li>
+                        <li><a href="../../clerk/employment">Employment</a></li>
+                        <li><a href="../../clerk/contact-information">Contact Us</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+        </div>
+    </div>
+</nav>
+
+        <section
+        class="page-header-section page-header-image-search "
+        aria-labelledby="page-header-title"
+>
+    <div class="container">
+        <header class="page-header pull-left">
+            <h1 id="page-header-title">
+                <span class="hidden-xxs" aria-hidden="true">
+                    Search Results
+                </span>
+                <span class="visible-xxs">
+                    Search Results
+                </span>
+
+                            </h1>
+        </header>
+    </div>
+</section>
+    <div id="page-wrapper">
+        <div class="container" id="page">
+
+
+            <div
+            class="alert alert-disclaimer hidden-print"
+            id="announcement"
+            role="region"
+            aria-labelledby="announcement-heading"
+            aria-live="polite"
+            aria-atomic="true"
+    >
+        <h2 id="announcement-heading" class="sr-only">Announcement</h2>
+        <p><b>Scam Alert!</b> The Clerk's Office has been informed of a scam involving  text messages claiming they have an unpaid parking ticket and must either pay a fine or appear in court.</p>
+<p>These texts are not coming from the Franklin County Municipal Court or the Clerk.</p>
+<p>Additional information: <a href="../../documents/announcements/scam-example-document-2026-03.pdf" target="_blank">Example scam document</a> and <a href="https://www.dispatch.com/story/news/local/2026/03/05/franklin-county-court-warns-of-parking-ticket-toll-fee-scam-texts/88998751007/" target=_"blank">Dispatch article</a>.
+    </div>
+
+
+
+
+
+
+
+
+<div class="row">
+    <div class="col-xs-12">
+
+        <div class="row">
+            <div class="col-xs-12">
+                                <div class="panel panel-default">
+                    <div class="panel-body">
+	                    <span class="hidden-print">
+
+                            <form method="POST" action="../../case/search/modify" accept-charset="UTF-8" style="display: inline-block;"><input name="_token" type="hidden" value="Qu7sWUpOrXiqVDXGqNS1LsqDGSajrdc3j3M47CKf">
+                            <input name="desktop_view" type="hidden" value="">
+                            <button type="submit" class="btn btn-primary btn-xs"><i class="fa fa-search fa-fw"></i> New Search</button>
+                            </form>
+
+                            <form method="POST" action="../../case/search/modify" accept-charset="UTF-8" style="display: inline-block;"><input name="_token" type="hidden" value="Qu7sWUpOrXiqVDXGqNS1LsqDGSajrdc3j3M47CKf">
+                                                                                                <input name="case_number" type="hidden" value="2024 CVG 006892">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <input name="desktop_view" type="hidden" value="">
+                            <button type="submit" class="btn btn-info btn-xs"><i class="fa fa-refresh fa-fw"></i> Modify Search</button>
+                            </form>
+
+                            <form method="POST" action="../../case/search/results/print" accept-charset="UTF-8" style="display: inline-block;" target="blank"><input name="_token" type="hidden" value="Qu7sWUpOrXiqVDXGqNS1LsqDGSajrdc3j3M47CKf">
+                            <input name="parameters" type="hidden" value="eyJpdiI6IjZITHVPUDlLMDd5SUJtcTcrdlE5eHc9PSIsInZhbHVlIjoiY0ZwNVBHNnpFY2ZhQ2NzR2lpbHBSeGdjaHo2c2h0bFAxaVFuNk5qYVl4bko1OVJGRThMZUFjQ3JRVHp4TE9LeCIsIm1hYyI6IjcwMDNiNDg2N2FmZjVhZjUwNTRlZWNhZDYxNWYzMDQ3YjA4NTZlNDllZjY2NDgzNjk4MTc4ZGFmNzM3ZDBmMWYiLCJ0YWciOiIifQ==">
+                            <input name="cases" type="hidden" value="eyJpdiI6IjdMUmZvNlhuKzNyckMrNFNFL2UxRHc9PSIsInZhbHVlIjoieWhobTh1WDN5SHlGVDIrWDg0bGwyZ1BxcEhTaENla2tnNjFPaFUzd2Ivd3F5bXVYd3VENHhWb1gwa0NpeE1XUi9VZDlSV2xLZXQrOExIUWU2bnM0clRnQmdEQ0hTL0R4TzNzM3ZXc2tOaWV5RGVaYSs2cWRVUkFTSlU0MEdNVUlSTzNIZmdIQVovbG40NzBGUXhud1FlcThFbXR1eFRmcHF0bHJmQWd0d0J2MjRKSlFndmRIUHJTTThqd1VGSkNrWlFJMFhFajVCdlZ3WGZEQUdLMENkNHh3NGxDbmUwMGRpRU5RYXEwWFdaVWhlSCs2L1BicVpGby9GOWl3Z2YyaE5DMFdaMWZGem5LbzcxSXVDekZjeTRkMm5QY09UWnhCVTYya0ROWUtKMFJaOUpKS3ZMT2FURkJVbVVXVDJqZGZpLzZOcDQ2cGlabEs5NHpCREVJbndGdUpPWGxaa2JwMXd6cFpRSk0xRFlNVml5MHExUUc2d2dnQ2JHelFOSWNPMys0cVFOaTRoT3Q3WlR3MFEyc3YxN0xHa0tvVjFuS2g5ZFo4cTZMMnNkUT0iLCJtYWMiOiJkODNmM2E0NmRkODQ3MWM2MTc4ZDU5YTY4NGNhODdlMzM3ZDc3MThkMzY1NmY4NGMzZTNmZTY0YjRjYzgzOGUwIiwidGFnIjoiIn0=">
+                            <button type="submit" class="btn btn-success btn-xs hidden-xs"><i class="fa fa-print fa-fw"></i> Print Results</button>
+                            </form>
+
+                            <form method="POST" action="../../case/search/results/pdf" accept-charset="UTF-8" style="display: inline-block;" target="blank"><input name="_token" type="hidden" value="Qu7sWUpOrXiqVDXGqNS1LsqDGSajrdc3j3M47CKf">
+                            <input name="parameters" type="hidden" value="eyJpdiI6IjZITHVPUDlLMDd5SUJtcTcrdlE5eHc9PSIsInZhbHVlIjoiY0ZwNVBHNnpFY2ZhQ2NzR2lpbHBSeGdjaHo2c2h0bFAxaVFuNk5qYVl4bko1OVJGRThMZUFjQ3JRVHp4TE9LeCIsIm1hYyI6IjcwMDNiNDg2N2FmZjVhZjUwNTRlZWNhZDYxNWYzMDQ3YjA4NTZlNDllZjY2NDgzNjk4MTc4ZGFmNzM3ZDBmMWYiLCJ0YWciOiIifQ==">
+                            <input name="cases" type="hidden" value="eyJpdiI6IjdMUmZvNlhuKzNyckMrNFNFL2UxRHc9PSIsInZhbHVlIjoieWhobTh1WDN5SHlGVDIrWDg0bGwyZ1BxcEhTaENla2tnNjFPaFUzd2Ivd3F5bXVYd3VENHhWb1gwa0NpeE1XUi9VZDlSV2xLZXQrOExIUWU2bnM0clRnQmdEQ0hTL0R4TzNzM3ZXc2tOaWV5RGVaYSs2cWRVUkFTSlU0MEdNVUlSTzNIZmdIQVovbG40NzBGUXhud1FlcThFbXR1eFRmcHF0bHJmQWd0d0J2MjRKSlFndmRIUHJTTThqd1VGSkNrWlFJMFhFajVCdlZ3WGZEQUdLMENkNHh3NGxDbmUwMGRpRU5RYXEwWFdaVWhlSCs2L1BicVpGby9GOWl3Z2YyaE5DMFdaMWZGem5LbzcxSXVDekZjeTRkMm5QY09UWnhCVTYya0ROWUtKMFJaOUpKS3ZMT2FURkJVbVVXVDJqZGZpLzZOcDQ2cGlabEs5NHpCREVJbndGdUpPWGxaa2JwMXd6cFpRSk0xRFlNVml5MHExUUc2d2dnQ2JHelFOSWNPMys0cVFOaTRoT3Q3WlR3MFEyc3YxN0xHa0tvVjFuS2g5ZFo4cTZMMnNkUT0iLCJtYWMiOiJkODNmM2E0NmRkODQ3MWM2MTc4ZDU5YTY4NGNhODdlMzM3ZDc3MThkMzY1NmY4NGMzZTNmZTY0YjRjYzgzOGUwIiwidGFnIjoiIn0=">
+                            <button type="submit" class="btn btn-success btn-xs hidden-xs"><i class="fa fa-file-pdf-o fa-fw"></i> PDF Results</button>
+                            </form>
+
+	                    </span>
+
+                    </div>
+                    <div class="panel-footer">
+                        <strong>Results:</strong> 2
+                        |
+                        <strong>Search Parameters:</strong>
+                                                                                    Case number: <em>{{ case.case_number }}</em>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </div>
+                </div>
+            </div>
+        </div>
+
+		<!-- standard view -->
+	    <div class="row hidden-xs visible-print-override">
+	        <div class="col-xs-12">
+	            <div class="panel panel-default">
+                    <table class="table table-condensed table-hover" id="datatable">
+                        <thead>
+                            <tr class="tip" data-toggle="tooltip" data-original-title="Click headers to sort.  Hold shift to sort multiple columns." data-container="body">
+                                <th class="hidden-print">&nbsp;</th>
+                                <th class="no-wrap">Case Number</th>
+                                <th>Name</th>
+                                <th>Party Type</th>
+                                <th>DOB</th>
+                                <th>Alerts &amp; Pending Events</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for p in case.parties %}
+                                                            <tr>
+                                    <td class="hidden-print">
+                                        <form method="POST" action="../../case/view" accept-charset="UTF-8" target="_blank"><input name="_token" type="hidden" value="{{ token }}">
+                                            <!-- Form Submit Button -->
+                                            <div class="form-group">
+                                                <input name="case_id" type="hidden" value="{{ case_id }}">
+                                                <input class="btn btn-primary btn-xs" type="submit" value="View">
+                                            </div>
+                                        </form>
+                                    </td>
+                                    <td class="no-wrap">{{ case.case_number }}</td>
+                                    <td>{{ p.name }}</td>
+                                    <td>{{ p.type_.value }}</td>
+                                    <td>
+                                        <span class="hidden">00000000</span>
+
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge ">0</span>
+                                        NO
+                                    </td>
+                                    <td>
+                                        TODO MOCK
+                                    </td>
+                                </tr>
+                        {% endfor %}
+                                                    </tbody>
+                    </table>
+	            </div>
+	        </div>
+	    </div>
+
+
+		<!-- mobile view -->
+
+
+        <div class="hidden-print hidden-sm hidden-md hidden-lg">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="panel panel-default">
+                        <div class="panel-body panel-form-inline">
+                            <form class="form-inline">
+                                <div class="form-group input-group-sm">
+                                    <label for="order_by">Order By:</label>
+                                    <select id="order_by" class="form-control">
+                                        <option value="case-number">Case Number</option>
+                                        <option value="name">Name</option>
+                                        <option value="party-type">Party Type</option>
+                                        <option value="dob">DOB</option>
+                                        <option value="alerts">Alerts</option>
+                                        <option value="pending-events">Pending Events</option>
+                                        <option value="case-status">Case Status</option>
+                                    </select>
+                                </div>
+                                <div class="form-group input-group-sm">
+                                    <select id="order_dir" class="form-control">
+                                        <option value="asc">Asc</option>
+                                        <option value="desc" selected="selected">Desc</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+		<div class="hidden-print sortable-container hidden-sm hidden-md hidden-lg">
+
+{% for p in case.parties %}
+		        <div class="row sortable-record"
+                     data-case-number="{{case.case_number}}"
+                     data-name="{{p.name}}"
+                     data-party-type="{{p.type_.value}}"
+                     data-dob="00000000"
+                     data-alerts="0"
+                     data-pending-events="NO"
+                     data-case-status="TODO MOCK"
+                >
+		            <div class="col-xs-12">
+		                <div class="panel panel-default">
+		                    <div class="panel-body">
+
+                                <strong>Case Number:</strong> {{case.case_number}}<br>
+                                <strong>Name:</strong> {{p.name}} <br>
+                                <strong>Party Type:</strong> {{p.type_.value}}<br>
+                                                                <strong>Alerts:</strong> <span class="badge ">0</span><br>
+                                <strong>Pending Events:</strong> NO<br>
+                                <strong>Case Status:</strong> TODO MOCK<br>
+
+								<span class="text-center hidden-print">
+                                    <form method="POST" action="../../case/view" accept-charset="UTF-8" target="_blank"><input name="_token" type="hidden" value="{{token}}">
+                                        <!-- Form Submit Button -->
+                                            <input name="case_id" type="hidden" value="{{case_id}}">
+                                            <input class="btn btn-primary" type="submit" value="View">
+
+                                    </form>
+                                </span>
+
+		                    </div>
+	                    </div>
+	                </div>
+	            </div>
+
+{% endfor %}
+
+        </div>
+    </div>
+</div>
+
+
+        </div>
+    </div>
+
+
+            <footer class="hidden-print footer-container">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="page-footer">
+                    <h3>
+                        <a href="/"><span class="no-wrap">Franklin County</span>
+                        <span class="no-wrap">Municipal Court</span></a>
+                        <span class="show-xs hidden-sm hidden-md hidden-lg"><br></span>
+                        <span class="no-wrap"><small>Clerk Lori M. Tyack</small></span>
+                    </h3>
+                </div>
+                                    <ul class="list-inline">
+                        <li><a href="../../case/search">Search Records</a></li>
+                        <li><a href="../../forms">View Forms</a></li>
+                        <li><a href="../../directions">Get Directions</a></li>
+                        <li><a href="../../clerk/contact-information">Contact the Clerk&#039;s Office</a></li>
+                        <li><a href="../../court/contact-information">Contact the Court</a></li>
+                    </ul>
+
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="/js/jquery.min.js"><\/script>')</script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script>
+        if(typeof($.fn.modal) === 'undefined') {
+            document.write('<script src="/js/bootstrap.min.js"><\/script>')
+        }
+    </script>
+
+    <!-- Site JS -->
+    <script>
+        $(document).ready(function() {
+            $('#flash-overlay-modal').modal();
+            $('.tip').tooltip();
+        } );
+    </script>
+
+        <script src="//cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
+    <script src="//cdn.datatables.net/1.10.13/js/dataTables.bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#datatable').dataTable( {
+                paging: false,
+                searching: false,
+                info: false,
+                "order": [
+                    [ 5, "desc" ],
+                    [ 1, "desc" ],
+                    [ 3, "asc" ],
+                    [ 2, "asc" ],
+                    [ 4, "desc" ],
+                    [ 6, "desc" ]
+                ],
+                "columns": [
+                    { "orderable": false },
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ],
+                "language": {
+                    "emptyTable": "No records found for the provided search parameters."
+                }
+            });
+            $('.btn').click(function() {
+                $(this).addClass('btn-success');
+                $(this).removeClass('btn-primary');
+                $(this).closest('tr').addClass('success');
+            });
+            $('#order_by').on('change', function() {
+                var sortOrder = $('#order_dir').val();
+                var dataAttr = this.value;
+                $('.sortable-container').each(function(){
+                    var $this = $(this);
+                    if(sortOrder == 'desc') {
+                        $this.append($this.find('.sortable-record').get().sort(function(a, b) {
+                            return $(a).attr('data-' + dataAttr).localeCompare($(b).attr('data-' + dataAttr));
+                        }).reverse());
+                    }
+                    if(sortOrder == 'asc') {
+                        $this.append($this.find('.sortable-record').get().sort(function(a, b) {
+                            return $(a).attr('data-' + dataAttr).localeCompare($(b).attr('data-' + dataAttr));
+                        }));
+                    }
+                });
+            });
+            $('#order_dir').on('change', function() {
+                var dataAttr = $('#order_by').val();
+                var sortOrder = this.value;
+                $('.sortable-container').each(function(){
+                    var $this = $(this);
+                    if(sortOrder == 'desc') {
+                        $this.append($this.find('.sortable-record').get().sort(function(a, b) {
+                            return $(a).attr('data-' + dataAttr).localeCompare($(b).attr('data-' + dataAttr));
+                        }).reverse());
+                    }
+                    if(sortOrder == 'asc') {
+                        $this.append($this.find('.sortable-record').get().sort(function(a, b) {
+                            return $(a).attr('data-' + dataAttr).localeCompare($(b).attr('data-' + dataAttr));
+                        }));
+                    }
+                });
+            });
+        } );
+        window.onunload = function(){};
+    </script>
+
+      
+</body>
+</html>

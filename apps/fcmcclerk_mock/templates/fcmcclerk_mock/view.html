@@ -1,0 +1,574 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html lang="en" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html lang="en" class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html lang="en" class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en" class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=680">
+
+    <!-- http://realfavicongenerator.net/ -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=WGaEXQLByx">
+    <link rel="icon" type="image/png" href="/favicon-32x32.png?v=WGaEXQLByx" sizes="32x32">
+    <link rel="icon" type="image/png" href="/favicon-16x16.png?v=WGaEXQLByx" sizes="16x16">
+    <link rel="manifest" href="/manifest.json?v=WGaEXQLByx">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg?v=WGaEXQLByx" color="#333333">
+    <link rel="shortcut icon" href="/favicon.ico?v=WGaEXQLByx">
+    <meta name="apple-mobile-web-app-title" content="FCMC Clerk">
+    <meta name="application-name" content="FCMC Clerk">
+    <meta name="theme-color" content="#eeeeee">
+
+    <title>{{case.case_number}} FCMC Case Information</title>
+
+
+    <link rel="stylesheet" href="/css/combined.css?id=e77692f11e1473fb94e2b75f58f3900c">
+    <link rel="stylesheet" href="/css/patch.css?v=1775232769">
+
+        <style type="text/css" media="screen">
+        body, #page-wrapper, .container {
+            min-width: 680px;
+        }
+        a.anchor-heading {
+            top: -100px;
+        }
+    </style>
+	<style type="text/css" media="print">
+        td, th { padding: 0 !important; }
+        .panel { margin-bottom: 0px; border: none; }
+        .panel-body { padding: 5px; }
+        .table { margin-bottom: 0px; }
+        .public-access { font-size: 12pt; }
+        h2.anchored { font-size: 14pt; }
+        h4 { font-size: 13pt; }
+	</style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="/js/html5shiv.min.js"></script>
+        <script src="/js/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <div id="top"></div>
+
+    <a href="#page" class="sr-only sr-only-focusable">Skip to main content</a>
+
+
+<nav class="navbar navbar-default navbar-fixed-top navbar-inverse" role="navigation">
+    <div class="container">
+
+        <div class="navbar-header pull-left">
+            <a class="navbar-brand" href="#top">{{case.case_number}}</a>
+        </div>
+        <div class="navbar-header pull-right">
+            <ul class="nav navbar-nav">
+                <li>
+                    <a href="javascript:open(location, '_self').close();" class="hidden-print" title="Close Window">
+                <i class="fa fa-times fa-lg"></i>
+            </a>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+</nav>
+
+
+        <section
+        class="page-header-section page-header-image-search-fixed hidden-print"
+        aria-labelledby="page-header-title"
+>
+    <div class="container">
+        <header class="page-header pull-left">
+            <h1 id="page-header-title">
+                <span class="hidden-xxs" aria-hidden="true">
+                    {{case.case_number}}
+                </span>
+                <span class="visible-xxs">
+                    {{case.case_number}}
+                </span>
+
+                                    <small>FCMC Case Information</small>
+                            </h1>
+        </header>
+    </div>
+</section>
+    <div id="page-wrapper">
+        <div class="container" id="page">
+
+
+            <div
+            class="alert alert-disclaimer hidden-print"
+            id="announcement"
+            role="region"
+            aria-labelledby="announcement-heading"
+            aria-live="polite"
+            aria-atomic="true"
+    >
+        <h2 id="announcement-heading" class="sr-only">Announcement</h2>
+        <p><b>Scam Alert!</b> The Clerk's Office has been informed of a scam involving  text messages claiming they have an unpaid parking ticket and must either pay a fine or appear in court.</p>
+<p>These texts are not coming from the Franklin County Municipal Court or the Clerk.</p>
+<p>Additional information: <a href="https://www.fcmcclerk.com/documents/announcements/scam-example-document-2026-03.pdf" target="_blank">Example scam document</a> and <a href="https://www.dispatch.com/story/news/local/2026/03/05/franklin-county-court-warns-of-parking-ticket-toll-fee-scam-texts/88998751007/" target=_"blank">Dispatch article</a>.
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+<div class="row public-access">
+    <div class="col-md-3 col-md-push-9 hidden-print">
+        <div class="panel panel-default">
+            <div class="panel-body">
+
+                <ul class="list-unstyled list-index anchor-list large-list">
+					<li><a href="#overview" class="anchor-link">Overview</a></li>
+																					<li><a href="#parties" class="anchor-link">Parties</a></li>
+																										<li><a href="#disposition" class="anchor-link">Disposition</a></li>
+																<li><a href="#financial-summary" class="anchor-link">Financial Summary</a></li>
+																<li><a href="#receipts" class="anchor-link">Receipts</a></li>
+																					<li><a href="#events" class="anchor-link">Events</a></li>
+																<li><a href="#docket" class="anchor-link">Docket</a></li>
+					                </ul>
+
+                <form method="POST" action="https://www.fcmcclerk.com/case/view/print" accept-charset="UTF-8" target="blank"><input name="_token" type="hidden" value="Qu7sWUpOrXiqVDXGqNS1LsqDGSajrdc3j3M47CKf">
+                    <!-- Form Submit Button -->
+                    <div class="form-group">
+                        <input name="case_id" type="hidden" value="eyJpdiI6Im8rZks1cWZtT1ZFV3h0ZDdISzhBY3c9PSIsInZhbHVlIjoiN05PN2s4WXhIcnpZb05yUVVTYnl0QT09IiwibWFjIjoiNjFhODhmMDI5ZGY5ZjlhMTdjNzkyZTYyODBjNTM4MjMyZTQ2NjJhMmQ3M2IyNTgxYTExZWQyYzk2NjVkMzQyMiIsInRhZyI6IiJ9">
+                        <button type="submit" class="btn btn-success btn-xs btn-block"><i class="fa fa-print fa-fw"></i> Print</button>
+                    </div>
+                </form>
+
+                <form method="POST" action="https://www.fcmcclerk.com/case/view/pdf" accept-charset="UTF-8"><input name="_token" type="hidden" value="Qu7sWUpOrXiqVDXGqNS1LsqDGSajrdc3j3M47CKf">
+                    <!-- Form Submit Button -->
+                    <div class="form-group">
+                        <input name="case_id" type="hidden" value="eyJpdiI6Im8rZks1cWZtT1ZFV3h0ZDdISzhBY3c9PSIsInZhbHVlIjoiN05PN2s4WXhIcnpZb05yUVVTYnl0QT09IiwibWFjIjoiNjFhODhmMDI5ZGY5ZjlhMTdjNzkyZTYyODBjNTM4MjMyZTQ2NjJhMmQ3M2IyNTgxYTExZWQyYzk2NjVkMzQyMiIsInRhZyI6IiJ9">
+                        <button type="submit" class="btn btn-success btn-xs btn-block"><i class="fa fa-file-pdf-o fa-fw"></i> PDF</button>
+                    </div>
+                </form>
+
+                <button type="button" class="btn btn-default btn-xs btn-block" data-toggle="modal" data-target="#helpModal">
+					<i class="fa fa-question-circle"></i> Help
+                </button>
+
+            </div>
+        </div>
+    </div>
+    <div class="col-md-9 col-md-pull-3">
+
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+
+						<a href="#top" class="scroll-up pull-right hidden-print" role="button" aria-label="Scroll to top of page">
+        <i class="fa fa-chevron-up fa-2x" aria-hidden="true"></i>
+        <span class="sr-only">Scroll to top of page</span>
+    </a>
+                        <a id="overview" class="anchor-heading" aria-hidden="true"></a><h2 class="anchored">
+                <a href="#overview" id="overview-heading">Overview</a>
+              </h2>
+
+                        <table class="table" border="0">
+                            <tr valign="top">
+                                <td class="page_header" style="text-align: left; width: 50%;">{{ case.plaintiff }}<br />
+                                              <sup><i>Plaintiff</i></sup><br /><span style="display: block; margin-top: 10px; margin-bottom: 15px;">Vs</span>{{ case.defendant }}<i>et al</i><br /><sup><i>Defendant</i></sup>		</td>
+                                <td class="page_header" style="text-align: right; width: 50%; border-left: thin solid #D4D4D4; padding-left: 5px;">
+                                        Case No. {{case.case_number}}<br /><br />
+                                        Status: CLOSED<br /><br />
+                                        Filed: 09/28/2023
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+			        <div class="row">
+	            <div class="col-xs-12">
+	                <div class="panel panel-default">
+
+						<div class="panel-header">
+							<button type="button" class="btn btn-default btn-xs hide-table pull-right" title="Show/Hide Section">
+    <span class="hide-table-text hidden-print"><i class="fa fa-minus" aria-hidden="true"></i></span>
+    <span class="hide-table-text" style="display: none;"><i class="fa fa-plus" aria-hidden="true"></i></span>
+</button>						</div>
+
+						<div class="panel-body">
+
+	                        <a href="#top" class="scroll-up pull-right hidden-print" role="button" aria-label="Scroll to top of page">
+        <i class="fa fa-chevron-up fa-2x" aria-hidden="true"></i>
+        <span class="sr-only">Scroll to top of page</span>
+    </a>
+	                        <a id="parties" class="anchor-heading" aria-hidden="true"></a><h2 class="anchored">
+                <a href="#parties" id="parties-heading">Parties</a>
+              </h2>
+
+	                        <div class="toggler-c opened" title="PARTIES">
+                             <table class="table" id="pty_table">
+                                <!--<tr>
+                                    <td class="table_header" colspan="5" onClick='toggleRows("pty_table", this, "pty_img")'><img name="pty_img" class="print1" src="images/collapse.png" alt="Collapse" title="Collapse" style="float: right;"/>PARTIES</td>
+                                </tr>-->
+                                 {% for p in case.parties %}
+                                 <tr valign="top">
+                                    <td class="data" align="center" style="background-color: #EEEEEE; text-align: center;" rowspan="3"><b>{{ forloop.counter }}</b></td>
+                                    <td class="title">Name</td>
+                                    <td class="data">{{ p.name }}</td>
+                                    <td class="title">Type</td>
+                                    <td class="data">{{ p.type_.value }}</td>
+                                </tr><tr valign="top">
+                                        <td class="title">Address</td>
+                                        <td class="data" colspan="3">{{ p.address }}</td>
+                                    </tr><tr valign="top">
+                                        <td class="title">City</td>
+                                        <td class="data">{{ p.city }}</td>
+                                        <td class="title">State/Zip</td>
+                                        <td class="data">{{ p.state }}/{{ p.zip_ }}</td>
+                                    </tr><tr style="height: 10px;">
+                                        <td colspan="5"><span style="font-size: 5px;">&nbsp;</span></td>
+                                    </tr>
+                                 {% endfor %}
+                                 </table>
+                             </div>
+
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+
+
+
+			        <div class="row">
+	            <div class="col-xs-12">
+	                <div class="panel panel-default">
+
+						<div class="panel-header">
+							<button type="button" class="btn btn-default btn-xs hide-table pull-right" title="Show/Hide Section">
+    <span class="hide-table-text hidden-print"><i class="fa fa-minus" aria-hidden="true"></i></span>
+    <span class="hide-table-text" style="display: none;"><i class="fa fa-plus" aria-hidden="true"></i></span>
+</button>						</div>
+
+						<div class="panel-body">
+
+	                        <a href="#top" class="scroll-up pull-right hidden-print" role="button" aria-label="Scroll to top of page">
+        <i class="fa fa-chevron-up fa-2x" aria-hidden="true"></i>
+        <span class="sr-only">Scroll to top of page</span>
+    </a>
+	                        <a id="disposition" class="anchor-heading" aria-hidden="true"></a><h2 class="anchored">
+                <a href="#disposition" id="disposition-heading">Disposition</a>
+              </h2>
+
+	                        <div class="toggler-c opened" title="CASE DISPOSITION">
+                             <table class="table" id="dsp_table">
+                                <!--<tr>
+                                    <td class="table_header" colspan="5" onClick='toggleRows("dsp_table", this, "dsp_img")'><img name="dsp_img" class="print1" src="images/collapse.png" alt="Collapse" title="Collapse" style="float: right;"/>CASE DISPOSITION</td>
+                                </tr>-->
+                                <tr>
+                                    <td class="title"><u>Status</u></td>
+                                    <td class="title"><u>Status Date</u></td>
+                                    <td class="title"><u>Disposition Code</u></td>
+                                    <td class="title"><u>Disposition Date</u></td>
+                                    <td class="title"><u>Judge</u></td>
+                                </tr>
+                                 {% for d in case.dispositions %}
+                                 <tr valign="top">
+                                    <td class="data">{{ d.status }}</td>
+                                    <td class="data">{{ d.status_date|date:"m/d/Y" }}</td>
+                                    <td class="data">{{ d.code }}</td>
+                                    <td class="data">{{ d.date|date:"m/d/Y" }}</td>
+                                    <td class="data">{{ d.judge }}</td>
+                                </tr>
+                             {% endfor %}
+                             </table>
+                             </div>
+
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+
+			        <div class="row">
+	            <div class="col-xs-12">
+	                <div class="panel panel-default">
+
+						<div class="panel-header">
+							<button type="button" class="btn btn-default btn-xs hide-table pull-right" title="Show/Hide Section">
+    <span class="hide-table-text hidden-print"><i class="fa fa-minus" aria-hidden="true"></i></span>
+    <span class="hide-table-text" style="display: none;"><i class="fa fa-plus" aria-hidden="true"></i></span>
+</button>						</div>
+
+						<div class="panel-body">
+
+	                        <a href="#top" class="scroll-up pull-right hidden-print" role="button" aria-label="Scroll to top of page">
+        <i class="fa fa-chevron-up fa-2x" aria-hidden="true"></i>
+        <span class="sr-only">Scroll to top of page</span>
+    </a>
+	                        <a id="financial-summary" class="anchor-heading" aria-hidden="true"></a><h2 class="anchored">
+                <a href="#financial-summary" id="financial-summary-heading">Financial Summary</a>
+              </h2>
+
+	                        <div class="toggler-c opened" title="FINANCIAL SUMMARY">
+                             <table class="table" id="dkt_appl_table">
+                                <!--<tr>
+                                    <td class="table_header" colspan="5" onClick='toggleRows("dkt_appl_table", this, "dkt_appl_img")'><img name="dkt_appl_img" class="print1" src="images/collapse.png" alt="Collapse" title="Collapse" style="float: right;"/>FINANCIAL SUMMARY</td>
+                                </tr>-->
+                                <tr>
+                                    <td class="title"><u>Docket Application</u></td>
+                                    <td class="title"><u>Amount Owed</u></td>
+                                    <td class="title"><u>Amount Paid</u></td>
+                                    <td class="title"><u>Amount Dismissed</u></td>
+                                    <td class="title"><u>Balance</u></td>
+                                </tr>{% for f in case.finances %}<tr valign="top">
+                                    <td class="data">{% if forloop.last %}<b>{% endif %}{{ f.application }}{% if forloop.last %}</b>{% endif %}</td>
+                                    <td class="data">${{ f.owed }}</td>
+                                    <td class="data">${{ f.paid }}</td>
+                                    <td class="data">${{ f.dismissed }}</td>
+                                    <td class="data">${{ f.balance }}</td>
+                                </tr>{% endfor %}</table>
+                             </div>
+
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+
+			        <div class="row">
+	            <div class="col-xs-12">
+	                <div class="panel panel-default">
+
+						<div class="panel-header">
+							<button type="button" class="btn btn-default btn-xs hide-table pull-right" title="Show/Hide Section">
+    <span class="hide-table-text hidden-print"><i class="fa fa-minus" aria-hidden="true"></i></span>
+    <span class="hide-table-text" style="display: none;"><i class="fa fa-plus" aria-hidden="true"></i></span>
+</button>						</div>
+
+						<div class="panel-body">
+
+	                        <a href="#top" class="scroll-up pull-right hidden-print" role="button" aria-label="Scroll to top of page">
+        <i class="fa fa-chevron-up fa-2x" aria-hidden="true"></i>
+        <span class="sr-only">Scroll to top of page</span>
+    </a>
+	                        <a id="receipts" class="anchor-heading" aria-hidden="true"></a><h2 class="anchored">
+                <a href="#receipts" id="receipts-heading">Receipts</a>
+              </h2>
+
+	                        <div class="toggler-c opened" title="RECEIPTS">
+                             <table class="table" id="rec_table">
+                                <!--<tr>
+                                    <td class="table_header" colspan="6" onClick='toggleRows("rec_table", this, "rec_img")'><img name="rec_img" class="print1" src="images/collapse.png" alt="Collapse" title="Collapse" style="float: right;"/>RECEIPTS</td>
+                                </tr>-->
+                                <tr>
+                                    <td class="title"><u>Number</u></td>
+                                    <td class="title"><u>Cash Book</u></td>
+                                    <td class="title"><u>Received From</u></td>
+                                    <td class="title"><u>Status</u></td>
+                                    <td class="title"><u>Date</u></td>
+                                    <td class="title"><u>Total Amount</u></td>
+                                </tr></table>
+                             </div>
+
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+
+
+			        <div class="row">
+	            <div class="col-xs-12">
+	                <div class="panel panel-default">
+
+						<div class="panel-header">
+							<button type="button" class="btn btn-default btn-xs hide-table pull-right" title="Show/Hide Section">
+    <span class="hide-table-text hidden-print"><i class="fa fa-minus" aria-hidden="true"></i></span>
+    <span class="hide-table-text" style="display: none;"><i class="fa fa-plus" aria-hidden="true"></i></span>
+</button>						</div>
+
+						<div class="panel-body">
+
+	                        <a href="#top" class="scroll-up pull-right hidden-print" role="button" aria-label="Scroll to top of page">
+        <i class="fa fa-chevron-up fa-2x" aria-hidden="true"></i>
+        <span class="sr-only">Scroll to top of page</span>
+    </a>
+	                        <a id="events" class="anchor-heading" aria-hidden="true"></a><h2 class="anchored">
+                <a href="#events" id="events-heading">Events</a>
+              </h2>
+
+	                        <div class="toggler-c opened" title="EVENTS">
+                             <table class="table" id="evnt_table">
+                                <!--<tr>
+                                    <td class="table_header" colspan="6" onClick='toggleRows("evnt_table", this, "evnt_img")'><img name="evnt_img" class="print1" src="images/collapse.png" alt="Collapse" title="Collapse" style="float: right;"/>EVENTS</td>
+                                </tr>-->
+                                <tr>
+                                    <td class="title"><u>Event</u></td>
+                                    <td class="title"><u>Date</u></td>
+                                    <td class="title"><u>Start</u></td>
+                                    <td class="title"><u>End</u></td>
+                                    <td class="title"><u>Judge</u></td>
+                                    <td class="title"><u>Ct.Rm.</u></td>
+                                    <td class="title"><u>Result</u></td>
+                                </tr>{% for e in case.events %}<tr valign="top">
+                                    <td class="data">{{ e.event }}</td>
+                                    <td class="data">{{ e.start|date:"m/d/Y" }}</td>
+                                    <td class="data">{{ e.start|date:"h:i A" }}</td>
+                                    <td class="data">{{ e.end|date:"h:i A" }}</td>
+                                    <td class="data">{{ e.judge }}</td>
+                                    <td class="data">{{ e.room }}</td>
+                                    <td class="data">{{ e.result }}</td>
+                                </tr>{% endfor %}</table>
+                             </div>
+
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+
+			        <div class="row">
+	            <div class="col-xs-12">
+	                <div class="panel panel-default">
+
+						<div class="panel-header">
+							<button type="button" class="btn btn-default btn-xs hide-table pull-right" title="Show/Hide Section">
+    <span class="hide-table-text hidden-print"><i class="fa fa-minus" aria-hidden="true"></i></span>
+    <span class="hide-table-text" style="display: none;"><i class="fa fa-plus" aria-hidden="true"></i></span>
+</button>						</div>
+
+						<div class="panel-body">
+
+	                        <a href="#top" class="scroll-up pull-right hidden-print" role="button" aria-label="Scroll to top of page">
+        <i class="fa fa-chevron-up fa-2x" aria-hidden="true"></i>
+        <span class="sr-only">Scroll to top of page</span>
+    </a>
+	                        <a id="docket" class="anchor-heading" aria-hidden="true"></a><h2 class="anchored">
+                <a href="#docket" id="docket-heading">Docket</a>
+              </h2>
+
+	                        <div class="toggler-c opened" title="DOCKET">
+                             <table class="table" id="dkt_table">
+                                <tr>
+                                    <td class="title" style="width: 90px;"><u>Date</u></td>
+                                    <td class="title" style=""><u>Text</u></td>
+                                    <td class="title" style="width: 60px;"><u>Amount</u></td>
+                                    <td class="title" style="width: 60px;"><u>Balance</u></td>
+                                </tr>{% for d in case.docket %}<tr valign="top">
+                                    <td class="data">{{ d.date|date:"m/d/Y" }}</td>
+                                    <td class="data"><strong>{{d.text}}</strong></td>
+                                    <td class="data">{{d.amount|default:""}}</td>
+                                    <td class="data">{{d.balance|default:""}}</td>
+                                </tr>
+                                 {% if d.extra %}
+                                 <tr valign="top" id="dkt_row_1" class="dkt_text" style="border-top: none;">
+                                        <td class="data" style="border-top: none;">&nbsp;</td>
+                                        <td class="data" style="border-top: none;" colspan="3">{{d.extra|safe}}</td>
+                                    </tr>
+                                 {% endif %}
+                                 {% endfor %}
+                                   </table>
+                             </div>
+
+	                        <a href="#top" class="scroll-up pull-right hidden-print" role="button" aria-label="Scroll to top of page">
+        <i class="fa fa-chevron-up fa-2x" aria-hidden="true"></i>
+        <span class="sr-only">Scroll to top of page</span>
+    </a>
+
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+
+    </div>
+</div>
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="helpModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="helpModalLabel">Help Information</h4>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        Questions about this case?
+                    </p>
+                                            <p>
+                            Call the Civil Department
+                            <a href="https://www.fcmcclerk.com/office-hours">during regular business hours</a>.
+                        </p>
+                        <p>
+                            <span class="no-wrap"><i class="fa fa-phone fa-fw icon-tel"></i> <a href="tel:16146457220">(614) 645-7220</a></span>
+                        </p>
+                                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+        </div>
+    </div>
+
+
+        <footer class="hidden-print footer-container">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="page-footer">
+                    <h3>
+                        <a href="/"><span class="no-wrap">Franklin County</span>
+                        <span class="no-wrap">Municipal Court</span></a>
+                        <span class="show-xs hidden-sm hidden-md hidden-lg"><br></span>
+                        <span class="no-wrap"><small>Clerk Lori M. Tyack</small></span>
+                    </h3>
+                </div>
+
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="/js/jquery.min.js"><\/script>')</script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script>
+        if(typeof($.fn.modal) === 'undefined') {
+            document.write('<script src="/js/bootstrap.min.js"><\/script>')
+        }
+    </script>
+
+    <!-- Site JS -->
+    <script>
+        $(document).ready(function() {
+            $('#flash-overlay-modal').modal();
+            $('.tip').tooltip();
+        } );
+    </script>
+
+    	<script>
+		$(document).ready(function() {
+			$('.hide-table').click(function() {
+				$(this).closest('.panel').find('.table').toggle();
+				$(this).closest('.panel').find('.scroll-up').toggle();
+				$(this).find('.hide-table-text').toggle();
+			});
+		} );
+	</script>
+
+</body>
+</html>

@@ -1,10 +1,19 @@
+import base64
 import csv
+import hashlib
+import json
+import secrets
 from datetime import datetime, timezone, date, timedelta
 
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.views.decorators.csrf import csrf_exempt
 
 from . import fake_state
+from .forms import SearchForm
+
+from django.contrib import messages
+
 
 # Create your views here.
 
@@ -79,3 +88,46 @@ def report_csv(request, start, end):
                 )
 
     return response
+
+def search(request):
+
+    form = SearchForm()
+    token = secrets.token_urlsafe(32)
+    request.session["form_token"] = token
+
+    return render(request, "fcmcclerk_mock/search.html", context={"form": form, "token":token})
+
+@csrf_exempt
+def results(request):
+
+    form = SearchForm(request.POST)
+    print("token", request.POST.get("_token"))
+    form_token = request.POST.get("_token")
+    sess_token = request.session.get("form_token")
+
+    if sess_token is None or form_token != sess_token:
+        return HttpResponse("wrong token")
+
+    if form.is_valid():
+        print("valid form")
+        for case in fake_state.EVICTION_FIXTURE:
+            if case.case_number == form.cleaned_data["case_number"]:
+                token = secrets.token_urlsafe(32)
+                request.session["result_token"] = token
+                return render(request, "fcmcclerk_mock/result.html", context={"token": token, "case": case, "case_id": base64.b64encode(json.dumps({"number":case.case_number}).encode()).decode()})
+        for case  in fake_state.EVICTION_FIXTURE[-20:]:
+            print(case.case_number)
+        messages.error(request, f"Not found")
+        return redirect("fcmcclerk_mock:search")
+
+@csrf_exempt
+def case_view(request):
+    print("token", request.POST.get("_token"))
+    print("id", request.POST.get("case_id"))
+
+    data = json.loads(base64.b64decode(request.POST.get("case_id")))
+    for case in fake_state.EVICTION_FIXTURE:
+        if case.case_number == data["number"]:
+            return render(request, "fcmcclerk_mock/view.html",context={"case":case})
+
+

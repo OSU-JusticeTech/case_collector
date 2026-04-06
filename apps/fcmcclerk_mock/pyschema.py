@@ -1,5 +1,6 @@
 import random
 from datetime import timedelta
+from turtledemo.clock import jump
 
 import numpy as np
 from pydantic import BaseModel, Field, field_validator, ConfigDict
@@ -95,6 +96,10 @@ class SideName(BaseModel):
         populate_by_name=True,
     )
 
+    @classmethod
+    def generate(cls, type_):
+        return SideName(name=f"TEST {type_}", type_=type_)
+
 
 class SideAddress(SideName):
     address: list[str]
@@ -111,6 +116,7 @@ class SideAddress(SideName):
 
     def __hash__(self):
         return hash(str(self))
+
 
 
 class Attorney(SideAddress):
@@ -139,6 +145,27 @@ class DocketEntry(BaseModel):
     amount: Decimal | None = None
     balance: Decimal | None = None
 
+    @staticmethod
+    def generate(filed):
+        return list(reversed([DocketEntry(date=filed, text="PETITION IN FE&D FILED", extra="Receipt: 12345  Date: ##/##/####", amount=128, balance=0),
+        DocketEntry(date=filed+timedelta(days=1), text="IMAGE OF COMPLAINT"),
+        DocketEntry(date=filed+timedelta(days=1), text="HEARING SCHEDULED, NOTICES PROCESSED - HS",extra="Event: EVICTION HEARING - FCRS <br/>\nDate: 10/23/2025    Time: 8:30 am <br/>\nJudge: 11B    Location: 11B LOCATED ON THE 11TH FLOOR<br/>\n<br/>\nResult: DDSMP - NOTICE OF DISMISSAL BY PLAINTIFF W/O PREJ."),
+        DocketEntry(date=filed+timedelta(days=1), text="SUMMONS ISSUED WITH COPY OF COMPLAINT"),
+        DocketEntry(date=filed+timedelta(days=1), text='ORDINARY MAIL  CERTIFICATE OF MAILING DATED & FILED NEXT BUS. DAY - OM',
+                extra='Issue Date:  10/10/2025<br/>\nService:  ISSUE SVC FOR G1 C/A - ISG1<br/>\nMethod:  ORDINARY MAIL<br/>\nCost Per:  $0.00<br/>\n<br/>\n<br/>\n   DEF<br/>\n     Tracking No: O00000000'),
+        DocketEntry(date=filed+timedelta(days=1), text='SUMMONS ISSUED WITH COPY OF COMPLAINT',
+        extra = '1 CAUSE G - 1CA<br/>\nSent on:  10/10/2025  08:08:47.72'),
+        DocketEntry(date=filed+timedelta(days=1), text='BAILIFF SERVICE - BS',
+        extra = 'Issue Date:  10/10/2025<br/>\nService:  ISSUE SVC FOR G1 C/A - ISG1<br/>\nMethod:  BAILIFF SERVICE<br/>\nCost Per:  $0.00<br/>\n<br/>\n<br/>\n  ADDRESS    Tracking No: B0000000'),
+        DocketEntry(date=filed+timedelta(days=1), text='SUMMONS ISSUED WITH COPY OF COMPLAINT',
+        extra = '1 CAUSE G - 1CA<br/>\nSent on:  10/10/2025  08:09:05.63'),
+        DocketEntry(date=filed+timedelta(days=6), text='BAILIFF RETURN FILED SHOWING SERVICE ON:\nAS TO:',
+        extra = 'BAILIFF RETURN FILED SHOWING SERVICE ON:<br/>\nAS TO:<br/>\n   Method    : BAILIFF SERVICE<br/>\n   Issued    : 10/10/2025<br/>\n   Service   : ISSUE SVC FOR G1 C/A - ISG1<br/>\n   Served    : 10/14/2025<br/>\n   Return    : 10/15/2025<br/>\n   On        : NAME<br/>\n   Signed By : <br/>\n<br/>\n   Reason    : SUCCESSFUL BAILIFF SERVICE - SBAIL<br/>\n   Comment   : posted<br/>\n<br/>\n   Tracking # : B00000000'),
+        DocketEntry(date=filed+timedelta(days=13), text='DISMISSED BY PLAINTIFF',
+        extra = 'The following event: EVICTION HEARING - FCRS scheduled for 10/23/2025 at 8:30 am has been resulted as follows:<br/>\n<br/>\nResult: DDSMP - NOTICE OF DISMISSAL BY PLAINTIFF W/O PREJ. <br/>\nJudge: 11B    Location: 11B LOCATED ON THE 11TH FLOOR'
+                    )
+        ]))
+
 
 class Event(BaseModel):
     room: str
@@ -148,6 +175,14 @@ class Event(BaseModel):
     judge: str
     result: str
 
+    @classmethod
+    def generate(cls, filed: datetime.date):
+        future_days = int(np.random.exponential(5) + 14)
+        return Event(room="11B", judge="11B", event="EVICTION HEARING - FCRS",
+                     result='JUDGEMENT FOR RESTITUTION OF PREMISES',
+                     start=datetime.datetime.combine(filed, datetime.time(10,30))+timedelta(days=future_days),
+                     end=datetime.datetime.combine(filed, datetime.time(10,35))+timedelta(days=future_days))
+
 
 class Finance(BaseModel):
     application: str | Literal["TOTAL"]
@@ -155,6 +190,10 @@ class Finance(BaseModel):
     paid: Decimal
     dismissed: Decimal
     balance: Decimal
+
+    @classmethod
+    def generate(cls, amt):
+        return [Finance(application="COST", owed=amt, paid=amt, dismissed=0, balance=0),Finance(application="TOTAL:", owed=amt, paid=amt, dismissed=0, balance=0)]
 
 
 class Disposition(BaseModel):
@@ -222,13 +261,18 @@ class Case(BaseModel):
     @staticmethod
     def generate(num, filed):
         disp = Disposition.generate(filed)
-        filing = DocketEntry(date=filed, text="PETITION IN FE&D FILED")
+        event = Event.generate(filed)
+        pt = SideName.generate(Sides.PLAINTIFF)
+        de = SideName.generate(Sides.DEFENDANT)
+
+        d = DocketEntry.generate(filed)
+        cost = Finance.generate(223)
         return Case(
             case_number=num,
-            parties=[],
-            docket=[filing],
+            parties=[pt,de],
+            docket=d,
             attorneys=[],
-            finances=[],
-            events=[],
+            finances=cost,
+            events=[event],
             dispositions=[disp],
         )
