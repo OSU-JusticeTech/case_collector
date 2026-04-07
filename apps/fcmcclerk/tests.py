@@ -24,14 +24,20 @@ class FakeSession:
         return FakeResponse(response)
 
     def get(self, url, *args, **kwargs):
-        path = url.replace("https://www.fcmcclerk.com", f"/fcmcclerk.com/{datetime.datetime.now().date().isoformat()}")
-        print("get rewrote", path)
+        path = url.replace(
+            "https://www.fcmcclerk.com",
+            f"/fcmcclerk.com/{datetime.datetime.now().date().isoformat()}",
+        )
+        # print("get rewrote", path)
         response = self.client.get(path)
         return self._build_response(response)
 
     def post(self, url, *args, **kwargs):
-        path = url.replace("https://www.fcmcclerk.com", f"/fcmcclerk.com/{datetime.datetime.now().date().isoformat()}")
-        print("post rewrote", path)
+        path = url.replace(
+            "https://www.fcmcclerk.com",
+            f"/fcmcclerk.com/{datetime.datetime.now().date().isoformat()}",
+        )
+        # print("post rewrote", path)
         response = self.client.post(path, data=kwargs.get("data"))
         return self._build_response(response)
 

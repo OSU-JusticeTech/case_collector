@@ -15,7 +15,6 @@ from .forms import SearchForm
 
 from django.contrib import messages
 
-
 # Create your views here.
 
 
@@ -41,7 +40,7 @@ def eviction_reports(request, request_date):
 def report_csv(request, request_date, start, end):
     start = date.fromisoformat(start)
     end = date.fromisoformat(end)
-    print(start, end)
+    # print(start, end)
     field_names = [
         "CASE_NUMBER",
         "CASE_FILE_DATE",
@@ -91,13 +90,17 @@ def report_csv(request, request_date, start, end):
 
     return response
 
+
 def search(request, request_date):
 
     form = SearchForm()
     token = secrets.token_urlsafe(32)
     request.session["form_token"] = token
 
-    return render(request, "fcmcclerk_mock/search.html", context={"form": form, "token":token})
+    return render(
+        request, "fcmcclerk_mock/search.html", context={"form": form, "token": token}
+    )
+
 
 @csrf_exempt
 def results(request, request_date):
@@ -118,11 +121,22 @@ def results(request, request_date):
             if case.case_number == form.cleaned_data["case_number"]:
                 token = secrets.token_urlsafe(32)
                 request.session["result_token"] = token
-                return render(request, "fcmcclerk_mock/result.html", context={"token": token, "case": case, "case_id": base64.b64encode(json.dumps({"number":case.case_number}).encode()).decode()})
-        for case  in cases[-20:]:
+                return render(
+                    request,
+                    "fcmcclerk_mock/result.html",
+                    context={
+                        "token": token,
+                        "case": case,
+                        "case_id": base64.b64encode(
+                            json.dumps({"number": case.case_number}).encode()
+                        ).decode(),
+                    },
+                )
+        for case in cases[-20:]:
             print(case.case_number)
         messages.error(request, f"Not found")
         return redirect("fcmcclerk_mock:search", request_date=request_date)
+
 
 @csrf_exempt
 def case_view(request, request_date):
@@ -134,6 +148,4 @@ def case_view(request, request_date):
 
     for case in cases:
         if case.case_number == data["number"]:
-            return render(request, "fcmcclerk_mock/view.html",context={"case":case})
-
-
+            return render(request, "fcmcclerk_mock/view.html", context={"case": case})

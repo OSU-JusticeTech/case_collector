@@ -59,7 +59,7 @@ def decide_next_scrape():
         year = int(parts[0])
         cat = parts[1]
         number = int(parts[2])
-        existing = Page.objects.filter(year=year,category=cat, number=number)
+        existing = Page.objects.filter(year=year, category=cat, number=number)
         if existing.exists():
             continue
         return case["CASE_NUMBER"]
@@ -70,6 +70,7 @@ def decide_next_scrape():
 class CaseNotFound(Exception):
     pass
 
+
 class ErrorFetchingOverview(Exception):
     pass
 
@@ -77,25 +78,46 @@ class ErrorFetchingOverview(Exception):
 def scrape_detail(case_number):
     sess = requests.session()
     # sess.proxies.update(proxies)
-    sess.headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/135.0'}
+    sess.headers = {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/135.0"
+    }
     result = sess.get(f"{BASE_URL}/case/search")
-    token = result.content.decode().split('<input name="_token" type="hidden" value="')[1].split('"')[0]
+    token = (
+        result.content.decode()
+        .split('<input name="_token" type="hidden" value="')[1]
+        .split('"')[0]
+    )
 
-    overview = sess.post(f"{BASE_URL}/case/search/results",
-                         data={'_token': token, "case_number": case_number})
+    overview = sess.post(
+        f"{BASE_URL}/case/search/results",
+        data={"_token": token, "case_number": case_number},
+    )
     if b"<li>No Results Found</li>" in overview.content:
         print("not a case")
         time.sleep(8)
         raise CaseNotFound()
 
-    casetokens = list(map(lambda x: x.split('"')[0],
-                          overview.content.decode().split('input name="case_id" type="hidden" value="')[1:]))
+    casetokens = list(
+        map(
+            lambda x: x.split('"')[0],
+            overview.content.decode().split(
+                'input name="case_id" type="hidden" value="'
+            )[1:],
+        )
+    )
     if len(casetokens) == 0:
         raise ErrorFetchingOverview()
-    case = sess.post(f"{BASE_URL}/case/view", data={'_token': token, "case_id": casetokens[0]})
+    case = sess.post(
+        f"{BASE_URL}/case/view", data={"_token": token, "case_id": casetokens[0]}
+    )
     parts = case_number.split(" ")
     year = int(parts[0])
     cat = parts[1]
     number = int(parts[2])
-    Page.objects.create(year=year, category=cat, number=number,content=case.content, return_code=case.status_code)
-
+    Page.objects.create(
+        year=year,
+        category=cat,
+        number=number,
+        content=case.content,
+        return_code=case.status_code,
+    )

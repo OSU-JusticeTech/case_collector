@@ -9,6 +9,7 @@ from apps.fcmcclerk_mock.pyschema import Case, Disposition
 
 EVICTION_FIXTURE = []  # will be populated on startup
 
+
 def fixture_at(req_date):
     new_cases = []
     for case in EVICTION_FIXTURE:
@@ -24,11 +25,18 @@ def fixture_at(req_date):
                     cp.dispositions.append(ev)
             if len(cp.dispositions) == 0:
                 filed = cp.docket[-1].date
-                cp.dispositions.append(Disposition(status="OPEN", status_date=filed,
-                                                   code="UNDISPOSED",judge="ADMINISTRATIVE"))
+                cp.dispositions.append(
+                    Disposition(
+                        status="OPEN",
+                        status_date=filed,
+                        code="UNDISPOSED",
+                        judge="ADMINISTRATIVE",
+                    )
+                )
             new_cases.append(cp)
 
     return new_cases
+
 
 def generate_year(year, total_cases=500):
 

@@ -1,6 +1,12 @@
 from django.urls import path, re_path
 
-from apps.fcmcclerk_mock.views import eviction_reports, report_csv, search, results, case_view
+from apps.fcmcclerk_mock.views import (
+    eviction_reports,
+    report_csv,
+    search,
+    results,
+    case_view,
+)
 
 app_name = "fcmcclerk_mock"
 urlpatterns = [
