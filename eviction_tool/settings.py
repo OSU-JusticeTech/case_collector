@@ -140,4 +140,4 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
-SCRAPE_PROXIES = dict(https="socks5://localhost:8080")
+SCRAPE_PROXIES = {} # dict(https="socks5://localhost:8080")

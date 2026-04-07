@@ -10,5 +10,5 @@ ENV UV_NO_DEV=1
 WORKDIR /app
 RUN uv sync
 
-CMD uv run manage.py migrate && uv run manage.py runserver
+CMD uv run manage.py migrate && uv run uvicorn eviction_tool.asgi:application --host 0.0.0.0
 
