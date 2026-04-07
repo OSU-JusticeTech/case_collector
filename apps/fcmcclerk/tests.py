@@ -46,5 +46,5 @@ class MyTest(TestCase):
             cno = decide_next_scrape()
             scrape_detail(cno)
 
-        
+        self.assertEqual(Page.objects.count(), 1)
         print(Page.objects.all())
