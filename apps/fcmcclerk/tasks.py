@@ -1,11 +1,16 @@
 import csv
+import hashlib
 import logging
 import time
+from datetime import datetime
+from typing import Any
+
 import requests
 from bs4 import BeautifulSoup
 from django.conf import settings
 
 from django.core.cache import cache
+from pydantic import BaseModel
 
 from apps.fcmcclerk.models import Page
 
@@ -13,6 +18,11 @@ CACHE_KEY = "fcmc_eviction_reports"
 
 BASE_URL = "https://www.fcmcclerk.com"
 
+class CSVcase():
+    def __init__(self, data):
+        self.data = data
+        self.case_number = data["CASE_NUMBER"]
+        self.digest = hashlib.sha256(str(data).encode()).hexdigest()
 
 def load_case_csvs():
 
@@ -35,15 +45,19 @@ def load_case_csvs():
                     assert data.ok
                     inf = csv.DictReader(data.content.decode().splitlines())
                     for row in inf:
-                        cases.append(row)
+                        cases.append(CSVcase(row))
                     time.sleep(1)
         # print(cases)
         cache.set(CACHE_KEY, cases, timeout=80000)
-    print(len(cases))
-    newest = sorted(cases, key=lambda x: x.get("CASE_NUMBER"), reverse=True)
-    print(newest[:2])
+    #print(len(cases))
+    newest = sorted(cases, key=lambda x: x.case_number, reverse=True)
+    #print(newest[:2])
     return newest
 
+class ScrapeInstruction(BaseModel):
+    case_number: str
+    digest: str | None = None
+    earliest: datetime | None = None
 
 def decide_next_scrape():
     # we first try to get case numbers from csv:
@@ -53,16 +67,15 @@ def decide_next_scrape():
     # cache.set(CACHE_KEY,42, timeout=10)
     csv_cases = load_case_csvs()
     for case in csv_cases:
-        parts = case["CASE_NUMBER"].split(" ")
+        parts = case.case_number.split(" ")
 
-        print("case:")
         year = int(parts[0])
         cat = parts[1]
         number = int(parts[2])
-        existing = Page.objects.filter(year=year, category=cat, number=number)
+        existing = Page.objects.filter(year=year, category=cat, number=number, overview_digest=case.digest)
         if existing.exists():
             continue
-        return case["CASE_NUMBER"]
+        return ScrapeInstruction(case_number=case.case_number, digest=case.digest)
 
     # print(resp.content)
 
@@ -75,7 +88,9 @@ class ErrorFetchingOverview(Exception):
     pass
 
 
-def scrape_detail(case_number):
+def scrape_detail(instruction: ScrapeInstruction):
+    case_number = instruction.case_number
+    digest = instruction.digest
     sess = requests.session()
     # sess.proxies.update(proxies)
     sess.headers = {
@@ -120,4 +135,5 @@ def scrape_detail(case_number):
         number=number,
         content=case.content,
         return_code=case.status_code,
+        overview_digest=digest,
     )

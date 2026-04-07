@@ -1,16 +1,19 @@
 import datetime
+import logging
 
 from django.test import TestCase, Client
 from unittest.mock import patch
 import json
+from django.core.cache import cache
 
 from apps.fcmcclerk.models import Page
-from apps.fcmcclerk.tasks import decide_next_scrape, scrape_detail
+from apps.fcmcclerk.tasks import decide_next_scrape, scrape_detail, CACHE_KEY
 
 
 class FakeSession:
-    def __init__(self, client):
+    def __init__(self, client, report_date):
         self.client = client
+        self.report_date = report_date
         self.proxies = {}
 
     def _build_response(self, response):
@@ -26,7 +29,7 @@ class FakeSession:
     def get(self, url, *args, **kwargs):
         path = url.replace(
             "https://www.fcmcclerk.com",
-            f"/fcmcclerk.com/{datetime.datetime.now().date().isoformat()}",
+            f"/fcmcclerk.com/{self.report_date.isoformat()}",
         )
         # print("get rewrote", path)
         response = self.client.get(path)
@@ -35,7 +38,7 @@ class FakeSession:
     def post(self, url, *args, **kwargs):
         path = url.replace(
             "https://www.fcmcclerk.com",
-            f"/fcmcclerk.com/{datetime.datetime.now().date().isoformat()}",
+            f"/fcmcclerk.com/{self.report_date.isoformat()}",
         )
         # print("post rewrote", path)
         response = self.client.post(path, data=kwargs.get("data"))
@@ -48,11 +51,23 @@ class MyTest(TestCase):
 
     @patch("apps.fcmcclerk.tasks.requests.session")
     def test_session_call(self, mock_session_cls):
-        mock_session_cls.return_value = FakeSession(self.client)
-
+        mock_session_cls.return_value = FakeSession(self.client, datetime.datetime.now().date())
         with patch("time.sleep", return_value=None):
-            cno = decide_next_scrape()
-            scrape_detail(cno)
+            for _ in range(30):
+                cno = decide_next_scrape()
+                logging.info("scrape case %s", cno)
+                scrape_detail(cno)
 
-        self.assertEqual(Page.objects.count(), 1)
+            cache.delete(CACHE_KEY)
+
+            logging.warning("cleared cache")
+            mock_session_cls.return_value = FakeSession(self.client, (datetime.datetime.now() + datetime.timedelta(days=2)).date())
+
+            for _ in range(30):
+                cno = decide_next_scrape()
+                logging.info("scrape case %s", cno)
+                scrape_detail(cno)
+
         print(Page.objects.all())
+
+        self.assertEqual(Page.objects.count(), 60)

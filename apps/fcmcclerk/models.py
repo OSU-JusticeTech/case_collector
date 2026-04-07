@@ -21,6 +21,7 @@ class Page(models.Model):
     scraped_at = models.DateTimeField(auto_now_add=True)
     content = models.CharField(null=True)
     return_code = models.IntegerField()
+    overview_digest = models.CharField(null=True)
 
     class Meta:
         unique_together = ("year", "category", "number", "scraped_at")
