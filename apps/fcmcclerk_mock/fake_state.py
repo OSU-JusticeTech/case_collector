@@ -1,11 +1,10 @@
 import copy
-from collections import Counter
 from datetime import datetime, timezone, date, timedelta
 import random
 
 import numpy as np
 
-from apps.fcmcclerk_mock.pyschema import Case, Disposition
+from apps.fcmcclerk.pyschema import Case, Disposition
 
 EVICTION_FIXTURE = []  # will be populated on startup
 

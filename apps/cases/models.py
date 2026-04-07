@@ -6,16 +6,24 @@ from django.db import models
 class Source(models.Model):
     name = models.CharField(unique=True)
 
+    def __str__(self):
+        return self.name
 
 class CourtCase(models.Model):
-    case_number: str
+    case_number = models.CharField()
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.source}: {self.case_number}"
 
 
 class CaseSnapshot(models.Model):
     state_hash = models.BinaryField()
     created_at = models.DateTimeField(auto_now_add=True)
     case = models.ForeignKey(CourtCase, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.case} @ {self.created_at} {self.state_hash.hex()}"
 
 
 class Party(models.Model):
@@ -28,6 +36,9 @@ class Party(models.Model):
     role = models.CharField()
     snapshot = models.ForeignKey(CaseSnapshot, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return f"{self.side[:3]} {self.name} {self.address} {self.city} {self.state}/{self.zip_code} {self.role}"
+
 
 class DocketEntry(models.Model):
     date = models.DateField()
@@ -36,6 +47,9 @@ class DocketEntry(models.Model):
     amount = models.DecimalField(null=True, max_digits=10, decimal_places=2)
     balance = models.DecimalField(null=True, max_digits=10, decimal_places=2)
     snapshot = models.ForeignKey(CaseSnapshot, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.date} {self.text}"
 
 
 class Event(models.Model):

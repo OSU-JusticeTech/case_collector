@@ -12,7 +12,10 @@ from django.conf import settings
 from django.core.cache import cache
 from pydantic import BaseModel
 
+from apps.cases.models import Source, CourtCase, CaseSnapshot, Party, DocketEntry, Event, Finance, Disposition
 from apps.fcmcclerk.models import Page
+from apps.fcmcclerk.parser import parse_case
+from apps.fcmcclerk.pyschema import Case
 
 CACHE_KEY = "fcmc_eviction_reports"
 
@@ -129,11 +132,80 @@ def scrape_detail(instruction: ScrapeInstruction):
     year = int(parts[0])
     cat = parts[1]
     number = int(parts[2])
-    Page.objects.create(
+    pg = Page.objects.create(
         year=year,
         category=cat,
         number=number,
-        content=case.content,
+        content=case.content.decode(),
         return_code=case.status_code,
         overview_digest=digest,
+    )
+    return pg
+
+def compute_state_hash(obj: Case) -> bytes:
+    payload = obj.model_dump_json().encode("utf-8")
+    return hashlib.sha256(payload).digest()
+
+
+def create_snapshot_if_changed(
+    source: Source,
+    page: Page,
+    parse_case: Case
+) -> tuple[CaseSnapshot, bool]:  # or int epoch
+    """
+    Returns (snapshot_id, created_new).
+    Creates a new snapshot ONLY if its hash differs from the latest snapshot's hash.
+    """
+    new_hash = compute_state_hash(parse_case)
+
+    current_case,_ = CourtCase.objects.get_or_create(case_number=parse_case.case_number, source=source)
+
+    current_snapshot = current_case.casesnapshot_set.order_by("created_at").last()
+
+    if current_snapshot is not None and current_snapshot.state_hash == new_hash:
+            # No change since latest snapshot → skip
+        return current_snapshot, False
+
+        # 3) Insert new snapshot (no unique constraint on (case_id, hash))
+    snap = CaseSnapshot.objects.create(
+        case=current_case, state_hash=new_hash
+    )
+
+    for party_data in parse_case.parties + parse_case.attorneys:
+        Party.objects.create(
+                    side=party_data.type_.value,
+                    name=party_data.name,
+                    address="\n".join(party_data.address)
+                    if hasattr(party_data, "address") and party_data.address
+                    else "",
+                    city=party_data.city if hasattr(party_data, "city") else "",
+                    state=party_data.state if hasattr(party_data, "state") else "",
+                    zip_code=party_data.zip_ if hasattr(party_data, "zip_") else "",
+                    role=party_data.role if hasattr(party_data, "role") else "",
+                    snapshot=snap,
+                )
+
+    # Save docket entries
+    for attr, cls in [
+        ("docket", DocketEntry),
+        ("events", Event),
+        ("finances", Finance),
+        ("dispositions", Disposition),
+    ]:
+        for sub_data in getattr(parse_case, attr):
+            cls.objects.create(
+                    **sub_data.model_dump(),
+                    snapshot=snap,
+                )
+
+
+        return snap, True
+
+def parse_page(pg: Page):
+    case = parse_case(pg.content)
+    src,_ = Source.objects.get_or_create(name="FCMC")
+    create_snapshot_if_changed(
+        source=src,
+        page=pg,  # or int epoch
+        parse_case=case,
     )

@@ -10,14 +10,18 @@ from enum import Enum
 from decimal import Decimal
 
 state_abbreviations = [
+    "AE",  # Armed Forces Europe
     "AL",
     "AK",
     "AZ",
     "AR",
     "CA",
+    "CANADA",
+    "CN",  # also Canada
     "CO",
     "CT",
     "DE",
+    "DC",  # Washington
     "FL",
     "GA",
     "HI",
@@ -48,6 +52,7 @@ state_abbreviations = [
     "OK",
     "OR",
     "PA",
+    "PR",  # Puerto Rico
     "RI",
     "SC",
     "SD",
@@ -103,13 +108,15 @@ class SideName(BaseModel):
 
 class SideAddress(SideName):
     address: list[str]
-    city: str
-    state: Literal[*state_abbreviations]
-    zip_: str = Field(..., alias="zip")
+    city: str | None
+    state: Literal[*state_abbreviations] | None
+    zip_: str | None = Field(..., alias="zip")
 
     @field_validator("zip_", mode="after")
     @classmethod
     def is_zip(cls, value: str) -> str:
+        if value is None:
+            return value
         if len(value) != 5 or not value.isdigit():
             raise ValueError(f"{value} is not zip code")
         return value
