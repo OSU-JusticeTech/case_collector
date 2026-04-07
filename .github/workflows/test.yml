@@ -27,6 +27,7 @@ jobs:
         run: uv run manage.py test apps
 
   build-and-push-image:
+    needs: test
     runs-on: ubuntu-latest
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
     permissions:
