@@ -1,13 +1,34 @@
+import copy
 from collections import Counter
 from datetime import datetime, timezone, date, timedelta
 import random
 
 import numpy as np
 
-from apps.fcmcclerk_mock.pyschema import Case
+from apps.fcmcclerk_mock.pyschema import Case, Disposition
 
-EVICTION_FIXTURE = {}  # will be populated on startup
+EVICTION_FIXTURE = []  # will be populated on startup
 
+def fixture_at(req_date):
+    new_cases = []
+    for case in EVICTION_FIXTURE:
+        if case.docket[-1].date <= req_date:
+            cp: Case = copy.deepcopy(case)
+            cp.docket = []
+            for de in case.docket:
+                if de.date <= req_date:
+                    cp.docket.append(de)
+            cp.dispositions = []
+            for ev in case.dispositions:
+                if ev.date <= req_date:
+                    cp.dispositions.append(ev)
+            if len(cp.dispositions) == 0:
+                filed = cp.docket[-1].date
+                cp.dispositions.append(Disposition(status="OPEN", status_date=filed,
+                                                   code="UNDISPOSED",judge="ADMINISTRATIVE"))
+            new_cases.append(cp)
+
+    return new_cases
 
 def generate_year(year, total_cases=500):
 
@@ -26,7 +47,7 @@ def generate_year(year, total_cases=500):
     day = date(year, 1, 1)
     weekenddayofyear = 0
     cases = []
-    case_number = 0
+    case_number = 1
     while day.year == year:
         if day.weekday() < 5:
             # 261 workdays per year

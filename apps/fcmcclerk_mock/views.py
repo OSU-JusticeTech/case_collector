@@ -10,6 +10,7 @@ from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 
 from . import fake_state
+from .fake_state import fixture_at
 from .forms import SearchForm
 
 from django.contrib import messages
@@ -18,10 +19,10 @@ from django.contrib import messages
 # Create your views here.
 
 
-def eviction_reports(request):
+def eviction_reports(request, request_date):
 
     months = []
-    now = datetime.now(timezone.utc).date()
+    now = datetime.fromisoformat(request_date).date()
     startmon = now.year * 12 + (now.month)
     for i in range(14):
         month = ((startmon - i) % 12) + 1
@@ -37,7 +38,7 @@ def eviction_reports(request):
     return render(request, "fcmcclerk_mock/report.html", context={"csvs": csvs})
 
 
-def report_csv(request, start, end):
+def report_csv(request, request_date, start, end):
     start = date.fromisoformat(start)
     end = date.fromisoformat(end)
     print(start, end)
@@ -77,19 +78,20 @@ def report_csv(request, start, end):
     writer = csv.DictWriter(response, fieldnames=field_names)
     writer.writeheader()
 
-    for case in fake_state.EVICTION_FIXTURE:
+    cases = fixture_at(datetime.fromisoformat(request_date).date())
+
+    for case in cases:
         if start <= case.docket[-1].date <= end:  # min(end, datetime.now().date()):
-            if case.docket[-1].date < datetime.now().date():
-                writer.writerow(
-                    {
-                        "CASE_NUMBER": case.case_number,
-                        "CASE_FILE_DATE": case.docket[-1].date,
-                    }
-                )
+            writer.writerow(
+                {
+                    "CASE_NUMBER": case.case_number,
+                    "CASE_FILE_DATE": case.docket[-1].date,
+                }
+            )
 
     return response
 
-def search(request):
+def search(request, request_date):
 
     form = SearchForm()
     token = secrets.token_urlsafe(32)
@@ -98,7 +100,7 @@ def search(request):
     return render(request, "fcmcclerk_mock/search.html", context={"form": form, "token":token})
 
 @csrf_exempt
-def results(request):
+def results(request, request_date):
 
     form = SearchForm(request.POST)
     print("token", request.POST.get("_token"))
@@ -110,23 +112,27 @@ def results(request):
 
     if form.is_valid():
         print("valid form")
-        for case in fake_state.EVICTION_FIXTURE:
+        cases = fixture_at(datetime.fromisoformat(request_date).date())
+
+        for case in cases:
             if case.case_number == form.cleaned_data["case_number"]:
                 token = secrets.token_urlsafe(32)
                 request.session["result_token"] = token
                 return render(request, "fcmcclerk_mock/result.html", context={"token": token, "case": case, "case_id": base64.b64encode(json.dumps({"number":case.case_number}).encode()).decode()})
-        for case  in fake_state.EVICTION_FIXTURE[-20:]:
+        for case  in cases[-20:]:
             print(case.case_number)
         messages.error(request, f"Not found")
-        return redirect("fcmcclerk_mock:search")
+        return redirect("fcmcclerk_mock:search", request_date=request_date)
 
 @csrf_exempt
-def case_view(request):
+def case_view(request, request_date):
     print("token", request.POST.get("_token"))
     print("id", request.POST.get("case_id"))
 
     data = json.loads(base64.b64decode(request.POST.get("case_id")))
-    for case in fake_state.EVICTION_FIXTURE:
+    cases = fixture_at(datetime.fromisoformat(request_date).date())
+
+    for case in cases:
         if case.case_number == data["number"]:
             return render(request, "fcmcclerk_mock/view.html",context={"case":case})
 
