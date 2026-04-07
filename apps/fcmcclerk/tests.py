@@ -1,3 +1,5 @@
+import datetime
+
 from django.test import TestCase, Client
 from unittest.mock import patch
 import json
@@ -22,13 +24,13 @@ class FakeSession:
         return FakeResponse(response)
 
     def get(self, url, *args, **kwargs):
-        path = url.replace("https://www.fcmcclerk.com", "/fcmcclerk.com")
+        path = url.replace("https://www.fcmcclerk.com", f"/fcmcclerk.com/{datetime.datetime.now().date().isoformat()}")
         print("get rewrote", path)
         response = self.client.get(path)
         return self._build_response(response)
 
     def post(self, url, *args, **kwargs):
-        path = url.replace("https://www.fcmcclerk.com", "/fcmcclerk.com")
+        path = url.replace("https://www.fcmcclerk.com", f"/fcmcclerk.com/{datetime.datetime.now().date().isoformat()}")
         print("post rewrote", path)
         response = self.client.post(path, data=kwargs.get("data"))
         return self._build_response(response)
