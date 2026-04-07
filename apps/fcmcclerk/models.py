@@ -17,10 +17,13 @@ class Page(models.Model):
 
     year = models.IntegerField()
     category = models.CharField(choices=CATEGORIES)
-    case_number = models.IntegerField()
+    number = models.IntegerField()
     scraped_at = models.DateTimeField(auto_now_add=True)
     content = models.CharField(null=True)
     return_code = models.IntegerField()
 
     class Meta:
-        unique_together = ("year", "category", "case_number", "scraped_at")
+        unique_together = ("year", "category", "number", "scraped_at")
+
+    def __str__(self):
+        return f"{self.year} {self.category} {self.number:06d} @ {self.scraped_at} ({self.return_code})"

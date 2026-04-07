@@ -2,7 +2,8 @@ from django.test import TestCase, Client
 from unittest.mock import patch
 import json
 
-from apps.fcmcclerk.tasks import decide_next_scrape
+from apps.fcmcclerk.models import Page
+from apps.fcmcclerk.tasks import decide_next_scrape, scrape_detail
 
 
 class FakeSession:
@@ -27,7 +28,8 @@ class FakeSession:
         return self._build_response(response)
 
     def post(self, url, *args, **kwargs):
-        path = url.replace("https://www.fcmcclerk.com", "")
+        path = url.replace("https://www.fcmcclerk.com", "/fcmcclerk.com")
+        print("post rewrote", path)
         response = self.client.post(path, data=kwargs.get("data"))
         return self._build_response(response)
 
@@ -41,4 +43,8 @@ class MyTest(TestCase):
         mock_session_cls.return_value = FakeSession(self.client)
 
         with patch("time.sleep", return_value=None):
-            decide_next_scrape()
+            cno = decide_next_scrape()
+            scrape_detail(cno)
+
+        
+        print(Page.objects.all())
