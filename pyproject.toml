@@ -8,6 +8,7 @@ dependencies = [
     "beautifulsoup4>=4.14.3",
     "django>=6.0.3",
     "numpy>=2.4.4",
+    "psycopg[binary]>=3.3.3",
     "pydantic>=2.12.5",
     "requests[socks]>=2.33.1",
     "uvicorn>=0.44.0",

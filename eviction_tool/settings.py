@@ -86,7 +86,7 @@ WSGI_APPLICATION = "eviction_tool.wsgi.application"
 if "DB_NAME" in os.environ:
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.postgresql_psycopg2",
+            "ENGINE": "django.db.backends.postgresql",
             "NAME": os.getenv("DB_NAME", "scraper"),
             "USER": os.getenv("DB_USER", "postgres"),
             "PASSWORD": os.environ["DB_PASS"],
