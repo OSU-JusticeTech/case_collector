@@ -8,7 +8,7 @@ wheels/
 .idea
 
 uv.lock
-
+staticfiles/
 db/
 
 # Virtual environments
