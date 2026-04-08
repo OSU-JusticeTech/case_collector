@@ -1,17 +1,74 @@
 services:
 
-  scraper:
+  db:
+    image: postgres:18
+    restart: always
+    shm_size: 128mb
+    volumes:
+      - db:/var/lib/postgresql
+    environment:
+      POSTGRES_PASSWORD: <DB-PW>
+      POSTGRES_DB: eviction
+      POSTGRES_USER: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  ui:
     restart: always
     image: ghcr.io/osu-justicetech/case_collector:main
-    volumes:
-      - db:/app/db
-    command: ["sh","-c","uv run manage.py collectstatic --noinput && uv run manage.py migrate && uv run uvicorn eviction_tool.asgi:application --host 0.0.0.0"]
+    command: ["sh","-c","uv run manage.py collectstatic --noinput && uv run manage.py createcachetable && uv run manage.py migrate && uv run uvicorn eviction_tool.asgi:application --host 0.0.0.0"]
     environment:
       DJANGO_TRUSTED_ORIGINS: "http://localhost:8001"
       DJANGO_ALLOWED_HOSTS: "localhost"
+      DJANGO_SECRET: "django-insecure-ydtr_#%%p3g188$cptutqw9s7f5b-rjmvgi^l@o^s(*&ob53fh-replaceme"
+      DB_NAME: "eviction"
+      DB_PASS: "<DB-PW>"
+      DB_HOST: "db"
+      #DJANGO_DEBUG: "True"
     ports:
-      - "0.0.0.0:8000:8000"
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+    healthcheck:
+      test: ["CMD-SHELL", "echo \"import urllib.request; urllib.request.urlopen('http://localhost:8000/admin/')\" | uv run -"]
+      interval: 30s
+      start_period: 30s
+      timeout: 10s
+      retries: 3
 
+  scraper:
+    image: ghcr.io/osu-justicetech/case_collector:main
+    command: ["sh","-c","uv run manage.py scrape"]
+    environment:
+      DJANGO_TRUSTED_ORIGINS: "http://localhost:8001"
+      DJANGO_ALLOWED_HOSTS: "localhost"
+      DJANGO_SECRET: "django-insecure-ydtr_#%%p3g188$cptutqw9s7f5b-rjmvgi^l@o^s(*&ob53fh-replaceme"
+      DB_NAME: "eviction"
+      DB_PASS: "<DB-PW>"
+      DB_HOST: "db"
+
+    depends_on:
+      ui:
+        condition: service_healthy
+        restart: true
+
+
+  metabase:
+    image: metabase/metabase:latest
+    volumes:
+      - /dev/urandom:/dev/random:ro
+      - metabase-data:/metabase-data
+    environment:
+      MB_DB_FILE: "/metabase-data/metabase.db"
+    ports:
+      - 3000:3000
 
 volumes:
   db:
+  metabase-data:
