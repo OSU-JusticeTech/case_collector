@@ -51,7 +51,7 @@ def load_case_csvs():
                         cases.append(CSVcase(row))
                     time.sleep(1)
         # print(cases)
-        cache.set(CACHE_KEY, cases, timeout=80000)
+        cache.set(CACHE_KEY, cases, timeout=20000)
     #print(len(cases))
     newest = sorted(cases, key=lambda x: x.case_number, reverse=True)
     #print(newest[:2])

@@ -16,4 +16,4 @@ class Command(BaseCommand):
             if pg.return_code == 200:
                 logging.info("parse and add %s", pg)
                 parse_page(pg)
-            time.sleep(8)
+            time.sleep(15)
