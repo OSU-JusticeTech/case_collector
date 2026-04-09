@@ -4,12 +4,14 @@ import logging
 import time
 from datetime import datetime
 from typing import Any
+from unicodedata import category
 
 import requests
 from bs4 import BeautifulSoup
 from django.conf import settings
 
 from django.core.cache import cache
+from django.db.models import Q
 from pydantic import BaseModel
 
 from apps.cases.models import Source, CourtCase, CaseSnapshot, Party, DocketEntry, Event, Finance, Disposition
@@ -69,15 +71,28 @@ def decide_next_scrape():
     # print(val)
     # cache.set(CACHE_KEY,42, timeout=10)
     csv_cases = load_case_csvs()
+    proced = set()
     for case in csv_cases:
         parts = case.case_number.split(" ")
 
         year = int(parts[0])
         cat = parts[1]
         number = int(parts[2])
+        proced.add((year,cat,number))
         existing = Page.objects.filter(year=year, category=cat, number=number, overview_digest=case.digest)
+
+        newer = Page.objects.filter(category=cat).filter(Q(year=year, number__gt=number) | Q(year__gt=year)).values_list("year","category","number")
+        missed = set(newer)-proced
+        for first in missed:
+            if Page.objects.filter(category=first[1], year=first[0], number=first[2], return_code=404).exists():
+                continue
+            print("missed cases before current one and not yet scraped", missed)
+            return ScrapeInstruction(case_number=f"{first[0]} {first[1]} {first[2]:06d}", digest="missing")
+            print("missed", missed)
+
         if existing.exists():
             continue
+
         return ScrapeInstruction(case_number=case.case_number, digest=case.digest)
 
     # print(resp.content)
@@ -95,6 +110,13 @@ def scrape_detail(instruction: ScrapeInstruction):
     case_number = instruction.case_number
     digest = instruction.digest
     sess = requests.session()
+
+    parts = case_number.split(" ")
+    year = int(parts[0])
+    cat = parts[1]
+    number = int(parts[2])
+
+    #print("search for ", case_number)
     # sess.proxies.update(proxies)
     sess.headers = {
         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/135.0"
@@ -112,8 +134,15 @@ def scrape_detail(instruction: ScrapeInstruction):
     )
     if b"<li>No Results Found</li>" in overview.content:
         print("not a case")
-        time.sleep(8)
-        raise CaseNotFound()
+        pg = Page.objects.create(
+            year=year,
+            category=cat,
+            number=number,
+            content="",
+            return_code=404,
+            overview_digest=digest,
+        )
+        return pg
 
     casetokens = list(
         map(
@@ -124,14 +153,19 @@ def scrape_detail(instruction: ScrapeInstruction):
         )
     )
     if len(casetokens) == 0:
-        raise ErrorFetchingOverview()
+        print("no case tokens found, make 404 page")
+        pg = Page.objects.create(
+            year=year,
+            category=cat,
+            number=number,
+            content="",
+            return_code=404,
+            overview_digest=digest,
+        )
+        return pg
     case = sess.post(
         f"{BASE_URL}/case/view", data={"_token": token, "case_id": casetokens[0]}
     )
-    parts = case_number.split(" ")
-    year = int(parts[0])
-    cat = parts[1]
-    number = int(parts[2])
     pg = Page.objects.create(
         year=year,
         category=cat,

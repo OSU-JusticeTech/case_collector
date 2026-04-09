@@ -135,8 +135,8 @@ def results(request, request_date):
                         ).decode(),
                     },
                 )
-        for case in cases[-20:]:
-            print(case.case_number)
+        for case in cases[-2:]:
+            print("you searched a nonexistant case, here are some valid ones", case.case_number)
         messages.error(request, f"Not found")
         return redirect("fcmcclerk_mock:search", request_date=request_date)
 

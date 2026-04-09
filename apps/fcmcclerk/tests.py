@@ -68,10 +68,43 @@ class MyTest(TestCase):
             for _ in range(15):
                 cno = decide_next_scrape()
                 logging.info("scrape case %s", cno)
-                scrape_detail(cno)
+                pg = scrape_detail(cno)
                 if pg.return_code == 200:
                     parse_page(pg)
 
         print(Page.objects.all())
 
         self.assertEqual(Page.objects.count(), 30)
+
+class SealingTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    @patch("apps.fcmcclerk.tasks.requests.session")
+    def test_session_call(self, mock_session_cls):
+        mock_session_cls.return_value = FakeSession(self.client, (datetime.datetime.now() - datetime.timedelta(days=100)).date())
+        with patch("time.sleep", return_value=None):
+            for _ in range(20):
+                cno = decide_next_scrape()
+                logging.info("scrape case %s", cno)
+                pg = scrape_detail(cno)
+                if pg.return_code == 200:
+                    parse_page(pg)
+
+            cache.delete(CACHE_KEY)
+
+            logging.warning("cleared cache")
+            mock_session_cls.return_value = FakeSession(self.client, (datetime.datetime.now() + datetime.timedelta(days=2)).date())
+
+            for _ in range(70):
+                cno = decide_next_scrape()
+                logging.info("scrape case %s", cno)
+                pg = scrape_detail(cno)
+                if pg.return_code == 200:
+                    parse_page(pg)
+                else:
+                    logging.warning("case %s not found: %s", cno, pg)
+
+        print(Page.objects.all())
+
+        self.assertEqual(Page.objects.count(), 90)

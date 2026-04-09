@@ -1,4 +1,5 @@
 import copy
+import hashlib
 from datetime import datetime, timezone, date, timedelta
 import random
 
@@ -11,8 +12,22 @@ EVICTION_FIXTURE = []  # will be populated on startup
 
 def fixture_at(req_date):
     new_cases = []
+    CASE_SEAL_RATIO = 0.3 # guessed
     for case in EVICTION_FIXTURE:
         if case.docket[-1].date <= req_date:
+            h = hashlib.sha256(b"".join([p.model_dump_json().encode() for p in case.parties]+[case.case_number.encode()])).digest()
+            int_from_bytes = int.from_bytes(h[:8], 'big')
+            float_val = int_from_bytes / 2 ** 64
+
+            # Use next bytes for int
+            int_val = int.from_bytes(h[8:12], 'big') % 20
+
+            if float_val < CASE_SEAL_RATIO:
+                #print("sealing case", case.case_number, "after days", int_val)
+                if case.docket[-1].date + timedelta(days=int_val) < req_date:
+                    #print("sealed")
+                    continue
+
             cp: Case = copy.deepcopy(case)
             cp.docket = []
             for de in case.docket:
