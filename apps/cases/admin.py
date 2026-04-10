@@ -10,6 +10,9 @@ admin.site.register(Source)
 
 class CaseAdmin(admin.ModelAdmin):
     readonly_fields = ("snapshots",)
+    list_display = ["source","case_number"]
+    list_filter = ["source"]
+    search_fields = ["case_number"]
 
     def snapshots(self, obj):
         links = [
@@ -40,6 +43,7 @@ def link_listing(objs, revname, attr=("title",)):
 
 class SnapshotAdmin(admin.ModelAdmin):
     readonly_fields = ("parties","docket")
+    date_hierarchy = "created_at"
 
     def parties(self, obj):
         return link_listing(obj.party_set.all(), "admin:cases_party_change", attr=("side", "role", "name", "address", "city"))
@@ -48,8 +52,22 @@ class SnapshotAdmin(admin.ModelAdmin):
                             attr=("date", "text"))
 
 admin.site.register(CaseSnapshot, SnapshotAdmin)
-admin.site.register(Party)
+
+class PartyAdmin(admin.ModelAdmin):
+    list_display = ["side","role","name","address","city","state","zip_code"]
+    list_filter = ["side","role","state","zip_code"]
+    search_fields = ["name","address","city","state"]
+
+admin.site.register(Party, PartyAdmin)
 admin.site.register(Event)
 admin.site.register(Disposition)
 admin.site.register(Finance)
-admin.site.register(DocketEntry)
+
+class DocketAdmin(admin.ModelAdmin):
+    list_display = ["snapshot__case__case_number","date","text"]
+    search_fields = ["snapshot__case__case_number","date","text"]
+    list_filter = ["text"]
+    date_hierarchy = "date"
+
+
+admin.site.register(DocketEntry, DocketAdmin)
