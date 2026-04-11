@@ -33,6 +33,7 @@ def load_case_csvs():
 
     cases = cache.get(CACHE_KEY)
     if cases is None:
+        logging.info("refreshing CSVs")
         sess = requests.session()
         if settings.SCRAPE_PROXIES:
             sess.proxies.update(settings.SCRAPE_PROXIES)
@@ -116,8 +117,8 @@ def scrape_detail(instruction: ScrapeInstruction):
     cat = parts[1]
     number = int(parts[2])
 
-    #print("search for ", case_number)
-    # sess.proxies.update(proxies)
+    if settings.SCRAPE_PROXIES:
+        sess.proxies.update(settings.SCRAPE_PROXIES)
     sess.headers = {
         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/135.0"
     }
@@ -198,6 +199,7 @@ def create_snapshot_if_changed(
 
     if current_snapshot is not None and current_snapshot.state_hash == new_hash:
             # No change since latest snapshot → skip
+        logging.warning("case with equal snapshot exists, skipping %s", parse_case.case_number)
         return current_snapshot, False
 
         # 3) Insert new snapshot (no unique constraint on (case_id, hash))
@@ -233,7 +235,7 @@ def create_snapshot_if_changed(
                 )
 
 
-        return snap, True
+    return snap, True
 
 def parse_page(pg: Page):
     case = parse_case(pg.content)
