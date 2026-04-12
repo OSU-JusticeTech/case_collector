@@ -59,7 +59,13 @@ class PartyAdmin(admin.ModelAdmin):
     search_fields = ["name","address","city","state"]
 
 admin.site.register(Party, PartyAdmin)
-admin.site.register(Event)
+
+class EventAdmin(admin.ModelAdmin):
+    list_display = ["event","start","end","room","judge","result"]
+    date_hierarchy = "start"
+    list_filter = ["result","event"]
+
+admin.site.register(Event, EventAdmin)
 
 class DispositionAdmin(admin.ModelAdmin):
     list_display = ["date","code","judge","status","status_date"]
