@@ -73,7 +73,7 @@ class Finance(models.Model):
 
 class Disposition(models.Model):
     code = models.CharField()
-    date = models.DateTimeField(null=True)
+    date = models.DateField(null=True)
     judge = models.CharField()
     status = models.CharField()
     status_date = models.DateField()

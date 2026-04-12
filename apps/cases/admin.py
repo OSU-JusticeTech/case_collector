@@ -60,8 +60,19 @@ class PartyAdmin(admin.ModelAdmin):
 
 admin.site.register(Party, PartyAdmin)
 admin.site.register(Event)
-admin.site.register(Disposition)
-admin.site.register(Finance)
+
+class DispositionAdmin(admin.ModelAdmin):
+    list_display = ["date","code","judge","status","status_date"]
+    date_hierarchy = "date"
+    list_filter = ["code","status"]
+
+admin.site.register(Disposition, DispositionAdmin)
+
+class FinanceAdmin(admin.ModelAdmin):
+    list_display = ["application","owed","paid","dismissed","balance"]
+    list_filter = ["application"]
+
+admin.site.register(Finance, FinanceAdmin)
 
 class DocketAdmin(admin.ModelAdmin):
     list_display = ["snapshot__case__case_number","date","text"]
