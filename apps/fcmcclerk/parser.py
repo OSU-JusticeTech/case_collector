@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Any
 
 from bs4 import BeautifulSoup
 import datetime
@@ -42,7 +42,7 @@ def parse_parties(soup) -> list[Union[SideName, SideAddress]]:
                 current_party = {"party_number": party_id}
             if cell.get("class") == ["title"]:
                 title = cell.get_text(strip=True)
-            if cell.get("class") == ["data"] and title is not None:
+            if cell.get("class") == ["data"] and title is not None and current_party is not None:
                 data = cell.decode_contents().replace(
                     "<br/>", "\n"
                 )  # .get_text(strip=True)
@@ -137,7 +137,7 @@ def parse_dispositions(soup):
             ]
             # print(data)
             d = dict(zip(columns, data))
-            raw = {
+            raw: dict[str,Any] = {
                 **{k.lower(): v for k, v in d.items()},
                 **{
                     "code": d["Disposition Code"],
@@ -168,7 +168,7 @@ def parse_docket(soup) -> list[DocketEntry]:
             1:
         ]:  # Skip the first row which contains the headers
             cells = row.find_all("td")
-            if row.get("class") == ["dkt_text"]:
+            if row.get("class") == ["dkt_text"] and current_entry is not None:
                 current_entry["extra"] = cells[1].decode_contents()
             else:
                 if current_entry is not None:
