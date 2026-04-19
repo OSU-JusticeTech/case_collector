@@ -7,7 +7,7 @@ import json
 from django.core.cache import cache
 
 from apps.fcmcclerk.models import Page
-from apps.fcmcclerk.tasks import decide_next_scrape, scrape_detail, CACHE_KEY, parse_page
+from apps.fcmcclerk.tasks import scrape_detail, CACHE_KEY, parse_page, scrape_generator
 
 
 class FakeSession:
@@ -44,6 +44,19 @@ class FakeSession:
         response = self.client.post(path, data=kwargs.get("data"))
         return self._build_response(response)
 
+def scrape_n_cases(n):
+    scraped = 0
+    while scraped < n:
+        for cinstr in scrape_generator():
+            logging.info("scrape case %s", cinstr)
+            pg = scrape_detail(cinstr)
+            if pg.return_code == 200:
+                parse_page(pg)
+            else:
+                logging.warning("case %s not found: %s", cinstr, pg)
+            scraped += 1
+            if scraped >= n:
+                break
 
 class MyTest(TestCase):
     def setUp(self):
@@ -53,24 +66,14 @@ class MyTest(TestCase):
     def test_session_call(self, mock_session_cls):
         mock_session_cls.return_value = FakeSession(self.client, datetime.datetime.now().date())
         with patch("time.sleep", return_value=None):
-            for _ in range(15):
-                cno = decide_next_scrape()
-                logging.info("scrape case %s", cno)
-                pg = scrape_detail(cno)
-                if pg.return_code == 200:
-                    parse_page(pg)
+            scrape_n_cases(15)
 
             cache.delete(CACHE_KEY)
 
             logging.warning("cleared cache")
             mock_session_cls.return_value = FakeSession(self.client, (datetime.datetime.now() + datetime.timedelta(days=2)).date())
 
-            for _ in range(15):
-                cno = decide_next_scrape()
-                logging.info("scrape case %s", cno)
-                pg = scrape_detail(cno)
-                if pg.return_code == 200:
-                    parse_page(pg)
+            scrape_n_cases(15)
 
         print(Page.objects.all())
 
@@ -84,26 +87,14 @@ class SealingTest(TestCase):
     def test_session_call(self, mock_session_cls):
         mock_session_cls.return_value = FakeSession(self.client, (datetime.datetime.now() - datetime.timedelta(days=100)).date())
         with patch("time.sleep", return_value=None):
-            for _ in range(20):
-                cno = decide_next_scrape()
-                logging.info("scrape case %s", cno)
-                pg = scrape_detail(cno)
-                if pg.return_code == 200:
-                    parse_page(pg)
+            scrape_n_cases(20)
 
             cache.delete(CACHE_KEY)
 
             logging.warning("cleared cache")
             mock_session_cls.return_value = FakeSession(self.client, (datetime.datetime.now() + datetime.timedelta(days=2)).date())
 
-            for _ in range(70):
-                cno = decide_next_scrape()
-                logging.info("scrape case %s", cno)
-                pg = scrape_detail(cno)
-                if pg.return_code == 200:
-                    parse_page(pg)
-                else:
-                    logging.warning("case %s not found: %s", cno, pg)
+            scrape_n_cases(70)
 
         print(Page.objects.all())
 

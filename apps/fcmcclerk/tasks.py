@@ -3,7 +3,7 @@ import hashlib
 import logging
 import time
 from datetime import datetime
-from typing import Any
+from typing import Any, Generator
 from unicodedata import category
 
 import requests
@@ -65,7 +65,7 @@ class ScrapeInstruction(BaseModel):
     digest: str | None = None
     earliest: datetime | None = None
 
-def decide_next_scrape():
+def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
     # we first try to get case numbers from csv:
 
     # val = cache.get(CACHE_KEY)
@@ -74,6 +74,9 @@ def decide_next_scrape():
     csv_cases = load_case_csvs()
     proced = set()
     for case in csv_cases:
+        case_cache = cache.get(CACHE_KEY)
+        if case_cache is None:
+            return
         parts = case.case_number.split(" ")
 
         year = int(parts[0])
@@ -85,16 +88,18 @@ def decide_next_scrape():
         newer = Page.objects.filter(category=cat).filter(Q(year=year, number__gt=number) | Q(year__gt=year)).values_list("year","category","number")
         missed = set(newer)-proced
         for first in missed:
+            case_cache = cache.get(CACHE_KEY)
+            if case_cache is None:
+                return
             if Page.objects.filter(category=first[1], year=first[0], number=first[2], return_code=404).exists():
                 continue
             print("missed cases before current one and not yet scraped", missed)
-            return ScrapeInstruction(case_number=f"{first[0]} {first[1]} {first[2]:06d}", digest="missing")
-            print("missed", missed)
+            yield ScrapeInstruction(case_number=f"{first[0]} {first[1]} {first[2]:06d}", digest="missing")
 
         if existing.exists():
             continue
 
-        return ScrapeInstruction(case_number=case.case_number, digest=case.digest)
+        yield ScrapeInstruction(case_number=case.case_number, digest=case.digest)
 
     # print(resp.content)
 
