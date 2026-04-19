@@ -5,6 +5,8 @@ import datetime
 
 from pydantic import TypeAdapter
 
+from zoneinfo import ZoneInfo
+
 from .pyschema import (
     Case,
     SideName,
@@ -208,6 +210,8 @@ def parse_events(soup) -> list[Event]:
         header = table.find_all("tr")[0]
         columns = [a.get_text() for a in header.find_all("td", class_="title")]
 
+        tz_ohio = ZoneInfo("America/New_York")
+
         events = []
         for row in table.find_all("tr")[1:]:
             data = [
@@ -224,10 +228,10 @@ def parse_events(soup) -> list[Event]:
                         "room": e["Ct.Rm."],
                         "start": datetime.datetime.strptime(
                             e["Date"] + e["Start"], "%m/%d/%Y%I:%M %p"
-                        ),
+                        ).replace(tzinfo=tz_ohio),
                         "end": datetime.datetime.strptime(
                             e["Date"] + e["End"], "%m/%d/%Y%I:%M %p"
-                        ),
+                        ).replace(tzinfo=tz_ohio),
                     },
                 }
             )
