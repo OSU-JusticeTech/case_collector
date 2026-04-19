@@ -87,11 +87,13 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
     # cache.set(CACHE_KEY,42, timeout=10)
     csv_cases = load_case_csvs()
     proced = set()
-    for case in csv_cases:
+    for ci, case in enumerate(csv_cases):
         case_cache = cache.get(CACHE_KEY)
         if case_cache is None:
             yield ScrapeInstruction(restart=True, case_number="")
         parts = case.case_number.split(" ")
+        if ci % 100 == 0:
+            logging.info("processed %d of %d csv cases", ci, len(csv_cases))
 
         year = int(parts[0])
         cat = parts[1]

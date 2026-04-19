@@ -10,12 +10,15 @@ class Command(BaseCommand):
     help = "Scrapes a FCMC case"
 
     def handle(self, *args, **options):
+        logging.info("start scraping")
         while True:
             for cno in scrape_generator():
                 logging.info("next case %s", cno)
                 if cno.restart:
+                    logging.info("cache expired, restart")
                     break
                 if cno.earliest is not None:
+                    logging.info("done, resume at %s", cno.earliest)
                     while datetime.now() < cno.earliest:
                         time.sleep(10)
                 pg = scrape_detail(cno)
