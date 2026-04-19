@@ -1,8 +1,9 @@
 import logging
 import time
+from datetime import datetime
 
 from django.core.management.base import BaseCommand
-from apps.fcmcclerk.tasks import decide_next_scrape, scrape_detail, parse_page
+from apps.fcmcclerk.tasks import scrape_detail, parse_page, scrape_generator
 
 
 class Command(BaseCommand):
@@ -10,13 +11,15 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         while True:
-            cno = decide_next_scrape()
-            logging.info("next case %s", cno)
-            if cno is None:
-                logging.info("waiting 6h for new cases")
-                time.sleep(6 * 3600)
-            pg = scrape_detail(cno)
-            if pg.return_code == 200:
-                logging.info("parse and add %s", pg)
-                parse_page(pg)
-            time.sleep(15)
+            for cno in scrape_generator():
+                logging.info("next case %s", cno)
+                if cno.restart:
+                    break
+                if cno.earliest is not None:
+                    while datetime.now() < cno.earliest:
+                        time.sleep(10)
+                pg = scrape_detail(cno)
+                if pg.return_code == 200:
+                    logging.info("parse and add %s", pg)
+                    parse_page(pg)
+                time.sleep(15)

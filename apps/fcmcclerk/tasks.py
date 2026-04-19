@@ -2,7 +2,7 @@ import csv
 import hashlib
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Generator
 from unicodedata import category
 
@@ -57,13 +57,13 @@ def load_case_csvs():
             soup = BeautifulSoup(resp.content, "html.parser")
             for link in soup.find_all("a", {"target": "_blank"}):
                 if ".csv" in link.attrs["href"]:
-                    logging.debug("fetching csv %s", link)
+                    logging.info("fetching csv %s", link)
                     data = sess.get(f"{BASE_URL}{link.attrs["href"]}")
                     assert data.ok
                     inf = csv.DictReader(data.content.decode().splitlines())
                     for row in inf:
                         cases.append(CSVcase(row))
-                    time.sleep(1)
+                    time.sleep(2)
         # print(cases)
         cache.set(CACHE_KEY, cases, timeout=20000)
     # print(len(cases))
@@ -76,6 +76,7 @@ class ScrapeInstruction(BaseModel):
     case_number: str
     digest: str | None = None
     earliest: datetime | None = None
+    restart: bool = False
 
 
 def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
@@ -89,7 +90,7 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
     for case in csv_cases:
         case_cache = cache.get(CACHE_KEY)
         if case_cache is None:
-            return
+            yield ScrapeInstruction(restart=True, case_number="")
         parts = case.case_number.split(" ")
 
         year = int(parts[0])
@@ -109,7 +110,7 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
         for first in missed:
             case_cache = cache.get(CACHE_KEY)
             if case_cache is None:
-                return
+                yield ScrapeInstruction(restart=True, case_number="")
             if Page.objects.filter(
                 category=first[1], year=first[0], number=first[2], return_code=404
             ).exists():
@@ -125,6 +126,7 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
         yield ScrapeInstruction(case_number=case.case_number, digest=case.digest)
 
     # print(resp.content)
+    yield ScrapeInstruction(earliest=datetime.now()+timedelta(hours=6), case_number="")
 
 
 class CaseNotFound(Exception):

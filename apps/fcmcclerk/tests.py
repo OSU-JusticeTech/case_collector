@@ -1,5 +1,6 @@
 import datetime
 import logging
+import time
 
 from django.test import TestCase, Client
 from unittest.mock import patch
@@ -112,3 +113,15 @@ class SealingTest(TestCase):
         print(Page.objects.all())
 
         self.assertEqual(Page.objects.count(), 90)
+
+
+class LiveTest(TestCase):
+    def test_session_call(self):
+        scrape_n_cases(1)
+        time.sleep(15)
+        scrape_n_cases(1)
+
+        print(Page.objects.all())
+
+        self.assertEqual(Page.objects.count(), 2)
+
