@@ -44,6 +44,7 @@ class FakeSession:
         response = self.client.post(path, data=kwargs.get("data"))
         return self._build_response(response)
 
+
 def scrape_n_cases(n):
     scraped = 0
     while scraped < n:
@@ -58,20 +59,26 @@ def scrape_n_cases(n):
             if scraped >= n:
                 break
 
+
 class MyTest(TestCase):
     def setUp(self):
         self.client = Client()
 
     @patch("apps.fcmcclerk.tasks.requests.session")
     def test_session_call(self, mock_session_cls):
-        mock_session_cls.return_value = FakeSession(self.client, datetime.datetime.now().date())
+        mock_session_cls.return_value = FakeSession(
+            self.client, datetime.datetime.now().date()
+        )
         with patch("time.sleep", return_value=None):
             scrape_n_cases(15)
 
             cache.delete(CACHE_KEY)
 
             logging.warning("cleared cache")
-            mock_session_cls.return_value = FakeSession(self.client, (datetime.datetime.now() + datetime.timedelta(days=2)).date())
+            mock_session_cls.return_value = FakeSession(
+                self.client,
+                (datetime.datetime.now() + datetime.timedelta(days=2)).date(),
+            )
 
             scrape_n_cases(15)
 
@@ -79,20 +86,26 @@ class MyTest(TestCase):
 
         self.assertEqual(Page.objects.count(), 30)
 
+
 class SealingTest(TestCase):
     def setUp(self):
         self.client = Client()
 
     @patch("apps.fcmcclerk.tasks.requests.session")
     def test_session_call(self, mock_session_cls):
-        mock_session_cls.return_value = FakeSession(self.client, (datetime.datetime.now() - datetime.timedelta(days=100)).date())
+        mock_session_cls.return_value = FakeSession(
+            self.client, (datetime.datetime.now() - datetime.timedelta(days=100)).date()
+        )
         with patch("time.sleep", return_value=None):
             scrape_n_cases(20)
 
             cache.delete(CACHE_KEY)
 
             logging.warning("cleared cache")
-            mock_session_cls.return_value = FakeSession(self.client, (datetime.datetime.now() + datetime.timedelta(days=2)).date())
+            mock_session_cls.return_value = FakeSession(
+                self.client,
+                (datetime.datetime.now() + datetime.timedelta(days=2)).date(),
+            )
 
             scrape_n_cases(70)
 

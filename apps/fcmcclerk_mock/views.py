@@ -87,7 +87,7 @@ def report_csv(request, request_date, start, end):
                         "CASE_NUMBER": case.case_number,
                         "CASE_FILE_DATE": case.docket[-1].date,
                         "LAST_DISPOSITION_DATE": case.dispositions[-1].date,
-                        "LAST_DISPOSITION_DESCRIPTION": case.dispositions[-1].code
+                        "LAST_DISPOSITION_DESCRIPTION": case.dispositions[-1].code,
                     }
                 )
 
@@ -109,7 +109,7 @@ def search(request, request_date):
 def results(request, request_date):
 
     form = SearchForm(request.POST)
-    #print("token", request.POST.get("_token"))
+    # print("token", request.POST.get("_token"))
     form_token = request.POST.get("_token")
     sess_token = request.session.get("form_token")
 
@@ -117,7 +117,7 @@ def results(request, request_date):
         return HttpResponse("wrong token")
 
     if form.is_valid():
-        #print("valid form")
+        # print("valid form")
         cases = fixture_at(datetime.fromisoformat(request_date).date())
 
         for case in cases:
@@ -136,15 +136,18 @@ def results(request, request_date):
                     },
                 )
         for case in cases[-2:]:
-            print("you searched a nonexistant case, here are some valid ones", case.case_number)
+            print(
+                "you searched a nonexistant case, here are some valid ones",
+                case.case_number,
+            )
         messages.error(request, f"Not found")
         return redirect("fcmcclerk_mock:search", request_date=request_date)
 
 
 @csrf_exempt
 def case_view(request, request_date):
-    #print("token", request.POST.get("_token"))
-    #print("id", request.POST.get("case_id"))
+    # print("token", request.POST.get("_token"))
+    # print("id", request.POST.get("case_id"))
 
     data = json.loads(base64.b64decode(request.POST.get("case_id")))
     cases = fixture_at(datetime.fromisoformat(request_date).date())

@@ -141,11 +141,13 @@ def parse_dispositions(soup):
                 **{k.lower(): v for k, v in d.items()},
                 **{
                     "code": d["Disposition Code"],
-                    "date": None
-                    if d["Disposition Date"] == ""
-                    else datetime.datetime.strptime(
-                        d["Disposition Date"], "%m/%d/%Y"
-                    ).date(),
+                    "date": (
+                        None
+                        if d["Disposition Date"] == ""
+                        else datetime.datetime.strptime(
+                            d["Disposition Date"], "%m/%d/%Y"
+                        ).date()
+                    ),
                     "status_date": datetime.datetime.strptime(
                         d["Status Date"], "%m/%d/%Y"
                     ).date(),
@@ -187,12 +189,16 @@ def parse_docket(soup) -> list[DocketEntry]:
                 **{
                     **{k.lower(): v for k, v in p.items()},
                     **{
-                        "balance": p["Balance"][1:].replace(",", "")
-                        if p["Balance"] != ""
-                        else None,
-                        "amount": p["Amount"][1:].replace(",", "")
-                        if p["Amount"] != ""
-                        else None,
+                        "balance": (
+                            p["Balance"][1:].replace(",", "")
+                            if p["Balance"] != ""
+                            else None
+                        ),
+                        "amount": (
+                            p["Amount"][1:].replace(",", "")
+                            if p["Amount"] != ""
+                            else None
+                        ),
                     },
                 }
             )
@@ -260,9 +266,11 @@ def parse_finances(soup) -> list[Finance]:
             Finance(
                 **{
                     **{
-                        k[7:].lower(): v[1:].replace(",", "")
-                        if v.startswith("$")
-                        else v.replace("<b>", "").replace("</b>", "")
+                        k[7:].lower(): (
+                            v[1:].replace(",", "")
+                            if v.startswith("$")
+                            else v.replace("<b>", "").replace("</b>", "")
+                        )
                         for k, v in e.items()
                     },
                     **{

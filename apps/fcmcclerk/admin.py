@@ -7,8 +7,9 @@ from apps.fcmcclerk.models import Page
 
 class PageAdmin(admin.ModelAdmin):
     date_hierarchy = "scraped_at"
-    list_display = ["year","category","number","scraped_at","return_code"]
-    list_filter = ["return_code","year","category"]
-    search_fields = ["year","category","number"]
+    list_display = ["year", "category", "number", "scraped_at", "return_code"]
+    list_filter = ["return_code", "year", "category"]
+    search_fields = ["year", "category", "number"]
+
 
 admin.site.register(Page, PageAdmin)

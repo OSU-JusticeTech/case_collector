@@ -2,15 +2,25 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html, format_html_join
 
-from apps.cases.models import CourtCase, CaseSnapshot, Source, Party, Event, Disposition, Finance, DocketEntry
+from apps.cases.models import (
+    CourtCase,
+    CaseSnapshot,
+    Source,
+    Party,
+    Event,
+    Disposition,
+    Finance,
+    DocketEntry,
+)
 
 # Register your models here.
 
 admin.site.register(Source)
 
+
 class CaseAdmin(admin.ModelAdmin):
     readonly_fields = ("snapshots",)
-    list_display = ["source","case_number"]
+    list_display = ["source", "case_number"]
     list_filter = ["source"]
     search_fields = ["case_number"]
 
@@ -24,10 +34,12 @@ class CaseAdmin(admin.ModelAdmin):
             for o in obj.casesnapshot_set.all()
         ]
         return (
-                format_html_join("", "<li>{}</li>", ((link,) for link in links)) or "(None)"
+            format_html_join("", "<li>{}</li>", ((link,) for link in links)) or "(None)"
         )
 
+
 admin.site.register(CourtCase, CaseAdmin)
+
 
 def link_listing(objs, revname, attr=("title",)):
     links = [
@@ -42,47 +54,65 @@ def link_listing(objs, revname, attr=("title",)):
 
 
 class SnapshotAdmin(admin.ModelAdmin):
-    readonly_fields = ("parties","docket")
+    readonly_fields = ("parties", "docket")
     date_hierarchy = "created_at"
 
     def parties(self, obj):
-        return link_listing(obj.party_set.all(), "admin:cases_party_change", attr=("side", "role", "name", "address", "city"))
+        return link_listing(
+            obj.party_set.all(),
+            "admin:cases_party_change",
+            attr=("side", "role", "name", "address", "city"),
+        )
+
     def docket(self, obj):
-        return link_listing(obj.docketentry_set.all(), "admin:cases_docketentry_change",
-                            attr=("date", "text"))
+        return link_listing(
+            obj.docketentry_set.all(),
+            "admin:cases_docketentry_change",
+            attr=("date", "text"),
+        )
+
 
 admin.site.register(CaseSnapshot, SnapshotAdmin)
 
+
 class PartyAdmin(admin.ModelAdmin):
-    list_display = ["side","role","name","address","city","state","zip_code"]
-    list_filter = ["side","role","state","zip_code"]
-    search_fields = ["name","address","city","state"]
+    list_display = ["side", "role", "name", "address", "city", "state", "zip_code"]
+    list_filter = ["side", "role", "state", "zip_code"]
+    search_fields = ["name", "address", "city", "state"]
+
 
 admin.site.register(Party, PartyAdmin)
 
+
 class EventAdmin(admin.ModelAdmin):
-    list_display = ["event","start","end","room","judge","result"]
+    list_display = ["event", "start", "end", "room", "judge", "result"]
     date_hierarchy = "start"
-    list_filter = ["result","event"]
+    list_filter = ["result", "event"]
+
 
 admin.site.register(Event, EventAdmin)
 
+
 class DispositionAdmin(admin.ModelAdmin):
-    list_display = ["date","code","judge","status","status_date"]
+    list_display = ["date", "code", "judge", "status", "status_date"]
     date_hierarchy = "date"
-    list_filter = ["code","status"]
+    list_filter = ["code", "status"]
+
 
 admin.site.register(Disposition, DispositionAdmin)
 
+
 class FinanceAdmin(admin.ModelAdmin):
-    list_display = ["application","owed","paid","dismissed","balance"]
+    list_display = ["application", "owed", "paid", "dismissed", "balance"]
     list_filter = ["application"]
+
 
 admin.site.register(Finance, FinanceAdmin)
 
+
 class DocketAdmin(admin.ModelAdmin):
-    list_display = ["snapshot__case__case_number","date","text"]
-    search_fields = ["snapshot__case__case_number","date","text"]
+    list_display = ["snapshot__case__case_number", "date", "text"]
+    search_fields = ["snapshot__case__case_number", "date", "text"]
     list_filter = ["text"]
     date_hierarchy = "date"
 

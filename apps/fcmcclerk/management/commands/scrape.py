@@ -14,7 +14,7 @@ class Command(BaseCommand):
             logging.info("next case %s", cno)
             if cno is None:
                 logging.info("waiting 6h for new cases")
-                time.sleep(6*3600)
+                time.sleep(6 * 3600)
             pg = scrape_detail(cno)
             if pg.return_code == 200:
                 logging.info("parse and add %s", pg)

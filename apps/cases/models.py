@@ -9,6 +9,7 @@ class Source(models.Model):
     def __str__(self):
         return self.name
 
+
 class CourtCase(models.Model):
     case_number = models.CharField()
     source = models.ForeignKey(Source, on_delete=models.CASCADE)

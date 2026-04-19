@@ -14,7 +14,16 @@ from django.core.cache import cache
 from django.db.models import Q
 from pydantic import BaseModel
 
-from apps.cases.models import Source, CourtCase, CaseSnapshot, Party, DocketEntry, Event, Finance, Disposition
+from apps.cases.models import (
+    Source,
+    CourtCase,
+    CaseSnapshot,
+    Party,
+    DocketEntry,
+    Event,
+    Finance,
+    Disposition,
+)
 from apps.fcmcclerk.models import Page
 from apps.fcmcclerk.parser import parse_case
 from apps.fcmcclerk.pyschema import Case
@@ -23,11 +32,13 @@ CACHE_KEY = "fcmc_eviction_reports"
 
 BASE_URL = "https://www.fcmcclerk.com"
 
-class CSVcase():
+
+class CSVcase:
     def __init__(self, data):
         self.data = data
         self.case_number = data["CASE_NUMBER"]
         self.digest = hashlib.sha256(str(data).encode()).hexdigest()
+
 
 def load_case_csvs():
 
@@ -55,15 +66,17 @@ def load_case_csvs():
                     time.sleep(1)
         # print(cases)
         cache.set(CACHE_KEY, cases, timeout=20000)
-    #print(len(cases))
+    # print(len(cases))
     newest = sorted(cases, key=lambda x: x.case_number, reverse=True)
-    #print(newest[:2])
+    # print(newest[:2])
     return newest
+
 
 class ScrapeInstruction(BaseModel):
     case_number: str
     digest: str | None = None
     earliest: datetime | None = None
+
 
 def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
     # we first try to get case numbers from csv:
@@ -82,19 +95,29 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
         year = int(parts[0])
         cat = parts[1]
         number = int(parts[2])
-        proced.add((year,cat,number))
-        existing = Page.objects.filter(year=year, category=cat, number=number, overview_digest=case.digest)
+        proced.add((year, cat, number))
+        existing = Page.objects.filter(
+            year=year, category=cat, number=number, overview_digest=case.digest
+        )
 
-        newer = Page.objects.filter(category=cat).filter(Q(year=year, number__gt=number) | Q(year__gt=year)).values_list("year","category","number")
-        missed = set(newer)-proced
+        newer = (
+            Page.objects.filter(category=cat)
+            .filter(Q(year=year, number__gt=number) | Q(year__gt=year))
+            .values_list("year", "category", "number")
+        )
+        missed = set(newer) - proced
         for first in missed:
             case_cache = cache.get(CACHE_KEY)
             if case_cache is None:
                 return
-            if Page.objects.filter(category=first[1], year=first[0], number=first[2], return_code=404).exists():
+            if Page.objects.filter(
+                category=first[1], year=first[0], number=first[2], return_code=404
+            ).exists():
                 continue
             print("missed cases before current one and not yet scraped", missed)
-            yield ScrapeInstruction(case_number=f"{first[0]} {first[1]} {first[2]:06d}", digest="missing")
+            yield ScrapeInstruction(
+                case_number=f"{first[0]} {first[1]} {first[2]:06d}", digest="missing"
+            )
 
         if existing.exists():
             continue
@@ -182,15 +205,14 @@ def scrape_detail(instruction: ScrapeInstruction):
     )
     return pg
 
+
 def compute_state_hash(obj: Case) -> bytes:
     payload = obj.model_dump_json().encode("utf-8")
     return hashlib.sha256(payload).digest()
 
 
 def create_snapshot_if_changed(
-    source: Source,
-    page: Page,
-    parse_case: Case
+    source: Source, page: Page, parse_case: Case
 ) -> tuple[CaseSnapshot, bool]:  # or int epoch
     """
     Returns (snapshot_id, created_new).
@@ -198,33 +220,37 @@ def create_snapshot_if_changed(
     """
     new_hash = compute_state_hash(parse_case)
 
-    current_case,_ = CourtCase.objects.get_or_create(case_number=parse_case.case_number, source=source)
+    current_case, _ = CourtCase.objects.get_or_create(
+        case_number=parse_case.case_number, source=source
+    )
 
     current_snapshot = current_case.casesnapshot_set.order_by("created_at").last()
 
     if current_snapshot is not None and current_snapshot.state_hash == new_hash:
-            # No change since latest snapshot → skip
-        logging.warning("case with equal snapshot exists, skipping %s", parse_case.case_number)
+        # No change since latest snapshot → skip
+        logging.warning(
+            "case with equal snapshot exists, skipping %s", parse_case.case_number
+        )
         return current_snapshot, False
 
         # 3) Insert new snapshot (no unique constraint on (case_id, hash))
-    snap = CaseSnapshot.objects.create(
-        case=current_case, state_hash=new_hash
-    )
+    snap = CaseSnapshot.objects.create(case=current_case, state_hash=new_hash)
 
     for party_data in parse_case.parties + parse_case.attorneys:
         Party.objects.create(
-                    side=party_data.type_.value,
-                    name=party_data.name,
-                    address="\n".join(party_data.address)
-                    if hasattr(party_data, "address") and party_data.address
-                    else "",
-                    city=party_data.city if hasattr(party_data, "city") else "",
-                    state=party_data.state if hasattr(party_data, "state") else "",
-                    zip_code=party_data.zip_ if hasattr(party_data, "zip_") else "",
-                    role=party_data.role if hasattr(party_data, "role") else "",
-                    snapshot=snap,
-                )
+            side=party_data.type_.value,
+            name=party_data.name,
+            address=(
+                "\n".join(party_data.address)
+                if hasattr(party_data, "address") and party_data.address
+                else ""
+            ),
+            city=party_data.city if hasattr(party_data, "city") else "",
+            state=party_data.state if hasattr(party_data, "state") else "",
+            zip_code=party_data.zip_ if hasattr(party_data, "zip_") else "",
+            role=party_data.role if hasattr(party_data, "role") else "",
+            snapshot=snap,
+        )
 
     # Save docket entries
     for attr, cls in [
@@ -235,16 +261,16 @@ def create_snapshot_if_changed(
     ]:
         for sub_data in getattr(parse_case, attr):
             cls.objects.create(
-                    **sub_data.model_dump(),
-                    snapshot=snap,
-                )
-
+                **sub_data.model_dump(),
+                snapshot=snap,
+            )
 
     return snap, True
 
+
 def parse_page(pg: Page):
     case = parse_case(pg.content)
-    src,_ = Source.objects.get_or_create(name="FCMC")
+    src, _ = Source.objects.get_or_create(name="FCMC")
     create_snapshot_if_changed(
         source=src,
         page=pg,  # or int epoch

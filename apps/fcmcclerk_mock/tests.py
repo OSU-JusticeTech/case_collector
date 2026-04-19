@@ -21,4 +21,8 @@ class FixtureTest(TestCase):
         print("got 2025-10-10")
         cases_new = fixture_at(datetime.date(2026, 2, 10))
 
-        print("sealed", set([c.case_number for c in cases]) - set([c.case_number for c in cases_new]))
+        print(
+            "sealed",
+            set([c.case_number for c in cases])
+            - set([c.case_number for c in cases_new]),
+        )
