@@ -114,6 +114,7 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
             missed = set(newer) - proced
             # print("newer", sorted(set(newer)))
             # print("missed", missed)
+            logging.info("missed cases before current one and not yet scraped: %s", missed)
             for first in missed:
                 case_cache = cache.get(CACHE_KEY)
                 if case_cache is None:
@@ -123,7 +124,6 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
                 ).exists():
                     proced.add(first)
                     continue
-                print("missed cases before current one and not yet scraped", missed)
                 yield ScrapeInstruction(
                     case_number=f"{first[0]} {first[1]} {first[2]:06d}", digest="missing"
                 )
