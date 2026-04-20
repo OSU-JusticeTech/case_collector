@@ -96,10 +96,14 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
             year__gte=year-2, category=cat
         ).values_list("year","category","number","overview_digest")
     logging.info("compare cases to list of %d existing", len(existing_set))
+    cache_check_time = 0
     for ci, case in enumerate(csv_cases):
-        case_cache = cache.get(CACHE_KEY)
-        if case_cache is None:
-            yield ScrapeInstruction(restart=True, case_number="")
+        if time.time() > cache_check_time+60:
+            cache_check_time = time.time()
+            case_cache = cache.get(CACHE_KEY)
+            logging.info("check if cache is None: %s", case_cache is None)
+            if case_cache is None:
+                yield ScrapeInstruction(restart=True, case_number="")
         parts = case.case_number.split(" ")
         if ci % 100 == 0:
             logging.info("processed %d of %d csv cases, currently missed: %d", ci, len(csv_cases), len(missed))
