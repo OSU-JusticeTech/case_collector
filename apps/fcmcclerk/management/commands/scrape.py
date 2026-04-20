@@ -24,5 +24,11 @@ class Command(BaseCommand):
                 pg = scrape_detail(cno)
                 if pg.return_code == 200:
                     logging.info("parse and add %s", pg)
-                    parse_page(pg)
+                    try:
+                        parse_page(pg)
+                    except Exception as e:
+                        logging.error("page %s could not be parsed: %s", pg, e.__repr__())
+                        pg.return_code = 401
+                        pg.save()
+
                 time.sleep(15)
