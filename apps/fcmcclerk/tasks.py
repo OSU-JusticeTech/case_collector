@@ -88,6 +88,14 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
     csv_cases = load_case_csvs()
     proced = set()
     missed = set()
+
+    parts = csv_cases[0].case_number.split(" ")
+    year = int(parts[0])
+    cat = parts[1]
+    existing_set = Page.objects.filter(
+            year__gte=year-2, category=cat
+        ).values_list("year","category","number","overview_digest")
+    logging.info("compare cases to list of %d existing", len(existing_set))
     for ci, case in enumerate(csv_cases):
         case_cache = cache.get(CACHE_KEY)
         if case_cache is None:
@@ -100,11 +108,11 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
         cat = parts[1]
         number = int(parts[2])
         proced.add((year, cat, number))
-        existing = Page.objects.filter(
-            year=year, category=cat, number=number, overview_digest=case.digest
-        )
+        #existing = Page.objects.filter(
+        #    year=year, category=cat, number=number, overview_digest=case.digest
+        #)
 
-        if ci % 100 == 0:
+        if ci % 50 == 0:
             # this is an expensive operation that only needs to be checked occasionally
             newer = (
                 Page.objects.filter(category=cat)
@@ -128,7 +136,7 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
                     case_number=f"{first[0]} {first[1]} {first[2]:06d}", digest="missing"
                 )
 
-        if existing.exists():
+        if (year,cat,number,case.digest) in existing_set:
             continue
 
         yield ScrapeInstruction(case_number=case.case_number, digest=case.digest)
