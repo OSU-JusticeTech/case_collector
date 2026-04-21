@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html, format_html_join
+from django.db.models import Count
 
 from apps.cases.models import (
     CourtCase,
@@ -17,12 +18,18 @@ from apps.cases.models import (
 
 admin.site.register(Source)
 
-
 class CaseAdmin(admin.ModelAdmin):
     readonly_fields = ("snapshots",)
-    list_display = ["source", "case_number"]
+    list_display = ["source", "case_number", "snapshot_count"]
     list_filter = ["source"]
     search_fields = ["case_number"]
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.annotate(snapshot_count=Count('casesnapshot'))
+
+    def snapshot_count(self, obj):
+        return obj.snapshot_count
 
     def snapshots(self, obj):
         links = [
