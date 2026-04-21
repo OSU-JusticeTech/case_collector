@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "apps.fcmcclerk.apps.FCMCclerkConfig",
     "apps.fcmcclerk_mock.apps.FcmcclerkMockConfig",
+    "apps.nextgen_mock.apps.NextgenMockConfig",
     "apps.cases.apps.CasesConfig",
 ]
 
