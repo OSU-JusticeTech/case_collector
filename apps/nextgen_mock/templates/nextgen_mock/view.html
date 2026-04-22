@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=800, width=device-width, initial-scale=1">
+
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="CK19hv3jS6qCbvuGm8ti8zxwP6EOpKD5W17P5MCw">
+
+    <title>{{ case.case_number }} FCMC Case Information</title>
+
+
+    <link href="https://secure.fcmcclerk.com/nextgen/storage/css/app.20251214154952.css" rel="stylesheet">
+    <link href="https://secure.fcmcclerk.com/nextgen/fontawesome/css/all.min.css?v=6.5.1&r=1" rel="stylesheet">
+
+
+        <style type="text/css" media="screen">
+        body, #page-wrapper, .container {
+            min-width: 680px;
+        }
+        a.anchor-heading {
+            top: -100px;
+        }
+    </style>
+	<style type="text/css" media="print">
+        td, th { padding: 0 !important; }
+        .panel { margin-bottom: 0px; border: none; }
+        .card-body { padding: 5px; }
+        .table { margin-bottom: 0px; }
+        .public-access { font-size: 12pt; }
+        h2.anchored { font-size: 14pt; }
+        h4 { font-size: 13pt; }
+	</style>
+
+    <style>
+    </style>
+
+</head>
+<body>
+    <div id="app" class="mb-5">
+
+<nav class="navbar fixed-top navbar-expand-md shadow-sm border-bottom bg-white border-dark-subtle">
+    <div class="container">
+
+        <a class="navbar-brand" href="#top">{{ case.case_number }}</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <!-- Left Side Of Navbar -->
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                                            Add to Briefcase:
+                        <a href="javascript:void(0)" class="briefcase" data-id="eyJpdiI6IkhnNnUwclM3WnZTYnVnQWhiVlVuRGc9PSIsInZhbHVlIjoiZ2tuZmpsNk5tTXlxL1JmVHdFRjNXdz09IiwibWFjIjoiYzJhMTNhMjlkYTQzYWQxZjQwYmMyOWE1M2Y4OTgxNjQyMjcxZWQ5ZGQ4YjgwNmZiNTM1YWRhNjhjNDI5YmEwNiIsInRhZyI6IiJ9" data-toggle="tooltip" data-bs-placement="left" title="Add to briefcase"><i class="fas fa-folder-plus fa-lg fa-fw"></i></a>
+                        <span class="fw-bold briefcase_message"></span>
+                                    </li>
+            </ul>
+
+            <!-- Right Side Of Navbar -->
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a href="javascript:open(location, '_self').close();" class="hidden-print" title="Close Window">
+                <i class="fa fa-times fa-lg"></i>
+            </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+        <main class="py-4">
+
+
+
+
+
+
+
+<div class="container pt-5">
+
+
+
+<div class="row">
+
+    <div class="col-md-9 col-sm-12 pb-3">
+
+        <div class="row">
+            <div class="col-xs-12 pb-3">
+                <div class="card shadow">
+                    <div class="card-header fw-bold">
+                        <a href="#" class="scroll-up float-end hidden-print" title="Scroll Up"><i class="fas fa-chevron-up"></i><span class="visually-hidden">Scroll to top of page</span></a>
+                        <a id="overview" class="anchor-heading"></a>Overview
+                    </div>
+                    <div class="card-body pt-0 pb-0">
+                        <table class="table" border="0" style="font-size: 20px; margin-bottom: 0;">
+                            <tr valign="top">
+                                <td class="page_header border-bottom-0" style="text-align: left; width: 50%;">{{ case.plaintiff }}<br />
+                                              <sup><i>Plaintiff</i></sup><br /><span style="display: block; margin-top: 10px; margin-bottom: 15px;">Vs</span>{{ case.defendant }}<br /><sup><i>Defendant</i></sup>		</td>
+                                <td class="page_header border-bottom-0" style="text-align: right; width: 50%; border-left: thin solid #D4D4D4; padding-left: 5px;">
+                                        <p>Case No. {{case.case_number}}</p>
+                                        <p>Status: CLOSED</p>
+                                        <p>Filed: 02/14/2024</p>
+                                        <p>Judge: ADMINISTRATIVE</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+			        <div class="row">
+	            <div class="col-xs-12 pb-3">
+	                <div class="card shadow">
+                        <div class="card-header fw-bold">
+                            <a href="#" class="scroll-up float-end hidden-print" title="Scroll Up"><i class="fas fa-chevron-up"></i><span class="visually-hidden">Scroll to top of page</span></a>
+                            <a id="parties" class="anchor-heading"></a>Parties
+                        </div>
+						<div class="card-body pb-0">
+	                        <div class="toggler-c opened" title="PARTIES">
+                             <table class="table" id="pty_table">
+                                <!--<tr>
+                                    <td class="table_header" colspan="5" onClick='toggleRows("pty_table", this, "pty_img")'><img name="pty_img" class="print1" src="images/collapse.png" alt="Collapse" title="Collapse" style="float: right;"/>PARTIES</td>
+                                </tr>-->
+                                 {% for p in case.parties %}
+                                 <tr valign="top">
+                                    <td class="data text-center border-end" rowspan="3"><b>{{ forloop.counter }}</b></td>
+                                    <td class="title">Name</td>
+                                    <td class="data">{{ p.name }}</td>
+                                    <td class="title">Type</td>
+                                    <td class="data">{{ p.type_.value }}</td>
+                                </tr><tr valign="top">
+                                        <td class="title">Address</td>
+                                        <td class="data" colspan="3">{{ p.address }}</td>
+                                    </tr><tr valign="top">
+                                        <td class="title">City</td>
+                                        <td class="data">{{ p.city }}</td>
+                                        <td class="title">State/Zip</td>
+                                        <td class="data">{{ p.state }}/{{ p.zip_ }}</td>
+                                    </tr><tr style="height: 10px;">
+                                        <td colspan="5"><span style="font-size: 5px;">&nbsp;</span></td>
+                                    </tr>
+                                 {% endfor %}
+                                 </table>
+                             </div>
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+
+
+
+			        <div class="row">
+	            <div class="col-xs-12 pb-3">
+	                <div class="card shadow">
+                        <div class="card-header fw-bold">
+                            <a href="#" class="scroll-up float-end hidden-print" title="Scroll Up"><i class="fas fa-chevron-up"></i><span class="visually-hidden">Scroll to top of page</span></a>
+                            <a id="disposition" class="anchor-heading"></a>Disposition
+                        </div>
+						<div class="card-body pt-0 pb-0">
+	                        <div class="toggler-c opened" title="CASE DISPOSITION">
+                             <table class="table table-striped" id="dsp_table">
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th>Status Date</th>
+                                        <th>Disposition Code</th>
+                                        <th>Disposition Date</th>
+                                        <th>Judge</th>
+                                    </tr>
+                                </thead>
+                                <tbody>{% for d in case.dispositions %}
+                                 <tr valign="top">
+                                    <td class="data">{{ d.status }}</td>
+                                    <td class="data">{{ d.status_date|date:"m/d/Y" }}</td>
+                                    <td class="data">{{ d.code }}</td>
+                                    <td class="data">{{ d.date|date:"m/d/Y" }}</td>
+                                    <td class="data">{{ d.judge }}</td>
+                                </tr>
+                             {% endfor %}</tbody></table>
+                             </div>
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+
+			        <div class="row">
+	            <div class="col-xs-12 pb-3">
+	                <div class="card shadow">
+                        <div class="card-header fw-bold">
+                            <a href="#" class="scroll-up float-end hidden-print" title="Scroll Up"><i class="fas fa-chevron-up"></i><span class="visually-hidden">Scroll to top of page</span></a>
+                            <a id="financial-summary" class="anchor-heading"></a>Financial Summary
+                        </div>
+						<div class="card-body pt-0 pb-0">
+	                        <div class="toggler-c opened" title="FINANCIAL SUMMARY">
+                             <table class="table table-striped" id="dkt_appl_table">
+                                <thead>
+                                    <tr>
+                                        <th>Docket Application</th>
+                                        <th>Amount Owed</th>
+                                        <th>Amount Paid</th>
+                                        <th>Amount Dismissed</th>
+                                        <th>Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>{% for f in case.finances %}<tr valign="top">
+                                    <td class="data">{% if forloop.last %}<b>{% endif %}{{ f.application }}{% if forloop.last %}</b>{% endif %}</td>
+                                    <td class="data">${{ f.owed }}</td>
+                                    <td class="data">${{ f.paid }}</td>
+                                    <td class="data">${{ f.dismissed }}</td>
+                                    <td class="data">${{ f.balance }}</td>
+                                </tr>{% endfor %}</tbody></table>
+                             </div>
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+
+			        <div class="row">
+	            <div class="col-xs-12 pb-3">
+	                <div class="card shadow">
+                        <div class="card-header fw-bold">
+                            <a href="#" class="scroll-up float-end hidden-print" title="Scroll Up"><i class="fas fa-chevron-up"></i><span class="visually-hidden">Scroll to top of page</span></a>
+                            <a id="receipts" class="anchor-heading"></a>Receipts
+                        </div>
+						<div class="card-body pt-0 pb-0">
+	                        <div class="toggler-c opened" title="RECEIPTS">
+                             <table class="table table-striped" id="rec_table">
+                                <thead>
+                                    <tr>
+                                        <th>Number</th>
+                                        <th>Cash Book</th>
+                                        <th>Received From</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Total Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody></table>
+                             </div>
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+
+
+                    <div class="row">
+                <div class="col-xs-12 pb-3">
+                    <div class="card shadow">
+                        <div class="card-header fw-bold">
+                            <a href="#" class="scroll-up float-end hidden-print" title="Scroll Up"><i class="fas fa-chevron-up"></i><span class="visually-hidden">Scroll to top of page</span></a>
+                            <a id="events" class="anchor-heading"></a>Events
+                        </div>
+                        <div class="card-body pt-0 pb-0">
+                            <div class="toggler-c opened" title="EVENTS">
+                             <table class="table table-striped" id="evnt_table">
+                                <thead>
+                                    <tr>
+                                        <th>Event</th>
+                                        <th>Date</th>
+                                        <th>Start</th>
+                                        <th>End</th>
+                                        <th>Judge</th>
+                                        <th>Ct.Rm.</th>
+                                        <th>Result</th>
+                                    </tr>
+                                </thead>
+                                <tbody>{% for e in case.events %}<tr valign="top">
+                                    <td class="data">{{ e.event }}</td>
+                                    <td class="data">{{ e.start|date:"m/d/Y" }}</td>
+                                    <td class="data">{{ e.start|date:"h:i A" }}</td>
+                                    <td class="data">{{ e.end|date:"h:i A" }}</td>
+                                    <td class="data">{{ e.judge }}</td>
+                                    <td class="data">{{ e.room }}</td>
+                                    <td class="data">{{ e.result }}</td>
+                                </tr>{% endfor %}</tbody></table>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+			        <div class="row">
+	            <div class="col-xs-12 pb-3">
+	                <div class="card shadow">
+                        <div class="card-header fw-bold">
+                            <a href="#" class="scroll-up float-end hidden-print" title="Scroll Up"><i class="fas fa-chevron-up"></i><span class="visually-hidden">Scroll to top of page</span></a>
+                            <a id="docket" class="anchor-heading"></a>Docket
+                        </div>
+						<div class="card-body pt-0 pb-0">
+	                        <div class="toggler-c opened" title="DOCKET">
+                             <table class="table table-striped" id="dkt_table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Text</th>
+                                        <th>Amount</th>
+                                        <th>Balance</th>
+                                        <th> </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for d in case.docket %}
+                                <tr valign="top">
+                                    <td class="data">{{ d.date|date:"m/d/Y" }}</td>
+                                    <td class="data bold-first-line">{{d.text}}<br />
+{{d.extra|safe}}</td>
+                                    <td class="data">{{d.amount|default:""}}</td>
+                                    <td class="data">{{d.balance|default:""}}</td>
+                                    <td class="data"><a target="_blank" href="https://secure.fcmcclerk.com/nextgen/case/image?q=eyJpdiI6ImpYNW1RN3lkRVBKd0hCNnBUd2s4dFE9PSIsInZhbHVlIjoiNnh4SW9rS2h3bnZOMk1HTHpqdHZQQT09IiwibWFjIjoiNTZkMmIwYjk3ODJkMTEyNWRkZTEyNDlkY2I4N2FkNDU0ZDAyNGVhNGQ0OTQwYjMzYmI3NDVlZTcwNzBlMDFmZSIsInRhZyI6IiJ9" data-toggle="tooltip" data-placement="top" title="View Document"><i class="fas fa-file-image fa-lg fa-fw"></i></a>        </td>
+
+                                </tr>
+                                {% endfor %}
+                               </tbody></table>
+                             </div>
+	                    </div>
+                        <div class="card-footer">
+                            <a href="#" class="scroll-up float-end hidden-print" title="Scroll Up"><i class="fas fa-chevron-up"></i><span class="visually-hidden">Scroll to top of page</span></a>
+                        </div>
+	                </div>
+	            </div>
+	        </div>
+
+    </div>
+    <div class="col-md-3 col-sm-12 hidden-print pb-3">
+        <div class="card shadow">
+            <div class="card-body">
+
+                <ul class="list-unstyled list-index anchor-list large-list">
+                    <li><a href="#overview" class="anchor-link text-decoration-none">Overview</a></li>
+                                                                                    <li><a href="#parties" class="anchor-link text-decoration-none">Parties</a></li>
+                                                                                                        <li><a href="#disposition" class="anchor-link text-decoration-none">Disposition</a></li>
+                                                                <li><a href="#financial-summary" class="anchor-link text-decoration-none">Financial Summary</a></li>
+                                                                <li><a href="#receipts" class="anchor-link text-decoration-none">Receipts</a></li>
+                                                                                    <li><a href="#events" class="anchor-link text-decoration-none">Events</a></li>
+                                                                                    <li><a href="#docket" class="anchor-link text-decoration-none">Docket</a></li>
+                                    </ul>
+
+                <a href="javascript:void(0)" class="clipboard btn btn-sm btn-primary" id="copy-1" data-clipboard-text="{{ case.case_number }}" data-toggle="tooltip" data-bs-placement="bottom" title="Copy {{ case.case_number }}" original-title="Copy {{ case.case_number }}"><i class="far fa-copy fa-lg fa-fw" id="icon-copy-1"></i></a>
+
+                <a href="https://secure.fcmcclerk.com/nextgen/redirect/efiling-website" target="_blank" class="btn btn-sm btn-primary" data-toggle="tooltip" data-bs-placement="bottom" title="Open eFiling Website"><i class="fas fa-cloud-upload-alt fa-lg fa-fw"></i></a>
+
+                                    <form method="POST" action="https://secure.fcmcclerk.com/nextgen/case/view/service-summary" accept-charset="UTF-8" target="blank" class="d-inline"><input name="_token" type="hidden" value="CK19hv3jS6qCbvuGm8ti8zxwP6EOpKD5W17P5MCw">
+                    <!-- Form Submit Button -->
+                    <input name="case_number" type="hidden" value="{{ case.case_number }}">
+                    <input name="case_id" type="hidden" value="eyJpdiI6Im9GSEowcFRTMmVGbGtjQXpGcURaSkE9PSIsInZhbHVlIjoiMzhFdDIreStRREFpem5EQjRuYThyUT09IiwibWFjIjoiZDM2MTZmYzVmMmYyNmU2ZmQxMmY5ZDBkNzllZjE3YTE5ODlmMzI5MzdjODZiNmZiZDkyODNhYTUyMzFkN2NhNyIsInRhZyI6IiJ9">
+                    <button type="submit" class="btn btn-primary btn-sm" data-toggle="tooltip" data-bs-placement="bottom" title="View Service Summary"><i class="fas fa-envelope fa-lg fa-fw"></i></button>
+                    </form>
+
+
+                <hr>
+
+                <form method="POST" action="https://secure.fcmcclerk.com/nextgen/case/view/print" accept-charset="UTF-8" target="blank" class="d-inline"><input name="_token" type="hidden" value="CK19hv3jS6qCbvuGm8ti8zxwP6EOpKD5W17P5MCw">
+                <!-- Form Submit Button -->
+                <input name="case_id" type="hidden" value="eyJpdiI6Im9GSEowcFRTMmVGbGtjQXpGcURaSkE9PSIsInZhbHVlIjoiMzhFdDIreStRREFpem5EQjRuYThyUT09IiwibWFjIjoiZDM2MTZmYzVmMmYyNmU2ZmQxMmY5ZDBkNzllZjE3YTE5ODlmMzI5MzdjODZiNmZiZDkyODNhYTUyMzFkN2NhNyIsInRhZyI6IiJ9">
+                <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-print fa-fw"></i> Print</button>
+                </form>
+
+                <form method="POST" action="https://secure.fcmcclerk.com/nextgen/case/view/pdf" accept-charset="UTF-8" target="blank" class="d-inline"><input name="_token" type="hidden" value="CK19hv3jS6qCbvuGm8ti8zxwP6EOpKD5W17P5MCw">
+                <!-- Form Submit Button -->
+                <input name="case_id" type="hidden" value="eyJpdiI6Im9GSEowcFRTMmVGbGtjQXpGcURaSkE9PSIsInZhbHVlIjoiMzhFdDIreStRREFpem5EQjRuYThyUT09IiwibWFjIjoiZDM2MTZmYzVmMmYyNmU2ZmQxMmY5ZDBkNzllZjE3YTE5ODlmMzI5MzdjODZiNmZiZDkyODNhYTUyMzFkN2NhNyIsInRhZyI6IiJ9">
+                <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-file-pdf fa-fw"></i> PDF</button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+</div>
+
+
+            <!-- Modal -->
+            <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="helpModalLabel">Help and Tips</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">Use the <i class="far fa-copy fa-lg fa-fw"></i> icon to copy the case number to your clipboard</li>
+                                <li class="list-group-item">Use the <i class="fas fa-external-link-alt fa-lg fa-fw"></i> icon to open the case on Secure Access</li>
+                                <li class="list-group-item">Use the <i class="fas fa-search fa-lg fa-fw"></i> icon to search for the case number on Secure Access</li>
+                                <li class="list-group-item">Use the <i class="fas fa-clone fa-lg fa-fw"></i> icon to view the Public Access Case Info in a pop-up</li>
+                                <li class="list-group-item">Use the <i class="fas fa-file-image fa-lg fa-fw"></i> icon to view scanned docket images</li>
+                                <li class="list-group-item">Hover over the abbreviations to view the full text</li>
+                                <li class="list-group-item">When viewing search results, at times a "Search" field is available to filter the records displayed (for example, filter by case number, name, jurisdiction, etc.)</li>
+                                <li class="list-group-item">
+                                    When filtering results, to view only cases without an event result, type the word "pending" or a back tick ` into the search field.
+                                    The backtick key is below the "Esc" key and to the left of the "1" key.
+                                </li>
+                                <li class="list-group-item">
+                                    When filtering results, Multiple search terms can be used at the same time.
+                                    For example, open an eCourt Docket for Courtroom 1A Criminal-Traffic and try searching for "OHP speed pending".
+                                </li>
+                                <li class="list-group-item">
+                                    Certain case information may not be available online due to confidentiality, court orders, or other relevant considerations.
+                                </li>
+                                <li class="list-group-item">
+                                    The Secure Access platform is a means to provide limited information about cases, but it may not always reflect the complete and up-to-date status of a case.
+                                    For the most accurate record, individuals are directed to consult the relevant Clerk's Office division,  Clerk's Case Management System, or physical case file.
+                                </li>
+                                <li class="list-group-item">
+                                    For performance reasons, data may be cached to decrease page load times.
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://secure.fcmcclerk.com/nextgen/storage/js/app.20251214154952.js"></script>
+
+    <!-- Site JS -->
+    <script>
+        $(document).ready(function() {
+            $('.alert').alert()
+            $('#flash-overlay-modal').modal();
+            $('.tip').tooltip();
+            $("#alert-bottom").fadeTo(10000, 500).slideDown(500, function(){
+                $("#alert-bottom").slideUp(500);
+            });
+            $('.datatable').DataTable({paging: false});
+            $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
+
+            $('.btn-highlight').click(function() {
+                $(this).addClass('btn-success');
+                $(this).removeClass('btn-primary');
+            });
+            var theme = $('html').data('bs-theme');
+            if(theme === 'dark') {
+                $('.invertable').css({
+                    'filter': 'invert(80%)'
+                });
+            }
+        } );
+    </script>
+
+    	<script>
+		$(document).ready(function() {
+			$('.hide-table').click(function() {
+				$(this).closest('.panel').find('.table').toggle();
+				$(this).closest('.panel').find('.scroll-up').toggle();
+				$(this).find('.hide-table-text').toggle();
+			});
+
+            $('.briefcase').click(function(){
+
+                var case_id_value = $(this).data('id');
+
+                // AJAX request
+                $.ajax({
+                    url: 'https://secure.fcmcclerk.com/nextgen/briefcase/add',
+                    type: 'post',
+                    data: { case_id: case_id_value, _token: 'CK19hv3jS6qCbvuGm8ti8zxwP6EOpKD5W17P5MCw' },
+                    success: function(response){
+                        // Add response
+                        $('.briefcase_message').html(response);
+                    },
+                    error: function (e) {
+                        // Display Error Modal
+                        $('.briefcase_message').html(response);
+                    },
+                });
+            });
+        });
+
+        var clipboard = new ClipboardJS('.clipboard');
+
+        clipboard.on('success', function(e) {
+            var originalTitle = $('#'+e.trigger.id).attr('original-title');
+            const tooltip = bootstrap.Tooltip.getInstance('#'+e.trigger.id);
+            tooltip.setContent({ '.tooltip-inner': 'Copied!' });
+            $('#icon-'+e.trigger.id).removeClass('far').addClass('fas');
+            setTimeout(
+                function()
+                {
+                    tooltip.setContent({ '.tooltip-inner': originalTitle });
+                    $('#icon-'+e.trigger.id).removeClass('fas').addClass('far');
+                    $('#'+e.trigger.id).blur();
+                }, 2000);
+            e.clearSelection();
+        });
+
+        clipboard.on('error', function(e) {
+            console.error('Action:', e.action);
+            console.error('Trigger:', e.trigger);
+            alert('Error - Unable to copy');
+        });
+    </script>
+</body>
+</html>

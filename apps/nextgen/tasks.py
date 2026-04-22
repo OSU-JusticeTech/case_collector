@@ -1,3 +1,4 @@
+import logging
 import time
 
 import requests
@@ -58,6 +59,7 @@ def scrape_pdfs(case_number):
     soup = BeautifulSoup(listing.content.decode(), 'html.parser')
     form = soup.find("form", {"action": f"{BASE_URL}/nextgen/case/view"})
     if form is None:
+        logging.error("case not found %s", case_number)
         #os.makedirs(path, exist_ok=True)
         #with open(f"{path}/not-found.error", "w") as f:
         #    pass

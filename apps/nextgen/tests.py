@@ -10,6 +10,7 @@ from django.core.cache import cache
 
 from apps.fcmcclerk.models import Page
 from apps.fcmcclerk.tasks import scrape_detail, CACHE_KEY, parse_page, scrape_generator
+from apps.fcmcclerk_mock.fake_state import fixture_at
 from apps.nextgen.tasks import scrape_pdfs
 
 from django.test import TestCase, modify_settings
@@ -65,6 +66,10 @@ class MyTest(TestCase):
          #NEXTGEN_PASSWORD="secure"):
             with patch("time.sleep", return_value=None):
 
-                scrape_pdfs("2025 CVG 000001")
-
+                cases = fixture_at(datetime.datetime.now().date())
+                for c in cases:
+                    if "CVG" in c.case_number:
+                        logging.info("testing to scrape %s", c.case_number)
+                        scrape_pdfs(c.case_number)
+                        break
 
