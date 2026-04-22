@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=800, width=device-width, initial-scale=1">
+
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="CK19hv3jS6qCbvuGm8ti8zxwP6EOpKD5W17P5MCw">
+
+    <title>NextGen Secure Access</title>
+
+
+    <link href="/nextgen/storage/css/app.20251214154952.css" rel="stylesheet">
+    <link href="/nextgen/fontawesome/css/all.min.css?v=6.5.1&r=1" rel="stylesheet">
+
+
+
+    <style>
+    </style>
+
+</head>
+<body>
+    <div id="app" class="mb-5">
+                    <nav class="navbar navbar-expand-md navbar-light shadow-sm">
+                <div class="container">
+                    <a class="navbar-brand fs-6 lh-sm" href="/nextgen">
+                                                NextGen Secure Access
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <!-- Left Side Of Navbar -->
+                        <ul class="navbar-nav me-auto">
+                                                            <li class="nav-item">
+                                    <a class="nav-link" href="/nextgen/case/search">Search</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/nextgen/ecourt">eCourt</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/nextgen/briefcase">Briefcase</a>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                        Schedules
+                                    </a>
+
+                                    <div class="dropdown-menu dropdown-menu-start" aria-labelledby="navbarDropdown">
+                                        <a class="dropdown-item" href="/nextgen/attorney-schedule/search">
+                                            Attorney Schedule
+                                        </a>
+                                        <a class="dropdown-item" href="/nextgen/interpreter/schedule">
+                                            Interpreter Schedule
+                                        </a>
+                                    </div>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                        Reports
+                                    </a>
+
+                                    <div class="dropdown-menu dropdown-menu-start" aria-labelledby="navbarDropdown">
+                                        <a class="dropdown-item" href="/nextgen/reports/daily-arraignment">
+                                            Daily Arraignment
+                                        </a>
+                                        <a class="dropdown-item" href="/nextgen/reports/4d-list">
+                                            4D List
+                                        </a>
+                                        <a class="dropdown-item" href="/nextgen/reports/evictions">
+                                            Monthly Evictions
+                                        </a>
+                                    </div>
+                                </li>
+                                                    </ul>
+
+                        <!-- Right Side Of Navbar -->
+                        <ul class="navbar-nav ms-auto">
+                            <!-- Authentication Links -->
+                                                            <li class="nav-item d-sm-none d-lg-inline">
+                                    <a href="/nextgen/redirect/efiling-website" target="_blank" class="nav-link" data-toggle="tooltip" data-bs-placement="bottom" title="Open eFiling Website">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <span class="d-md-none">Open eFiling Website</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/nextgen/feature-request" class="nav-link" data-toggle="tooltip" data-bs-placement="bottom" title="Feature Request">
+                                        <i class="fas fa-comment"></i>
+                                        <span class="d-md-none">Feature Request</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <!-- Button trigger modal -->
+                                    <button type="button" class="nav-link" data-bs-toggle="modal" data-bs-target="#helpModal" data-toggle="tooltip" data-bs-placement="bottom" title="Help">
+                                        <i class="fas fa-question-circle"></i>
+                                        <span class="d-md-none">Help</span>
+                                    </button>
+                                </li>
+
+
+                                <li class="nav-item dropdown">
+                                    <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                        Your Name
+                                    </a>
+
+                                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                        <a class="dropdown-item" href="/nextgen/profile">
+                                            Profile
+                                        </a>
+                                        <a class="dropdown-item" href="/nextgen/logout"
+                                           onclick="event.preventDefault();
+                                                         document.getElementById('logout-form').submit();">
+                                            Logout
+                                        </a>
+
+                                        <form id="logout-form" action="/nextgen/logout" method="POST" class="d-none">
+                                            <input type="hidden" name="_token" value="CK19hv3jS6qCbvuGm8ti8zxwP6EOpKD5W17P5MCw">                                        </form>
+                                    </div>
+                                </li>
+                                                    </ul>
+                    </div>
+                </div>
+            </nav>
+
+        <main class="py-4">
+
+
+
+
+
+            <div class="container">
+
+
+
+    <div class="row">
+                <div class="col-lg-4 pb-3">
+            <div class="card shadow mb-3">
+                <div class="card-header text-bg-primary text-white">
+                    NextGen Secure Access Services
+                </div>
+
+                <ul class="list-group list-group-flush">
+
+                    <li class="list-group-item">
+                        <h4>
+                            <a href="/nextgen/case/search" class="text-decoration-none">Advanced Records Search</a>
+                        </h4>
+                        <p>
+                            Includes additional search parameters to help find what you're looking for even quicker!
+                        </p>
+                    </li>
+
+                    <li class="list-group-item">
+                        <h4>
+                            <a href="/nextgen/ecourt" class="text-decoration-none">eCourt</a>
+                        </h4>
+                        <p>
+                            View a Courtroom Docket all in one search!
+                        </p>
+                    </li>
+
+                    <li class="list-group-item">
+                        <h4>
+                            <a href="/nextgen/briefcase" class="text-decoration-none">Briefcase</a>
+                        </h4>
+                        <p>
+                            Have all your saved cases in one place with the Secure Access Briefcase!
+                        </p>
+                    </li>
+
+                    <li class="list-group-item">
+                        <h4>
+                            <a href="/nextgen/attorney-schedule/search" class="text-decoration-none">Attorney Schedule</a>
+                        </h4>
+                        <p>
+                            Search by bar number to find future events!
+                        </p>
+                    </li>
+
+                    <li class="list-group-item">
+                        <h4>
+                            <a href="/nextgen/interpreter/schedule" class="text-decoration-none">Interpreter Schedule</a>
+                        </h4>
+                        <p>
+                            View all future events that have an Interpreter party type added!
+                        </p>
+                    </li>
+
+                    <li class="list-group-item">
+                        <h4>
+                            <a href="/nextgen/reports" class="text-decoration-none">Reports</a>
+                        </h4>
+                        <p>
+                            View these www.fcmcclerk.com reports without leaving Secure Access:
+                        </p>
+                        <ul class="list-unstyled">
+                            <li><a href="/nextgen/reports/daily-arraignment" class="text-decoration-none">Daily Arraignment</a></li>
+                            <li><a href="/nextgen/reports/4d-list" class="text-decoration-none">4D List</a></li>
+                            <li><a href="/nextgen/reports/evictions" class="text-decoration-none">Monthly Evictions</a></li>
+                        </ul>
+                    </li>
+
+                </ul>
+
+            </div>
+        </div>
+        <div class="col-lg-4 pb-3">
+            <div class="card shadow mb-3">
+                <div class="card-header text-bg-primary text-white">
+                    Featured Updates
+                </div>
+                <ul class="list-group list-group-flush">
+
+
+                    <li class="list-group-item">
+                        <span class="fw-bold">5/9/2024 - BCI + ITN Improvements</span>
+                        <p>
+                            <span class="badge bg-success">New</span>
+                            When viewing a pending case with a FINGERPRINTS REQUIRED docket,
+                            a new informational alert may be displayed when
+                            a BCI Reportable charge is present without an associated ITN.
+                        </p>
+                    </li>
+
+                    <li class="list-group-item">
+                        <span class="fw-bold">4/30/2024 - Domain Protection</span>
+                        <p>
+                            <span class="badge bg-success">New</span>
+                            Deployed enhanced security protection measures for validated government and law enforcement networks and accounts.
+                        </p>
+                    </li>
+
+                    <li class="list-group-item">
+                        <span class="fw-bold">1/10/2024 - Case Number Search</span>
+                        <p>
+                            <span class="badge bg-success">Update</span>
+                            To assist the Public Defender's Office, and all users, dashes will be removed
+                            from the case number when searching, allowing individuals to search for
+                            case numbers similar to "23-CRB-1234".
+                        </p>
+                    </li>
+
+                    <li class="list-group-item">
+                        <span class="fw-bold">12/22/2023 - Reports</span>
+                        <p>
+                            <span class="badge bg-success">New</span>
+                            Created new report pages that link to the daily reports from www.fcmcclerk.com,
+                            so all reports are also available within Secure Access.
+                        </p>
+                    </li>
+
+                    <li class="list-group-item">
+                        <span class="fw-bold">12/18/2023 - Website Color Theme</span>
+                        <p>
+                            <span class="badge bg-success">New</span>
+                            To try out the new experimental dark theme, go to your Profile
+                            by clicking your name in the top right, clicking Profile, then scrolling to the
+                            bottom of the page to select your theme preference. Don't forget to click 'Save Profile'!
+                        </p>
+                    </li>
+
+                    <li class="list-group-item">
+                        <span class="fw-bold">12/1/2023 - Assigned Judge</span>
+                        <p>
+                            <span class="badge bg-success">Case View Updated</span>
+                            The assigned Judge will appear in the Overview section when viewing a case.
+                            The assigned Judge is determined by the referenced Judge in the latest Disposition record.
+                        </p>
+                    </li>
+
+                    <li class="list-group-item">
+                        <span class="fw-bold">11/28/2023 - eCourt Navigation</span>
+                        <p>
+                            <span class="badge bg-success">eCourt Updated</span>
+                            When viewing an eCourt docket, links to the previous day and next day
+                            are available to quickly navigate dockets for different days.
+                        </p>
+                    </li>
+
+                    <li class="list-group-item">
+                        <span class="fw-bold">11/21/2023 - eCourt Start Time</span>
+                        <p>
+                            <span class="badge bg-success">eCourt Updated</span>
+                            When viewing an eCourt docket, the Event Start Time is displayed
+                            if an event is not resulted. You may click the Event Start Time
+                            to filter the docket by start time.
+                        </p>
+                    </li>
+
+                    <li class="list-group-item">
+                        <span class="fw-bold">11/17/2023 - eCourt Export</span>
+                        <p>
+                            <span class="badge bg-success">New</span>
+                            When viewing an eCourt docket using the "View All" option, we are testing a feature
+                            to export records to PDF, Excel, and Print View. This feature is only being
+                            tested using the "View All" option.
+                        </p>
+                    </li>
+
+                    <li class="list-group-item">
+                        <span class="fw-bold">11/14/2023 - Briefcase Highlights</span>
+                        <p>
+                            <span class="badge bg-success">Briefcase Updated</span>
+                            Cases will be highlighted in your Briefcase if a docket was added within the past day.
+                        </p>
+                    </li>
+
+                </ul>
+
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow mb-3">
+                <div class="card-header text-bg-primary text-white">
+                    Email Verification
+                </div>
+                <div class="card-body">
+                    <p>
+                        Email: <strong>cura@osu.edu</strong><br>
+                        Verified Until: <strong>May. 25, 2026</strong>
+                    </p>
+                    <p>
+                        <a href="/nextgen/email/reverify">Re-verify my email now</a>
+                    </p>
+                    <p>
+                        To help keep an accurate list of active users, we will
+                        be requiring all accounts to verify access to their registered Secure Access email every 60 days.
+                    </p>
+                </div>
+            </div>
+            <div class="card shadow mb-3">
+                <div class="card-header text-bg-primary text-white">
+                    Feature Request
+                </div>
+                <div class="card-body">
+                    <p>
+                        <strong>Have an idea to improve Secure Access?</strong> Send in a
+                        <a href="/nextgen/feature-request" class="text-decoration-none">Feature Request</a>
+                        that could improve the  way individuals use Secure Access. New features could include
+                        displaying additional information, new ways to search, reports to gather
+                        information, or anything you could think of! Now is the time to let us know what you'd like to see!
+                    </p>
+                </div>
+            </div>
+            <div class="card shadow">
+                <div class="card-header text-bg-primary text-white">
+                    Additional Features
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <span class="fw-bold">View Documents</span>
+                        <p>
+                            Scanned and electronic documents are at your fingertips!
+                        </p>
+                    </li>
+                    <li class="list-group-item">
+                        <span class="fw-bold">Integrated Pages</span>
+                        <p>
+                            Use quick links to make viewing case information or images a breeze!
+                        </p>
+                    </li>
+                    <li class="list-group-item">
+                        <span class="fw-bold">(Testing) Export Feature</span>
+                        <p>
+                            Export records to PDF, Excel, and Print View!
+                        </p>
+                    </li>
+                    <li class="list-group-item">
+                        <span class="fw-bold">(Experimental) Dark Theme</span>
+                        <p>
+                                <strong>To try out the new experimental dark theme,</strong>
+                                go to your Profile by clicking your name in the top right,
+                                clicking Profile, then scrolling to the bottom of the page to select
+                                your theme preference.  Don't forget to click 'Save Profile'!
+                        </p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-3">
+
+        </div>
+        <div class="col-lg-9 pb-3">
+        </div>
+    </div>
+
+</div>
+
+
+            <!-- Modal -->
+            <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="helpModalLabel">Help and Tips</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">Use the <i class="far fa-copy fa-lg fa-fw"></i> icon to copy the case number to your clipboard</li>
+                                <li class="list-group-item">Use the <i class="fas fa-external-link-alt fa-lg fa-fw"></i> icon to open the case on Secure Access</li>
+                                <li class="list-group-item">Use the <i class="fas fa-search fa-lg fa-fw"></i> icon to search for the case number on Secure Access</li>
+                                <li class="list-group-item">Use the <i class="fas fa-clone fa-lg fa-fw"></i> icon to view the Public Access Case Info in a pop-up</li>
+                                <li class="list-group-item">Use the <i class="fas fa-file-image fa-lg fa-fw"></i> icon to view scanned docket images</li>
+                                <li class="list-group-item">Hover over the abbreviations to view the full text</li>
+                                <li class="list-group-item">When viewing search results, at times a "Search" field is available to filter the records displayed (for example, filter by case number, name, jurisdiction, etc.)</li>
+                                <li class="list-group-item">
+                                    When filtering results, to view only cases without an event result, type the word "pending" or a back tick ` into the search field.
+                                    The backtick key is below the "Esc" key and to the left of the "1" key.
+                                </li>
+                                <li class="list-group-item">
+                                    When filtering results, Multiple search terms can be used at the same time.
+                                    For example, open an eCourt Docket for Courtroom 1A Criminal-Traffic and try searching for "OHP speed pending".
+                                </li>
+                                <li class="list-group-item">
+                                    Certain case information may not be available online due to confidentiality, court orders, or other relevant considerations.
+                                </li>
+                                <li class="list-group-item">
+                                    The Secure Access platform is a means to provide limited information about cases, but it may not always reflect the complete and up-to-date status of a case.
+                                    For the most accurate record, individuals are directed to consult the relevant Clerk's Office division,  Clerk's Case Management System, or physical case file.
+                                </li>
+                                <li class="list-group-item">
+                                    For performance reasons, data may be cached to decrease page load times.
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/nextgen/storage/js/app.20251214154952.js"></script>
+
+    <!-- Site JS -->
+    <script>
+        $(document).ready(function() {
+            $('.alert').alert()
+            $('#flash-overlay-modal').modal();
+            $('.tip').tooltip();
+            $("#alert-bottom").fadeTo(10000, 500).slideDown(500, function(){
+                $("#alert-bottom").slideUp(500);
+            });
+            $('.datatable').DataTable({paging: false});
+            $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
+
+            $('.btn-highlight').click(function() {
+                $(this).addClass('btn-success');
+                $(this).removeClass('btn-primary');
+            });
+            var theme = $('html').data('bs-theme');
+            if(theme === 'dark') {
+                $('.invertable').css({
+                    'filter': 'invert(80%)'
+                });
+            }
+        } );
+    </script>
+
+    </body>
+</html>

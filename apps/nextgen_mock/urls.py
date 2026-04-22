@@ -1,11 +1,12 @@
 from django.urls import path, re_path
 
-from apps.nextgen_mock.views import LoginView
+from apps.nextgen_mock.views import LoginView, home, search
 
 app_name = "nextgen_mock"
 urlpatterns = [
     path("<str:request_date>/nextgen/login", LoginView.as_view()),
-    #path("<str:request_date>/case/search", search, name="search"),
+    path("<str:request_date>/nextgen/home", home, name="home"),
+    path("<str:request_date>/nextgen/case/search", search, name="search"),
     #path("<str:request_date>/case/search/results", results),
     #path("<str:request_date>/case/view", case_view),
     #re_path(

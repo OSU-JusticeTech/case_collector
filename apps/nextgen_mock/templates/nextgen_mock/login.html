@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=800, width=device-width, initial-scale=1">
+
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="3aXG3Hh0aiDpWBKjKUoo1RndL11lDk2mitWscfOu">
+
+    <title>NextGen Secure Access</title>
+
+
+    <link href="/nextgen/storage/css/app.20251214154952.css" rel="stylesheet">
+    <link href="/nextgen/fontawesome/css/all.min.css?v=6.5.1&r=1" rel="stylesheet">
+
+
+
+    <style>
+    </style>
+
+</head>
+<body>
+    <div id="app" class="mb-5">
+                    <nav class="navbar navbar-expand-md navbar-light shadow-sm">
+                <div class="container">
+                    <a class="navbar-brand fs-6 lh-sm" href="/nextgen">
+                                                NextGen Secure Access
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <!-- Left Side Of Navbar -->
+                        <ul class="navbar-nav me-auto">
+                                                    </ul>
+
+                        <!-- Right Side Of Navbar -->
+                        <ul class="navbar-nav ms-auto">
+                            <!-- Authentication Links -->
+                                                                                                <li class="nav-item">
+                                        <a class="nav-link" href="/nextgen/login">Login</a>
+                                    </li>
+
+                                                                    <li class="nav-item">
+                                        <a class="nav-link" href="/nextgen/register">Register</a>
+                                    </li>
+                                                                                    </ul>
+                    </div>
+                </div>
+            </nav>
+
+        <main class="py-4">
+
+
+
+
+
+            <div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    Login
+                    <span id="showLogin" class="float-end"><a href="javascript:void(0);">Show Login Form</a></span>
+                </div>
+
+                <div class="card-body visually-hidden fade-delay">
+                    <form method="POST" action="/nextgen/login">
+                        <input type="hidden" name="_token" value="3aXG3Hh0aiDpWBKjKUoo1RndL11lDk2mitWscfOu">                        <div id="my_name_xCLtatK214V7pBSf_wrap" style="display: none" aria-hidden="true">
+        <input id="my_name_xCLtatK214V7pBSf"
+               name="my_name_xCLtatK214V7pBSf"
+               type="text"
+               value=""
+                              autocomplete="nope"
+               tabindex="-1">
+        <input name="valid_from"
+               type="text"
+               value="eyJpdiI6ImlPY1lpYmlnb3VsMHlEd2w2SUI3UUE9PSIsInZhbHVlIjoiaENPMHd5SUZzMG9BR20xWlBjSUxPdz09IiwibWFjIjoiNTlhN2VhMDAwNGJjZGZhNTczNzlkNzhiMzE0ZWE1MDE5MjI1NDBlYzNiYWI5NjE2MTczMmRkODg0YTNiOTMyYSIsInRhZyI6IiJ9"
+                              autocomplete="off"
+               tabindex="-1">
+    </div>
+
+                        <div class="row mb-3">
+
+
+                            <label for="email" class="col-md-4 col-form-label text-md-end">Email Address</label>
+
+                            <div class="col-md-6">
+                                {{ form.email }}
+
+
+                                                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label for="password" class="col-md-4 col-form-label text-md-end">Password</label>
+
+                            <div class="col-md-6">
+                                {{form.password}}
+
+                                                            </div>
+                        </div>
+
+
+
+                        <div class="row mb-0">
+                            <div class="col-md-8 offset-md-4">
+                                <button type="submit" class="btn btn-primary">
+                                    Login
+                                </button>
+
+                                                                    <a class="btn btn-link" href="/nextgen/password/reset">
+                                        Forgot Your Password?
+                                    </a>
+                                                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer fade-delay">
+                    <span class="float-end">
+                        <a href="/nextgen/login/help">Login Help</a>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+            <!-- Modal -->
+            <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="helpModalLabel">Help and Tips</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">Use the <i class="far fa-copy fa-lg fa-fw"></i> icon to copy the case number to your clipboard</li>
+                                <li class="list-group-item">Use the <i class="fas fa-external-link-alt fa-lg fa-fw"></i> icon to open the case on Secure Access</li>
+                                <li class="list-group-item">Use the <i class="fas fa-search fa-lg fa-fw"></i> icon to search for the case number on Secure Access</li>
+                                <li class="list-group-item">Use the <i class="fas fa-clone fa-lg fa-fw"></i> icon to view the Public Access Case Info in a pop-up</li>
+                                <li class="list-group-item">Use the <i class="fas fa-file-image fa-lg fa-fw"></i> icon to view scanned docket images</li>
+                                <li class="list-group-item">Hover over the abbreviations to view the full text</li>
+                                <li class="list-group-item">When viewing search results, at times a "Search" field is available to filter the records displayed (for example, filter by case number, name, jurisdiction, etc.)</li>
+                                <li class="list-group-item">
+                                    When filtering results, to view only cases without an event result, type the word "pending" or a back tick ` into the search field.
+                                    The backtick key is below the "Esc" key and to the left of the "1" key.
+                                </li>
+                                <li class="list-group-item">
+                                    When filtering results, Multiple search terms can be used at the same time.
+                                    For example, open an eCourt Docket for Courtroom 1A Criminal-Traffic and try searching for "OHP speed pending".
+                                </li>
+                                <li class="list-group-item">
+                                    Certain case information may not be available online due to confidentiality, court orders, or other relevant considerations.
+                                </li>
+                                <li class="list-group-item">
+                                    The Secure Access platform is a means to provide limited information about cases, but it may not always reflect the complete and up-to-date status of a case.
+                                    For the most accurate record, individuals are directed to consult the relevant Clerk's Office division,  Clerk's Case Management System, or physical case file.
+                                </li>
+                                <li class="list-group-item">
+                                    For performance reasons, data may be cached to decrease page load times.
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/nextgen/storage/js/app.20251214154952.js"></script>
+
+    <!-- Site JS -->
+    <script>
+        $(document).ready(function() {
+            $('.alert').alert()
+            $('#flash-overlay-modal').modal();
+            $('.tip').tooltip();
+            $("#alert-bottom").fadeTo(10000, 500).slideDown(500, function(){
+                $("#alert-bottom").slideUp(500);
+            });
+            $('.datatable').DataTable({paging: false});
+            $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
+
+            $('.btn-highlight').click(function() {
+                $(this).addClass('btn-success');
+                $(this).removeClass('btn-primary');
+            });
+            var theme = $('html').data('bs-theme');
+            if(theme === 'dark') {
+                $('.invertable').css({
+                    'filter': 'invert(80%)'
+                });
+            }
+        } );
+    </script>
+
+        <script>
+
+        $(document).ready(function(){
+            $('.fade-delay').hide().removeClass('visually-hidden').delay(1000).slideDown('fast');
+            setTimeout(function(){
+                $("#showLogin").fadeOut();
+                $("#email").focus();
+            },1000);
+            $("#showLogin").click(function() {
+                $('.fade-delay').show().removeClass('visually-hidden');
+            });
+        });
+
+    </script>
+</body>
+</html>
