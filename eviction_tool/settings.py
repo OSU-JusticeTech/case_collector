@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "apps.fcmcclerk.apps.FCMCclerkConfig",
+    "apps.nextgen.apps.NextgenConfig",
     "apps.fcmcclerk_mock.apps.FcmcclerkMockConfig",
     "apps.nextgen_mock.apps.NextgenMockConfig",
     "apps.cases.apps.CasesConfig",
@@ -164,3 +165,6 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 SCRAPE_PROXIES = {} # dict(https="socks5://localhost:8080")
+
+NEXTGEN_EMAIL = os.environ.get("NEXTGEN_EMAIL")
+NEXTGEN_PASSWORD = os.environ.get("NEXTGEN_PASSWORD")
