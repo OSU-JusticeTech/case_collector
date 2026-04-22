@@ -22,4 +22,5 @@ from django.urls import path, include
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("fcmcclerk.com/", include("apps.fcmcclerk_mock.urls", namespace="fcmcclerk_mock")),
+    path("secure.fcmcclerk.com/", include("apps.nextgen_mock.urls", namespace="nextgen_mock")),
 ]  + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
