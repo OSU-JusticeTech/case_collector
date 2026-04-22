@@ -44,7 +44,7 @@ services:
 
   scraper:
     image: ghcr.io/osu-justicetech/case_collector:main
-    command: ["sh","-c","uv run manage.py scrape"]
+    command: ["sh","-c","uv run manage.py fcmcclerk"]
     environment:
       DJANGO_TRUSTED_ORIGINS: "http://localhost:8001"
       DJANGO_ALLOWED_HOSTS: "localhost"
