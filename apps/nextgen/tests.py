@@ -22,11 +22,13 @@ class FakeSession:
         self.report_date = report_date
         self.proxies = {}
 
+
     def _build_response(self, response):
         class FakeResponse:
             def __init__(self, response):
                 self.status_code = response.status_code
                 self.content = response.content
+                self.headers = response.headers
 
             ok = True
 

@@ -10,8 +10,8 @@
     <title>{{ case.case_number }} FCMC Case Information</title>
 
 
-    <link href="https://secure.fcmcclerk.com/nextgen/storage/css/app.20251214154952.css" rel="stylesheet">
-    <link href="https://secure.fcmcclerk.com/nextgen/fontawesome/css/all.min.css?v=6.5.1&r=1" rel="stylesheet">
+    <link href="/nextgen/storage/css/app.20251214154952.css" rel="stylesheet">
+    <link href="/nextgen/fontawesome/css/all.min.css?v=6.5.1&r=1" rel="stylesheet">
 
 
         <style type="text/css" media="screen">
@@ -312,7 +312,7 @@
 {{d.extra|safe}}</td>
                                     <td class="data">{{d.amount|default:""}}</td>
                                     <td class="data">{{d.balance|default:""}}</td>
-                                    <td class="data"><a target="_blank" href="https://secure.fcmcclerk.com/nextgen/case/image?q=eyJpdiI6ImpYNW1RN3lkRVBKd0hCNnBUd2s4dFE9PSIsInZhbHVlIjoiNnh4SW9rS2h3bnZOMk1HTHpqdHZQQT09IiwibWFjIjoiNTZkMmIwYjk3ODJkMTEyNWRkZTEyNDlkY2I4N2FkNDU0ZDAyNGVhNGQ0OTQwYjMzYmI3NDVlZTcwNzBlMDFmZSIsInRhZyI6IiJ9" data-toggle="tooltip" data-placement="top" title="View Document"><i class="fas fa-file-image fa-lg fa-fw"></i></a>        </td>
+                                    <td class="data"><a target="_blank" href="/nextgen/case/image?q=eyJpdiI6ImpYNW1RN3lkRVBKd0hCNnBUd2s4dFE9PSIsInZhbHVlIjoiNnh4SW9rS2h3bnZOMk1HTHpqdHZQQT09IiwibWFjIjoiNTZkMmIwYjk3ODJkMTEyNWRkZTEyNDlkY2I4N2FkNDU0ZDAyNGVhNGQ0OTQwYjMzYmI3NDVlZTcwNzBlMDFmZSIsInRhZyI6IiJ9" data-toggle="tooltip" data-placement="top" title="View Document"><i class="fas fa-file-image fa-lg fa-fw"></i></a>        </td>
 
                                 </tr>
                                 {% endfor %}
@@ -343,9 +343,9 @@
 
                 <a href="javascript:void(0)" class="clipboard btn btn-sm btn-primary" id="copy-1" data-clipboard-text="{{ case.case_number }}" data-toggle="tooltip" data-bs-placement="bottom" title="Copy {{ case.case_number }}" original-title="Copy {{ case.case_number }}"><i class="far fa-copy fa-lg fa-fw" id="icon-copy-1"></i></a>
 
-                <a href="https://secure.fcmcclerk.com/nextgen/redirect/efiling-website" target="_blank" class="btn btn-sm btn-primary" data-toggle="tooltip" data-bs-placement="bottom" title="Open eFiling Website"><i class="fas fa-cloud-upload-alt fa-lg fa-fw"></i></a>
+                <a href="/nextgen/redirect/efiling-website" target="_blank" class="btn btn-sm btn-primary" data-toggle="tooltip" data-bs-placement="bottom" title="Open eFiling Website"><i class="fas fa-cloud-upload-alt fa-lg fa-fw"></i></a>
 
-                                    <form method="POST" action="https://secure.fcmcclerk.com/nextgen/case/view/service-summary" accept-charset="UTF-8" target="blank" class="d-inline"><input name="_token" type="hidden" value="CK19hv3jS6qCbvuGm8ti8zxwP6EOpKD5W17P5MCw">
+                                    <form method="POST" action="/nextgen/case/view/service-summary" accept-charset="UTF-8" target="blank" class="d-inline"><input name="_token" type="hidden" value="CK19hv3jS6qCbvuGm8ti8zxwP6EOpKD5W17P5MCw">
                     <!-- Form Submit Button -->
                     <input name="case_number" type="hidden" value="{{ case.case_number }}">
                     <input name="case_id" type="hidden" value="eyJpdiI6Im9GSEowcFRTMmVGbGtjQXpGcURaSkE9PSIsInZhbHVlIjoiMzhFdDIreStRREFpem5EQjRuYThyUT09IiwibWFjIjoiZDM2MTZmYzVmMmYyNmU2ZmQxMmY5ZDBkNzllZjE3YTE5ODlmMzI5MzdjODZiNmZiZDkyODNhYTUyMzFkN2NhNyIsInRhZyI6IiJ9">
@@ -355,13 +355,13 @@
 
                 <hr>
 
-                <form method="POST" action="https://secure.fcmcclerk.com/nextgen/case/view/print" accept-charset="UTF-8" target="blank" class="d-inline"><input name="_token" type="hidden" value="CK19hv3jS6qCbvuGm8ti8zxwP6EOpKD5W17P5MCw">
+                <form method="POST" action="/nextgen/case/view/print" accept-charset="UTF-8" target="blank" class="d-inline"><input name="_token" type="hidden" value="CK19hv3jS6qCbvuGm8ti8zxwP6EOpKD5W17P5MCw">
                 <!-- Form Submit Button -->
                 <input name="case_id" type="hidden" value="eyJpdiI6Im9GSEowcFRTMmVGbGtjQXpGcURaSkE9PSIsInZhbHVlIjoiMzhFdDIreStRREFpem5EQjRuYThyUT09IiwibWFjIjoiZDM2MTZmYzVmMmYyNmU2ZmQxMmY5ZDBkNzllZjE3YTE5ODlmMzI5MzdjODZiNmZiZDkyODNhYTUyMzFkN2NhNyIsInRhZyI6IiJ9">
                 <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-print fa-fw"></i> Print</button>
                 </form>
 
-                <form method="POST" action="https://secure.fcmcclerk.com/nextgen/case/view/pdf" accept-charset="UTF-8" target="blank" class="d-inline"><input name="_token" type="hidden" value="CK19hv3jS6qCbvuGm8ti8zxwP6EOpKD5W17P5MCw">
+                <form method="POST" action="/nextgen/case/view/pdf" accept-charset="UTF-8" target="blank" class="d-inline"><input name="_token" type="hidden" value="CK19hv3jS6qCbvuGm8ti8zxwP6EOpKD5W17P5MCw">
                 <!-- Form Submit Button -->
                 <input name="case_id" type="hidden" value="eyJpdiI6Im9GSEowcFRTMmVGbGtjQXpGcURaSkE9PSIsInZhbHVlIjoiMzhFdDIreStRREFpem5EQjRuYThyUT09IiwibWFjIjoiZDM2MTZmYzVmMmYyNmU2ZmQxMmY5ZDBkNzllZjE3YTE5ODlmMzI5MzdjODZiNmZiZDkyODNhYTUyMzFkN2NhNyIsInRhZyI6IiJ9">
                 <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-file-pdf fa-fw"></i> PDF</button>
@@ -424,7 +424,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="https://secure.fcmcclerk.com/nextgen/storage/js/app.20251214154952.js"></script>
+    <script src="/nextgen/storage/js/app.20251214154952.js"></script>
 
     <!-- Site JS -->
     <script>
@@ -465,7 +465,7 @@
 
                 // AJAX request
                 $.ajax({
-                    url: 'https://secure.fcmcclerk.com/nextgen/briefcase/add',
+                    url: '/nextgen/briefcase/add',
                     type: 'post',
                     data: { case_id: case_id_value, _token: 'CK19hv3jS6qCbvuGm8ti8zxwP6EOpKD5W17P5MCw' },
                     success: function(response){

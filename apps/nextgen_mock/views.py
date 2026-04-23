@@ -4,6 +4,7 @@ import secrets
 from datetime import datetime
 
 from django import views
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 
@@ -70,3 +71,6 @@ def case_view(request, request_date):
     for case in cases:
         if case.case_number == data["number"]:
             return render(request, "nextgen_mock/view.html", context={"case": case})
+
+def case_image(request, request_date):
+    return HttpResponse(b"pdf")
