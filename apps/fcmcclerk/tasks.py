@@ -73,7 +73,7 @@ def load_case_csvs():
 
 
 class ScrapeInstruction(BaseModel):
-    case_number: str
+    case_number: str | None = None
     digest: str | None = None
     earliest: datetime | None = None
     restart: bool = False
@@ -103,7 +103,7 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
             case_cache = cache.get(CACHE_KEY)
             logging.info("check if cache is None: %s", case_cache is None)
             if case_cache is None:
-                yield ScrapeInstruction(restart=True, case_number="")
+                yield ScrapeInstruction(restart=True, case_number=None)
         parts = case.case_number.split(" ")
         if ci % 100 == 0:
             logging.info("processed %d of %d csv cases, currently missed: %d", ci, len(csv_cases), len(missed))
@@ -130,7 +130,7 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
             for first in missed:
                 case_cache = cache.get(CACHE_KEY)
                 if case_cache is None:
-                    yield ScrapeInstruction(restart=True, case_number="")
+                    yield ScrapeInstruction(restart=True, case_number=None)
                 if Page.objects.filter(
                     category=first[1], year=first[0], number=first[2], return_code=410
                 ).exists():
@@ -146,7 +146,7 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
         yield ScrapeInstruction(case_number=case.case_number, digest=case.digest)
 
     # print(resp.content)
-    yield ScrapeInstruction(earliest=datetime.now()+timedelta(hours=6), case_number="")
+    yield ScrapeInstruction(earliest=datetime.now()+timedelta(hours=6), case_number=None)
 
 
 class CaseNotFound(Exception):

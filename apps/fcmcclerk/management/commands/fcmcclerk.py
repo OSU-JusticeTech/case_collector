@@ -21,6 +21,7 @@ class Command(BaseCommand):
                     logging.info("done, resume at %s", cno.earliest)
                     while datetime.now() < cno.earliest:
                         time.sleep(10)
+                    break
                 pg = scrape_detail(cno)
                 if pg.return_code == 200:
                     logging.info("parse and add %s", pg)
