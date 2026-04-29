@@ -6,6 +6,7 @@ from datetime import datetime
 from django import views
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 from apps.fcmcclerk_mock.fake_state import fixture_at
@@ -15,6 +16,7 @@ from apps.nextgen_mock.forms import LoginForm
 
 # Create your views here.
 
+@method_decorator(csrf_exempt, name='dispatch')
 class LoginView(views.View):
     def get(self, request, request_date):
         form = LoginForm()
