@@ -5,7 +5,7 @@ from apps.fcmcclerk_mock.views import (
     report_csv,
     search,
     results,
-    case_view,
+    case_view, all_numbers,
 )
 
 app_name = "fcmcclerk_mock"
@@ -18,4 +18,5 @@ urlpatterns = [
         r"^(?P<request_date>\d{4}-\d{2}-\d{2})/storage/shared/civil-fed/FCMC Civil F.E.D. \(Eviction\) Case List (?P<start>\d{4}-\d{2}-\d{2}) to (?P<end>\d{4}-\d{2}-\d{2}).csv",
         report_csv,
     ),
+    path("<str:request_date>/debug", all_numbers),
 ]

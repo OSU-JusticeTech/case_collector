@@ -1,9 +1,8 @@
 import base64
 import csv
-import hashlib
 import json
 import secrets
-from datetime import datetime, timezone, date, timedelta
+from datetime import datetime, date, timedelta
 
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -155,3 +154,7 @@ def case_view(request, request_date):
     for case in cases:
         if case.case_number == data["number"]:
             return render(request, "fcmcclerk_mock/view.html", context={"case": case})
+
+def all_numbers(request, request_date):
+    cases = fixture_at(datetime.fromisoformat(request_date).date())
+    return render(request, "fcmcclerk_mock/debug.html", context={"cases": cases})

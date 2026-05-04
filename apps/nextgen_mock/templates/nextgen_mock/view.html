@@ -305,14 +305,16 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                {% for d in case.docket %}
+                                {% for d,p in docket %}
                                 <tr valign="top">
                                     <td class="data">{{ d.date|date:"m/d/Y" }}</td>
                                     <td class="data bold-first-line">{{d.text}}<br />
 {{d.extra|safe}}</td>
                                     <td class="data">{{d.amount|default:""}}</td>
                                     <td class="data">{{d.balance|default:""}}</td>
-                                    <td class="data"><a target="_blank" href="/nextgen/case/image?q=eyJpdiI6ImpYNW1RN3lkRVBKd0hCNnBUd2s4dFE9PSIsInZhbHVlIjoiNnh4SW9rS2h3bnZOMk1HTHpqdHZQQT09IiwibWFjIjoiNTZkMmIwYjk3ODJkMTEyNWRkZTEyNDlkY2I4N2FkNDU0ZDAyNGVhNGQ0OTQwYjMzYmI3NDVlZTcwNzBlMDFmZSIsInRhZyI6IiJ9" data-toggle="tooltip" data-placement="top" title="View Document"><i class="fas fa-file-image fa-lg fa-fw"></i></a>        </td>
+                                    <td class="data">{% if p %}
+                                        <a target="_blank" href="/nextgen/case/image?q={{p}}" data-toggle="tooltip" data-placement="top" title="View Document"><i class="fas fa-file-image fa-lg fa-fw"></i>pdf</a>
+                                    {% endif %}</td>
 
                                 </tr>
                                 {% endfor %}

@@ -48,8 +48,6 @@ def results(request, request_date):
     if form.is_valid():
         # print("valid form")
         cases = fixture_at(datetime.fromisoformat(request_date).date())
-        print("form")
-
         for case in cases:
             if case.case_number == form.cleaned_data["case_number"]:
                 return render(
@@ -62,6 +60,7 @@ def results(request, request_date):
                         ).decode(),
                     },
                 )
+        print("could not find", form.cleaned_data)
         return redirect("nextgen_mock:search", request_date=request_date)
 
 @csrf_exempt
@@ -72,7 +71,15 @@ def case_view(request, request_date):
 
     for case in cases:
         if case.case_number == data["number"]:
-            return render(request, "nextgen_mock/view.html", context={"case": case})
+            docket = []
+            for i,d in enumerate(case.docket):
+                payload = None
+                if d.scan is not None:
+                    payload = base64.b64encode(json.dumps({"iv": base64.b64encode(secrets.token_bytes(16)).decode(), "value": base64.b64encode(json.dumps((case.case_number, i)).encode()).decode(),
+                        "mac": secrets.token_hex(32), "tag": ""}).encode()).decode()
+
+                docket.append((d, payload))
+            return render(request, "nextgen_mock/view.html", context={"case": case, "docket": docket})
 
 def case_image(request, request_date):
     return HttpResponse(b"pdf")
