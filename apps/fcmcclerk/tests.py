@@ -2,11 +2,13 @@ import datetime
 import logging
 import time
 
+from django.db.models import Model
 from django.test import TestCase, Client
 from unittest.mock import patch
 import json
 from django.core.cache import cache
 
+from apps.cases.models import CourtCase
 from apps.fcmcclerk.models import Page
 from apps.fcmcclerk.tasks import scrape_detail, CACHE_KEY, parse_page, scrape_generator
 
@@ -85,6 +87,7 @@ class MyTest(TestCase):
 
         print(Page.objects.all())
 
+        self.assertLess(0,CourtCase.objects.count())
         self.assertEqual(Page.objects.count(), 30)
 
 

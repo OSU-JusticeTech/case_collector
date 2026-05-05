@@ -275,15 +275,15 @@ def create_snapshot_if_changed(
         )
 
     # Save docket entries
-    for attr, cls in [
-        ("docket", DocketEntry),
-        ("events", Event),
-        ("finances", Finance),
-        ("dispositions", Disposition),
+    for attr, cls, exclude in [
+        ("docket", DocketEntry,{"scan"}),
+        ("events", Event,set()),
+        ("finances", Finance, set()),
+        ("dispositions", Disposition, set()),
     ]:
         for sub_data in getattr(parse_case, attr):
             cls.objects.create(
-                **sub_data.model_dump(),
+                **sub_data.model_dump(exclude=exclude),
                 snapshot=snap,
             )
 
