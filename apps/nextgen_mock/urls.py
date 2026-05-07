@@ -1,6 +1,13 @@
 from django.urls import path, re_path
 
-from apps.nextgen_mock.views import LoginView, home, search, results, case_view, case_image
+from apps.nextgen_mock.views import (
+    LoginView,
+    home,
+    search,
+    results,
+    case_view,
+    case_image,
+)
 
 app_name = "nextgen_mock"
 urlpatterns = [

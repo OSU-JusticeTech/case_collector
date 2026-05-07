@@ -3,7 +3,12 @@ import time
 from datetime import datetime
 
 from django.core.management.base import BaseCommand
-from apps.fcmcclerk.tasks import scrape_detail, parse_page, scrape_generator, ScrapeInstruction
+from apps.fcmcclerk.tasks import (
+    scrape_detail,
+    parse_page,
+    scrape_generator,
+    ScrapeInstruction,
+)
 
 
 def scrape_and_parse(instr: ScrapeInstruction):
@@ -19,6 +24,7 @@ def scrape_and_parse(instr: ScrapeInstruction):
 
     time.sleep(15)
 
+
 class Command(BaseCommand):
     help = "Scrapes a FCMC case"
 
@@ -27,7 +33,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         logging.info("start scraping")
-        scrape_cases = options.get("case_number",[])
+        scrape_cases = options.get("case_number", [])
         if len(scrape_cases) > 0:
             print("opt", scrape_cases)
             for case_number in scrape_cases:

@@ -4,6 +4,7 @@ from django.core.management import BaseCommand
 
 from apps.nextgen.tasks import scrape_pdfs
 
+
 class Command(BaseCommand):
     help = "Scrapes a nextgen case"
 

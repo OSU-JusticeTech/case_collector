@@ -42,7 +42,11 @@ def parse_parties(soup) -> list[Union[SideName, SideAddress]]:
                 current_party = {"party_number": party_id}
             if cell.get("class") == ["title"]:
                 title = cell.get_text(strip=True)
-            if cell.get("class") == ["data"] and title is not None and current_party is not None:
+            if (
+                cell.get("class") == ["data"]
+                and title is not None
+                and current_party is not None
+            ):
                 data = cell.decode_contents().replace(
                     "<br/>", "\n"
                 )  # .get_text(strip=True)
@@ -137,7 +141,7 @@ def parse_dispositions(soup):
             ]
             # print(data)
             d = dict(zip(columns, data))
-            raw: dict[str,Any] = {
+            raw: dict[str, Any] = {
                 **{k.lower(): v for k, v in d.items()},
                 **{
                     "code": d["Disposition Code"],

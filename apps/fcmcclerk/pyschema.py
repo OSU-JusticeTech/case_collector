@@ -143,6 +143,7 @@ class RunningAttorney(SideName):
 class PublicAttorney(SideName):
     address: list[str]
 
+
 class FileScan(BaseModel):
     data: bytes
     filename: str
@@ -167,8 +168,10 @@ class DocketEntry(BaseModel):
                         extra="Receipt: 12345  Date: ##/##/####",
                         amount=128,
                         balance=0,
-                        scan=FileScan(data=b'%PDF-1.6\r%\xe2\xe3\xcf\xd3\r\n7 0 obj\r<</Linearized 1/L 44097/O 9/E 40051/N 1/T 43808/H [ 435 133]>>\rendobj\r      ',
-                        filename=f"{case_number} - {filed.strftime('%m %d %Y')} - DCOMP - CV Docket - {filed.strftime('%m %d %Y')}.pdf")
+                        scan=FileScan(
+                            data=b"%PDF-1.6\r%\xe2\xe3\xcf\xd3\r\n7 0 obj\r<</Linearized 1/L 44097/O 9/E 40051/N 1/T 43808/H [ 435 133]>>\rendobj\r      ",
+                            filename=f"{case_number} - {filed.strftime('%m %d %Y')} - DCOMP - CV Docket - {filed.strftime('%m %d %Y')}.pdf",
+                        ),
                     ),
                     DocketEntry(
                         date=filed + timedelta(days=1), text="IMAGE OF COMPLAINT"
@@ -201,7 +204,10 @@ class DocketEntry(BaseModel):
                         date=filed + timedelta(days=1),
                         text="SUMMONS ISSUED WITH COPY OF COMPLAINT",
                         extra="1 CAUSE G - 1CA<br/>\nSent on:  10/10/2025  08:09:05.63",
-                        scan=FileScan(data=b'%PDF-1.6\r%\xe2\xe3\xcf\xd3\r\n7 0 obj\r<</Linearized 1/L 44097/O 9/E 31231/N 1/T 43808/H [ 435 133]>>\rendobj\r      ',filename=f"{case_number} - {(filed + timedelta(days=1)).strftime('%m %d %Y')} - DMAGDEC - CV Docket - {(filed + timedelta(days=1)).strftime('%m %d %Y')}.pdf")
+                        scan=FileScan(
+                            data=b"%PDF-1.6\r%\xe2\xe3\xcf\xd3\r\n7 0 obj\r<</Linearized 1/L 44097/O 9/E 31231/N 1/T 43808/H [ 435 133]>>\rendobj\r      ",
+                            filename=f"{case_number} - {(filed + timedelta(days=1)).strftime('%m %d %Y')} - DMAGDEC - CV Docket - {(filed + timedelta(days=1)).strftime('%m %d %Y')}.pdf",
+                        ),
                     ),
                     DocketEntry(
                         date=filed + timedelta(days=6),

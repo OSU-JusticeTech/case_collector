@@ -92,13 +92,13 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
     parts = csv_cases[0].case_number.split(" ")
     year = int(parts[0])
     cat = parts[1]
-    existing_set = Page.objects.filter(
-            year__gte=year-2, category=cat
-        ).values_list("year","category","number","overview_digest")
+    existing_set = Page.objects.filter(year__gte=year - 2, category=cat).values_list(
+        "year", "category", "number", "overview_digest"
+    )
     logging.info("compare cases to list of %d existing", len(existing_set))
     cache_check_time = 0
     for ci, case in enumerate(csv_cases):
-        if time.time() > cache_check_time+60:
+        if time.time() > cache_check_time + 60:
             cache_check_time = time.time()
             case_cache = cache.get(CACHE_KEY)
             logging.info("check if cache is None: %s", case_cache is None)
@@ -106,15 +106,20 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
                 yield ScrapeInstruction(restart=True, case_number=None)
         parts = case.case_number.split(" ")
         if ci % 100 == 0:
-            logging.info("processed %d of %d csv cases, currently missed: %d", ci, len(csv_cases), len(missed))
+            logging.info(
+                "processed %d of %d csv cases, currently missed: %d",
+                ci,
+                len(csv_cases),
+                len(missed),
+            )
 
         year = int(parts[0])
         cat = parts[1]
         number = int(parts[2])
         proced.add((year, cat, number))
-        #existing = Page.objects.filter(
+        # existing = Page.objects.filter(
         #    year=year, category=cat, number=number, overview_digest=case.digest
-        #)
+        # )
 
         if ci % 50 == 0:
             # this is an expensive operation that only needs to be checked occasionally
@@ -126,7 +131,9 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
             missed = set(newer) - proced
             # print("newer", sorted(set(newer)))
             # print("missed", missed)
-            logging.info("missed cases before current one and not yet scraped: %s", missed)
+            logging.info(
+                "missed cases before current one and not yet scraped: %s", missed
+            )
             for first in missed:
                 case_cache = cache.get(CACHE_KEY)
                 if case_cache is None:
@@ -137,16 +144,19 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
                     proced.add(first)
                     continue
                 yield ScrapeInstruction(
-                    case_number=f"{first[0]} {first[1]} {first[2]:06d}", digest="missing"
+                    case_number=f"{first[0]} {first[1]} {first[2]:06d}",
+                    digest="missing",
                 )
 
-        if (year,cat,number,case.digest) in existing_set:
+        if (year, cat, number, case.digest) in existing_set:
             continue
 
         yield ScrapeInstruction(case_number=case.case_number, digest=case.digest)
 
     # print(resp.content)
-    yield ScrapeInstruction(earliest=datetime.now()+timedelta(hours=6), case_number=None)
+    yield ScrapeInstruction(
+        earliest=datetime.now() + timedelta(hours=6), case_number=None
+    )
 
 
 class CaseNotFound(Exception):
@@ -276,8 +286,8 @@ def create_snapshot_if_changed(
 
     # Save docket entries
     for attr, cls, exclude in [
-        ("docket", DocketEntry,{"scan"}),
-        ("events", Event,set()),
+        ("docket", DocketEntry, {"scan"}),
+        ("events", Event, set()),
         ("finances", Finance, set()),
         ("dispositions", Disposition, set()),
     ]:

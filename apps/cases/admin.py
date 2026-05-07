@@ -18,6 +18,7 @@ from apps.cases.models import (
 
 admin.site.register(Source)
 
+
 class CaseAdmin(admin.ModelAdmin):
     readonly_fields = ("snapshots",)
     list_display = ["source", "case_number", "snapshot_count"]
@@ -26,7 +27,7 @@ class CaseAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return qs.annotate(snapshot_count=Count('casesnapshot'))
+        return qs.annotate(snapshot_count=Count("casesnapshot"))
 
     def snapshot_count(self, obj):
         return obj.snapshot_count

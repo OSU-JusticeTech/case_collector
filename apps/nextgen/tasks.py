@@ -16,9 +16,10 @@ def parse_fields(form):
 
 
 def extract_fields(content):
-    soup = BeautifulSoup(content, 'html.parser')
+    soup = BeautifulSoup(content, "html.parser")
     form = soup.find("form")
     return parse_fields(form)
+
 
 def scrape_pdfs(case_number):
 
@@ -35,10 +36,9 @@ def scrape_pdfs(case_number):
     time.sleep(1)
 
     fields = extract_fields(result.content.decode())
-    fields.update({
-        "email": settings.NEXTGEN_EMAIL,
-        "password": settings.NEXTGEN_PASSWORD
-    })
+    fields.update(
+        {"email": settings.NEXTGEN_EMAIL, "password": settings.NEXTGEN_PASSWORD}
+    )
     print(fields)
 
     sess.post(f"{BASE_URL}/nextgen/login", data=fields)
@@ -48,7 +48,7 @@ def scrape_pdfs(case_number):
     fields = extract_fields(search.content.decode())
 
     print(fields)
-    fields['case_number'] = case_number
+    fields["case_number"] = case_number
 
     time.sleep(1)
 
@@ -56,12 +56,12 @@ def scrape_pdfs(case_number):
 
     # print(listing.content.decode())
 
-    soup = BeautifulSoup(listing.content.decode(), 'html.parser')
+    soup = BeautifulSoup(listing.content.decode(), "html.parser")
     form = soup.find("form", {"action": f"{BASE_URL}/nextgen/case/view"})
     if form is None:
         logging.error("case not found %s", case_number)
-        #os.makedirs(path, exist_ok=True)
-        #with open(f"{path}/not-found.error", "w") as f:
+        # os.makedirs(path, exist_ok=True)
+        # with open(f"{path}/not-found.error", "w") as f:
         #    pass
         return
     case_data = parse_fields(form)
@@ -73,21 +73,23 @@ def scrape_pdfs(case_number):
 
     # print(case.content.decode())
 
-    #with open(f"{path}/overview.html", "wb") as f:
+    # with open(f"{path}/overview.html", "wb") as f:
     #    f.write(case.content)
 
-    soup = BeautifulSoup(case.content.decode(), 'html.parser')
+    soup = BeautifulSoup(case.content.decode(), "html.parser")
     for file_link in soup.find_all("a", {"title": "View Document"}):
         link = file_link.attrs["href"]
         file = sess.get(link)
         print(file.headers)
-        if file.headers['Content-Type'] != 'application/pdf':
-            #with open(f"{path}/{link.split("?q=")[1][9:20]}.html", "wb") as dest:
+        if file.headers["Content-Type"] != "application/pdf":
+            # with open(f"{path}/{link.split("?q=")[1][9:20]}.html", "wb") as dest:
             #    dest.write(file.content)
-                continue
-        save_name = file.headers["Content-Disposition"].split("filename=")[1].replace('"', "")
+            continue
+        save_name = (
+            file.headers["Content-Disposition"].split("filename=")[1].replace('"', "")
+        )
         print(save_name)
-        #with open(f"{path}/{save_name}", "wb") as f:
-            #f.write(file.content)
+        # with open(f"{path}/{save_name}", "wb") as f:
+        # f.write(file.content)
 
         time.sleep(5)

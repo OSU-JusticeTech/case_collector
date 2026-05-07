@@ -87,7 +87,7 @@ class MyTest(TestCase):
 
         print(Page.objects.all())
 
-        self.assertLess(0,CourtCase.objects.count())
+        self.assertLess(0, CourtCase.objects.count())
         self.assertEqual(Page.objects.count(), 30)
 
 
@@ -127,4 +127,3 @@ class LiveTest(TestCase):
         print(Page.objects.all())
 
         self.assertEqual(Page.objects.count(), 2)
-

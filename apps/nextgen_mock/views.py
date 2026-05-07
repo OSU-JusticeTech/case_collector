@@ -13,10 +13,10 @@ from apps.fcmcclerk_mock.fake_state import fixture_at
 from apps.fcmcclerk_mock.forms import SearchForm
 from apps.nextgen_mock.forms import LoginForm
 
-
 # Create your views here.
 
-@method_decorator(csrf_exempt, name='dispatch')
+
+@method_decorator(csrf_exempt, name="dispatch")
 class LoginView(views.View):
     def get(self, request, request_date):
         form = LoginForm()
@@ -27,8 +27,10 @@ class LoginView(views.View):
         if form.is_valid():
             return redirect("nextgen_mock:home", request_date=request_date)
 
+
 def home(request, request_date):
     return render(request, "nextgen_mock/home.html")
+
 
 def search(request, request_date):
 
@@ -39,6 +41,7 @@ def search(request, request_date):
     return render(
         request, "nextgen_mock/search.html", context={"form": form, "token": token}
     )
+
 
 @csrf_exempt
 def results(request, request_date):
@@ -63,6 +66,7 @@ def results(request, request_date):
         print("could not find", form.cleaned_data)
         return redirect("nextgen_mock:search", request_date=request_date)
 
+
 @csrf_exempt
 def case_view(request, request_date):
 
@@ -72,14 +76,31 @@ def case_view(request, request_date):
     for case in cases:
         if case.case_number == data["number"]:
             docket = []
-            for i,d in enumerate(case.docket):
+            for i, d in enumerate(case.docket):
                 payload = None
                 if d.scan is not None:
-                    payload = base64.b64encode(json.dumps({"iv": base64.b64encode(secrets.token_bytes(16)).decode(), "value": base64.b64encode(json.dumps((case.case_number, i)).encode()).decode(),
-                        "mac": secrets.token_hex(32), "tag": ""}).encode()).decode()
+                    payload = base64.b64encode(
+                        json.dumps(
+                            {
+                                "iv": base64.b64encode(
+                                    secrets.token_bytes(16)
+                                ).decode(),
+                                "value": base64.b64encode(
+                                    json.dumps((case.case_number, i)).encode()
+                                ).decode(),
+                                "mac": secrets.token_hex(32),
+                                "tag": "",
+                            }
+                        ).encode()
+                    ).decode()
 
                 docket.append((d, payload))
-            return render(request, "nextgen_mock/view.html", context={"case": case, "docket": docket})
+            return render(
+                request,
+                "nextgen_mock/view.html",
+                context={"case": case, "docket": docket},
+            )
+
 
 def case_image(request, request_date):
     return HttpResponse(b"pdf")

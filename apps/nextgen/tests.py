@@ -22,7 +22,6 @@ class FakeSession:
         self.report_date = report_date
         self.proxies = {}
 
-
     def _build_response(self, response):
         class FakeResponse:
             def __init__(self, response):
@@ -53,8 +52,6 @@ class FakeSession:
         return self._build_response(response)
 
 
-
-
 class MyTest(TestCase):
     def setUp(self):
         self.client = Client()
@@ -65,7 +62,7 @@ class MyTest(TestCase):
             self.client, datetime.datetime.now().date()
         )
         with self.settings(NEXTGEN_EMAIL="test@test.com", NEXTGEN_PASSWORD="test"):
-         #NEXTGEN_PASSWORD="secure"):
+            # NEXTGEN_PASSWORD="secure"):
             with patch("time.sleep", return_value=None):
 
                 cases = fixture_at(datetime.datetime.now().date())
@@ -74,4 +71,3 @@ class MyTest(TestCase):
                         logging.info("testing to scrape %s", c.case_number)
                         scrape_pdfs(c.case_number)
                         break
-

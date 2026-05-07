@@ -5,7 +5,8 @@ from apps.fcmcclerk_mock.views import (
     report_csv,
     search,
     results,
-    case_view, all_numbers,
+    case_view,
+    all_numbers,
 )
 
 app_name = "fcmcclerk_mock"
