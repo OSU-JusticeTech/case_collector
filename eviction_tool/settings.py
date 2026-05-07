@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
+
 import os
 from pathlib import Path
 
@@ -34,7 +35,6 @@ CSRF_TRUSTED_ORIGINS = os.environ.get(
 ).split(",")
 
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_extensions",
     "apps.fcmcclerk.apps.FCMCclerkConfig",
     "apps.nextgen.apps.NextgenConfig",
     "apps.fcmcclerk_mock.apps.FcmcclerkMockConfig",
@@ -164,7 +165,13 @@ STATIC_URL = "static/"
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-SCRAPE_PROXIES = {} # dict(https="socks5://localhost:8080")
+SCRAPE_PROXIES = {}  # dict(https="socks5://localhost:8080")
 
 NEXTGEN_EMAIL = os.environ.get("NEXTGEN_EMAIL")
 NEXTGEN_PASSWORD = os.environ.get("NEXTGEN_PASSWORD")
+
+GRAPH_MODELS = {
+    "app_labels": ["cases", "fcmcclerk"],
+    "all_applications": False,
+    "group_models": True,
+}
