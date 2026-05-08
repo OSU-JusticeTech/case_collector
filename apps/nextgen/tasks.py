@@ -57,7 +57,13 @@ def scrape_pdfs(case_number):
     # print(listing.content.decode())
 
     soup = BeautifulSoup(listing.content.decode(), "html.parser")
-    form = soup.find("form", {"action": f"{BASE_URL}/nextgen/case/view"})
+    allforms = soup.find_all("form")
+    print([f["action"] for f in allforms])
+    form = None
+    for f in allforms:
+        if f["action"].endswith("/nextgen/case/view"):
+            form = f
+            break
     if form is None:
         logging.error("case not found %s", case_number)
         # os.makedirs(path, exist_ok=True)
