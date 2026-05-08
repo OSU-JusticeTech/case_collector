@@ -4,18 +4,34 @@ from django.db import migrations
 
 CREATE_SQL = """
 CREATE VIEW IF NOT EXISTS latest_snapshot AS
-  SELECT c.case_number,c.source_id, s.*
+  SELECT 
+        c.case_number,
+        c.source_id,
+        s.*,
+        docket_dates.earliest_date,
+        docket_dates.latest_date
     FROM cases_courtcase c
+    
     JOIN cases_casesnapshot s 
-      ON s.case_id = c.id
+        ON s.case_id = c.id
+    
     JOIN (
         SELECT case_id, MAX(created_at) AS max_created_at
         FROM cases_casesnapshot
         GROUP BY case_id
     ) latest 
-      ON latest.case_id = s.case_id 
-      AND latest.max_created_at = s.created_at;
-
+        ON latest.case_id = s.case_id
+       AND latest.max_created_at = s.created_at
+    
+    LEFT JOIN (
+        SELECT 
+            snapshot_id,
+            MIN(date) AS earliest_date,
+            MAX(date) AS latest_date
+        FROM cases_docketentry
+        GROUP BY snapshot_id
+    ) docket_dates
+        ON docket_dates.snapshot_id = s.id;
 """
 
 DROP_SQL = "DROP VIEW IF EXISTS latest_snapshot;"
