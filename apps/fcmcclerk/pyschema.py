@@ -1,3 +1,4 @@
+import os.path
 import random
 from datetime import timedelta
 from turtledemo.clock import jump
@@ -169,7 +170,7 @@ class DocketEntry(BaseModel):
                         amount=128,
                         balance=0,
                         scan=FileScan(
-                            data=b"%PDF-1.6\r%\xe2\xe3\xcf\xd3\r\n7 0 obj\r<</Linearized 1/L 44097/O 9/E 40051/N 1/T 43808/H [ 435 133]>>\rendobj\r      ",
+                            data=open(os.path.dirname(__file__) + "/files/YYYY CVG ###### - MM DD YYYY - DCOMP - CV Docket - MM DD YYYY-redacted-100dpi.pdf","rb").read(),
                             filename=f"{case_number} - {filed.strftime('%m %d %Y')} - DCOMP - CV Docket - {filed.strftime('%m %d %Y')}.pdf",
                         ),
                     ),
@@ -203,11 +204,7 @@ class DocketEntry(BaseModel):
                     DocketEntry(
                         date=filed + timedelta(days=1),
                         text="SUMMONS ISSUED WITH COPY OF COMPLAINT",
-                        extra="1 CAUSE G - 1CA<br/>\nSent on:  10/10/2025  08:09:05.63",
-                        scan=FileScan(
-                            data=b"%PDF-1.6\r%\xe2\xe3\xcf\xd3\r\n7 0 obj\r<</Linearized 1/L 44097/O 9/E 31231/N 1/T 43808/H [ 435 133]>>\rendobj\r      ",
-                            filename=f"{case_number} - {(filed + timedelta(days=1)).strftime('%m %d %Y')} - DMAGDEC - CV Docket - {(filed + timedelta(days=1)).strftime('%m %d %Y')}.pdf",
-                        ),
+                        extra="1 CAUSE G - 1CA<br/>\nSent on:  10/10/2025  08:09:05.63"
                     ),
                     DocketEntry(
                         date=filed + timedelta(days=6),
@@ -218,6 +215,10 @@ class DocketEntry(BaseModel):
                         date=filed + timedelta(days=13),
                         text="DISMISSED BY PLAINTIFF",
                         extra="The following event: EVICTION HEARING - FCRS scheduled for 10/23/2025 at 8:30 am has been resulted as follows:<br/>\n<br/>\nResult: DDSMP - NOTICE OF DISMISSAL BY PLAINTIFF W/O PREJ. <br/>\nJudge: 11B    Location: 11B LOCATED ON THE 11TH FLOOR",
+                        scan=FileScan(
+                            data=open(os.path.dirname(__file__) + "/files/YYYY CVG ###### - MM DD YYYY - DDSMP - CV Docket - MM DD YYYY-redacted.pdf","rb").read(),
+                            filename=f"{case_number} - {(filed + timedelta(days=1)).strftime('%m %d %Y')} - DDSMP - CV Docket - {(filed + timedelta(days=1)).strftime('%m %d %Y')}.pdf",
+                        ),
                     ),
                 ]
             )
