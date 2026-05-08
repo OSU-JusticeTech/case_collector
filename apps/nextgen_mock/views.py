@@ -9,6 +9,7 @@ from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
+from apps.fcmcclerk.pyschema import Case
 from apps.fcmcclerk_mock.fake_state import fixture_at
 from apps.fcmcclerk_mock.forms import SearchForm
 from apps.nextgen_mock.forms import LoginForm
@@ -103,4 +104,14 @@ def case_view(request, request_date):
 
 
 def case_image(request, request_date):
-    return HttpResponse(b"pdf")
+    data = json.loads(base64.b64decode(request.GET.get("q","")))
+    print(data)
+    case_number, i = json.loads(base64.b64decode(data["value"]))
+    cases = fixture_at(datetime.fromisoformat(request_date).date())
+
+    for case in cases:
+        if case.case_number == case_number:
+
+            response = HttpResponse(case.docket[i].scan.data, content_type='application/pdf')
+            response['Content-Disposition'] = 'inline;filename='+case.docket[i].scan.filename
+            return response
