@@ -1,7 +1,6 @@
 import copy
 import hashlib
 from datetime import datetime, timezone, date, timedelta
-import random
 
 import numpy as np
 
@@ -61,12 +60,15 @@ def generate_year(year, total_cases=500):
 
     CASE_WEEKEND_RATIO = 0.0194938
     CASE_WORKDAY_RATIO = 0.912828
+
+    rng = np.random.default_rng(year + 1234567)
+
     # rest is sealed or other category
-    vals = np.random.zipf(1.3, 110) - 1
+    vals = rng.zipf(1.3, 110) - 1
     while sum(vals) > total_cases * CASE_WEEKEND_RATIO:
         max_pos = np.argmax(vals)
-        vals[max_pos] = np.random.zipf(1.3) - 1
-    random.shuffle(
+        vals[max_pos] = rng.zipf(1.3) - 1
+    rng.shuffle(
         vals
     )  # argmax always takes the first, accumulating non-zero values towards the end
     print(sum(vals))
@@ -80,16 +82,15 @@ def generate_year(year, total_cases=500):
             # 261 workdays per year
             mean = total_cases * CASE_WORKDAY_RATIO / 261
             std = mean / 2.32
-            no_cases = max(round(np.random.normal(mean, std)), 0)
+            no_cases = max(round(rng.normal(mean, std)), 0)
         else:
             no_cases = vals[weekenddayofyear]
             weekenddayofyear += 1
 
-        cats = random.choices(
-            ["CVE", "CVF", "CVG", "CVR"], weights=[629, 37087, 24018, 202], k=no_cases
-        )
+        case_type_distribution= np.array([629, 37087, 24018, 202])
+        cats = rng.choice(["CVE", "CVF", "CVG", "CVR"], no_cases, p=case_type_distribution/case_type_distribution.sum())
         for cat in cats:
-            while random.random() < 1 - CASE_WORKDAY_RATIO - CASE_WEEKEND_RATIO:
+            while rng.random() < 1 - CASE_WORKDAY_RATIO - CASE_WEEKEND_RATIO:
                 # print("skip", case_number)
                 case_number += 1
             cases.append(Case.generate(f"{year} {cat} {case_number:06d}", filed=day))
