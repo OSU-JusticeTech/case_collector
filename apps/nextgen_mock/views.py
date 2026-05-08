@@ -99,7 +99,8 @@ def case_view(request, request_date):
             return render(
                 request,
                 "nextgen_mock/view.html",
-                context={"case": case, "docket": docket},
+                context={"case": case, "docket": docket,
+                         "request_date": request_date},
             )
 
 

@@ -313,7 +313,7 @@
                                     <td class="data">{{d.amount|default:""}}</td>
                                     <td class="data">{{d.balance|default:""}}</td>
                                     <td class="data">{% if p %}
-                                        <a target="_blank" href="image?q={{p}}" data-toggle="tooltip" data-placement="top" title="View Document"><i class="fas fa-file-image fa-lg fa-fw"></i>pdf</a>
+                                        <a target="_blank" href="{% url "nextgen_mock:image" request_date %}?q={{p}}" data-toggle="tooltip" data-placement="top" title="View Document"><i class="fas fa-file-image fa-lg fa-fw"></i>pdf</a>
                                     {% endif %}</td>
 
                                 </tr>
