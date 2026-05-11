@@ -461,8 +461,8 @@
                                 </tr>{% for d in case.docket %}<tr valign="top">
                                     <td class="data">{{ d.date|date:"m/d/Y" }}</td>
                                     <td class="data"><strong>{{d.text}}</strong></td>
-                                    <td class="data">{{d.amount|default:""}}</td>
-                                    <td class="data">{{d.balance|default:""}}</td>
+                                    <td class="data">{% if d.amount %}${{d.amount}}{% endif %}</td>
+                                    <td class="data">{% if d.balance %}${{d.balance|default:""}}{% endif %}</td>
                                 </tr>
                                  {% if d.extra %}
                                  <tr valign="top" id="dkt_row_1" class="dkt_text" style="border-top: none;">
