@@ -106,7 +106,7 @@ def case_view(request, request_date):
 
 def case_image(request, request_date):
     data = json.loads(base64.b64decode(request.GET.get("q","")))
-    print(data)
+    # print(data)
     case_number, i = json.loads(base64.b64decode(data["value"]))
     cases = fixture_at(datetime.fromisoformat(request_date).date())
 
