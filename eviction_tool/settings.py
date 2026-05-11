@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "apps.fcmcclerk.apps.FCMCclerkConfig",
     "apps.nextgen.apps.NextgenConfig",
+    "apps.geocode.apps.GeocodeConfig",
     "apps.fcmcclerk_mock.apps.FcmcclerkMockConfig",
     "apps.nextgen_mock.apps.NextgenMockConfig",
     "apps.cases.apps.CasesConfig",
