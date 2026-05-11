@@ -9,7 +9,7 @@ from django.core.files.base import ContentFile
 
 from apps.cases.models import CourtCase
 from apps.fcmcclerk.pyschema import DocketEntry
-from apps.nextgen.models import ScanDocketEntry
+from apps.nextgen.models import ScanDocketEntry, Page
 
 BASE_URL = "https://secure.fcmcclerk.com"
 
@@ -112,7 +112,7 @@ def scrape_pdfs(case_number):
     soup = BeautifulSoup(case.content.decode(), "html.parser")
 
     dkt = parse_scan_docket(soup)
-    print(dkt)
+    # print(dkt)
     case_obj = CourtCase.objects.get(case_number=case_number, source__name="FCMC")
     for entry, link in dkt:
         entry_obj, created = ScanDocketEntry.objects.get_or_create(
@@ -120,7 +120,7 @@ def scrape_pdfs(case_number):
         )
         if created and link is not None:
             file = sess.get(link)
-            print(file.headers)
+            # print(file.headers)
             if file.headers["Content-Type"] != "application/pdf":
                 cf = ContentFile(file.content, name="non-pdf.html")
                 entry_obj.scan = cf
@@ -136,3 +136,9 @@ def scrape_pdfs(case_number):
             entry_obj.filename = save_name
             entry_obj.save()
             time.sleep(5)
+
+    Page.objects.create(
+        case = case_obj,
+        content=case.content.decode(),
+        return_code=case.status_code,
+    )
