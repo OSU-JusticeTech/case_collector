@@ -13,6 +13,7 @@ db/
 
 # Virtual environments
 .venv
+.env
 
 er.png
 
