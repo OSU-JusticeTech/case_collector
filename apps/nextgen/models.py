@@ -17,3 +17,11 @@ class ScanDocketEntry(models.Model):
         return (
             f"{self.case.case_number}: {self.date} {self.text[:20]}... {self.filename}"
         )
+
+
+class Page(models.Model):
+
+    case = models.ForeignKey(CourtCase, on_delete=models.SET_NULL, null=True)
+    scraped_at = models.DateTimeField(auto_now_add=True)
+    content = models.CharField(null=True)
+    return_code = models.IntegerField()
