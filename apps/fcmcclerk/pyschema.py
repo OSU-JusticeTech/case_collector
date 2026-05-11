@@ -180,7 +180,7 @@ class DocketEntry(BaseModel):
                     DocketEntry(
                         date=filed + timedelta(days=1),
                         text="HEARING SCHEDULED, NOTICES PROCESSED - HS",
-                        extra="Event: EVICTION HEARING - FCRS <br/>\nDate: 10/23/2025    Time: 8:30 am <br/>\nJudge: 11B    Location: 11B LOCATED ON THE 11TH FLOOR<br/>\n<br/>\nResult: DDSMP - NOTICE OF DISMISSAL BY PLAINTIFF W/O PREJ.",
+                        extra="Event: EVICTION HEARING - FCRS <br />\nDate: 10/23/2025    Time: 8:30 am <br />\nJudge: 11B    Location: 11B LOCATED ON THE 11TH FLOOR<br />\n<br />\nResult: DDSMP - NOTICE OF DISMISSAL BY PLAINTIFF W/O PREJ.",
                     ),
                     DocketEntry(
                         date=filed + timedelta(days=1),
@@ -189,32 +189,32 @@ class DocketEntry(BaseModel):
                     DocketEntry(
                         date=filed + timedelta(days=1),
                         text="ORDINARY MAIL  CERTIFICATE OF MAILING DATED & FILED NEXT BUS. DAY - OM",
-                        extra="Issue Date:  10/10/2025<br/>\nService:  ISSUE SVC FOR G1 C/A - ISG1<br/>\nMethod:  ORDINARY MAIL<br/>\nCost Per:  $0.00<br/>\n<br/>\n<br/>\n   DEF<br/>\n     Tracking No: O00000000",
+                        extra="Issue Date:  10/10/2025<br />\nService:  ISSUE SVC FOR G1 C/A - ISG1<br />\nMethod:  ORDINARY MAIL<br />\nCost Per:  $0.00<br />\n<br />\n<br />\n   DEF<br />\n     Tracking No: O00000000",
                     ),
                     DocketEntry(
                         date=filed + timedelta(days=1),
                         text="SUMMONS ISSUED WITH COPY OF COMPLAINT",
-                        extra="1 CAUSE G - 1CA<br/>\nSent on:  10/10/2025  08:08:47.72",
+                        extra="1 CAUSE G - 1CA<br />\nSent on:  10/10/2025  08:08:47.72",
                     ),
                     DocketEntry(
                         date=filed + timedelta(days=1),
                         text="BAILIFF SERVICE - BS",
-                        extra="Issue Date:  10/10/2025<br/>\nService:  ISSUE SVC FOR G1 C/A - ISG1<br/>\nMethod:  BAILIFF SERVICE<br/>\nCost Per:  $0.00<br/>\n<br/>\n<br/>\n  ADDRESS    Tracking No: B0000000",
+                        extra="Issue Date:  10/10/2025<br />\nService:  ISSUE SVC FOR G1 C/A - ISG1<br />\nMethod:  BAILIFF SERVICE<br />\nCost Per:  $0.00<br />\n<br />\n<br />\n  ADDRESS    Tracking No: B0000000",
                     ),
                     DocketEntry(
                         date=filed + timedelta(days=1),
                         text="SUMMONS ISSUED WITH COPY OF COMPLAINT",
-                        extra="1 CAUSE G - 1CA<br/>\nSent on:  10/10/2025  08:09:05.63"
+                        extra="1 CAUSE G - 1CA<br />\nSent on:  10/10/2025  08:09:05.63"
                     ),
                     DocketEntry(
                         date=filed + timedelta(days=6),
                         text="BAILIFF RETURN FILED SHOWING SERVICE ON:\nAS TO:",
-                        extra="BAILIFF RETURN FILED SHOWING SERVICE ON:<br/>\nAS TO:<br/>\n   Method    : BAILIFF SERVICE<br/>\n   Issued    : 10/10/2025<br/>\n   Service   : ISSUE SVC FOR G1 C/A - ISG1<br/>\n   Served    : 10/14/2025<br/>\n   Return    : 10/15/2025<br/>\n   On        : NAME<br/>\n   Signed By : <br/>\n<br/>\n   Reason    : SUCCESSFUL BAILIFF SERVICE - SBAIL<br/>\n   Comment   : posted<br/>\n<br/>\n   Tracking # : B00000000",
+                        extra="BAILIFF RETURN FILED SHOWING SERVICE ON:<br />\nAS TO:<br />\n   Method    : BAILIFF SERVICE<br />\n   Issued    : 10/10/2025<br />\n   Service   : ISSUE SVC FOR G1 C/A - ISG1<br />\n   Served    : 10/14/2025<br />\n   Return    : 10/15/2025<br />\n   On        : NAME<br />\n   Signed By : <br />\n<br />\n   Reason    : SUCCESSFUL BAILIFF SERVICE - SBAIL<br />\n   Comment   : posted<br />\n<br />\n   Tracking # : B00000000",
                     ),
                     DocketEntry(
                         date=filed + timedelta(days=13),
                         text="DISMISSED BY PLAINTIFF",
-                        extra="The following event: EVICTION HEARING - FCRS scheduled for 10/23/2025 at 8:30 am has been resulted as follows:<br/>\n<br/>\nResult: DDSMP - NOTICE OF DISMISSAL BY PLAINTIFF W/O PREJ. <br/>\nJudge: 11B    Location: 11B LOCATED ON THE 11TH FLOOR",
+                        extra="The following event: EVICTION HEARING - FCRS scheduled for 10/23/2025 at 8:30 am has been resulted as follows:<br />\n<br />\nResult: DDSMP - NOTICE OF DISMISSAL BY PLAINTIFF W/O PREJ. <br />\nJudge: 11B    Location: 11B LOCATED ON THE 11TH FLOOR",
                         scan=FileScan(
                             data=open(os.path.dirname(__file__) + "/files/YYYY CVG ###### - MM DD YYYY - DDSMP - CV Docket - MM DD YYYY-redacted.pdf","rb").read(),
                             filename=f"{case_number} - {(filed + timedelta(days=1)).strftime('%m %d %Y')} - DDSMP - CV Docket - {(filed + timedelta(days=1)).strftime('%m %d %Y')}.pdf",
