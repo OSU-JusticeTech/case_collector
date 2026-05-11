@@ -1,11 +1,39 @@
+import datetime
 import logging
 import time
 
 import requests
 from bs4 import BeautifulSoup
 from django.conf import settings
+from django.core.files.base import ContentFile
+
+from apps.cases.models import CourtCase
+from apps.fcmcclerk.pyschema import DocketEntry
+from apps.nextgen.models import ScanDocketEntry
 
 BASE_URL = "https://secure.fcmcclerk.com"
+
+def parse_scan_docket(soup):
+    table = soup.find("table", {"id": "dkt_table"})
+    # Extract the data rows
+    docket = []
+    if table is not None:
+        tbody = table.find("tbody")
+
+        for row in tbody.find_all("tr"):
+            cells = row.find_all("td")
+            text = cells[1].decode_contents()
+            pdf = cells[4].find("a", {"title": "View Document"})
+            pdf_link = None
+            if pdf is not None:
+                pdf_link = pdf.attrs["href"]
+            docket.append((DocketEntry(date=datetime.datetime.strptime(
+                        cells[0].get_text(strip=True), "%m/%d/%Y"
+                    ),
+                    text=text,
+                ),pdf_link))
+    return docket
+
 
 
 def parse_fields(form):
@@ -39,7 +67,7 @@ def scrape_pdfs(case_number):
     fields.update(
         {"email": settings.NEXTGEN_EMAIL, "password": settings.NEXTGEN_PASSWORD}
     )
-    print(fields)
+    # print(fields)
 
     sess.post(f"{BASE_URL}/nextgen/login", data=fields)
 
@@ -47,7 +75,7 @@ def scrape_pdfs(case_number):
 
     fields = extract_fields(search.content.decode())
 
-    print(fields)
+    #print(fields)
     fields["case_number"] = case_number
 
     time.sleep(1)
@@ -58,7 +86,6 @@ def scrape_pdfs(case_number):
 
     soup = BeautifulSoup(listing.content.decode(), "html.parser")
     allforms = soup.find_all("form")
-    print([f["action"] for f in allforms])
     form = None
     for f in allforms:
         if f["action"].endswith("/nextgen/case/view"):
@@ -71,31 +98,31 @@ def scrape_pdfs(case_number):
         #    pass
         return
     case_data = parse_fields(form)
-    print(case_data)
 
     time.sleep(1)
 
     case = sess.post(f"{BASE_URL}/nextgen/case/view", data=case_data)
 
-    # print(case.content.decode())
-
-    # with open(f"{path}/overview.html", "wb") as f:
-    #    f.write(case.content)
-
     soup = BeautifulSoup(case.content.decode(), "html.parser")
-    for file_link in soup.find_all("a", {"title": "View Document"}):
-        link = file_link.attrs["href"]
-        file = sess.get(link)
-        print(file.headers)
-        if file.headers["Content-Type"] != "application/pdf":
-            # with open(f"{path}/{link.split("?q=")[1][9:20]}.html", "wb") as dest:
-            #    dest.write(file.content)
-            continue
-        save_name = (
-            file.headers["Content-Disposition"].split("filename=")[1].replace('"', "")
-        )
-        print(save_name)
-        # with open(f"{path}/{save_name}", "wb") as f:
-        # f.write(file.content)
 
-        time.sleep(5)
+    dkt = parse_scan_docket(soup)
+    print(dkt)
+    case_obj = CourtCase.objects.get(case_number=case_number, source__name="FCMC")
+    for entry,link in dkt:
+        entry_obj, created = ScanDocketEntry.objects.get_or_create(case=case_obj, date=entry.date, text=entry.text)
+        if created and link is not None:
+            file = sess.get(link)
+            print(file.headers)
+            if file.headers["Content-Type"] != "application/pdf":
+                cf = ContentFile(file.content, name="non-pdf.html")
+                entry_obj.scan = cf
+                entry_obj.save()
+                continue
+            save_name = (
+                file.headers["Content-Disposition"].split("filename=")[1].replace('"', "")
+            )
+            cf = ContentFile(file.content, name=save_name)
+            entry_obj.scan = cf
+            entry_obj.filename = save_name
+            entry_obj.save()
+            time.sleep(5)

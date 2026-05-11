@@ -8,9 +8,11 @@ from unittest.mock import patch
 import json
 from django.core.cache import cache
 
+from apps.cases.models import CourtCase, Source
 from apps.fcmcclerk.models import Page
 from apps.fcmcclerk.tasks import scrape_detail, CACHE_KEY, parse_page, scrape_generator
 from apps.fcmcclerk_mock.fake_state import fixture_at
+from apps.nextgen.models import ScanDocketEntry
 from apps.nextgen.tasks import scrape_pdfs
 
 from django.test import TestCase, modify_settings
@@ -68,6 +70,11 @@ class MyTest(TestCase):
                 cases = fixture_at(datetime.datetime.now().date())
                 for c in cases:
                     if "CVG" in c.case_number:
+                        src = Source.objects.create(name="FCMC")
+                        CourtCase.objects.create(case_number=c.case_number, source=src)
                         logging.info("testing to scrape %s", c.case_number)
                         scrape_pdfs(c.case_number)
+                        scrape_pdfs(c.case_number)
                         break
+
+        self.assertEqual(ScanDocketEntry.objects.count(),10)
