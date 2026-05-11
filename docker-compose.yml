@@ -21,13 +21,8 @@ services:
     restart: always
     image: ghcr.io/osu-justicetech/case_collector:main
     command: ["sh","-c","uv run manage.py collectstatic --noinput && uv run manage.py createcachetable && uv run manage.py migrate && uv run uvicorn eviction_tool.asgi:application --host 0.0.0.0"]
-    environment:
-      DJANGO_TRUSTED_ORIGINS: "http://localhost:8001"
-      DJANGO_ALLOWED_HOSTS: "localhost"
-      DJANGO_SECRET: "django-insecure-ydtr_#%%p3g188$cptutqw9s7f5b-rjmvgi^l@o^s(*&ob53fh-replaceme"
-      DB_NAME: "eviction"
-      DB_PASS: "<DB-PW>"
-      DB_HOST: "db"
+    env_file: "django_env"
+    #environment:
       #DJANGO_DEBUG: "True"
     ports:
       - "8000:8000"
@@ -41,18 +36,28 @@ services:
       start_period: 30s
       timeout: 10s
       retries: 3
-
-  scraper:
+  
+  scraper_public:
     image: ghcr.io/osu-justicetech/case_collector:main
     command: ["sh","-c","uv run manage.py fcmcclerk"]
+    restart: always
+    env_file: "django_env"
+    
+    depends_on:
+      ui:
+        condition: service_healthy
+        restart: true
+ 
+  scraper_nextgen:
+    image: ghcr.io/osu-justicetech/case_collector:main
+    command: ["sh","-c","uv run manage.py nextgen"]
+    restart: always
+    env_file: "django_env"
     environment:
-      DJANGO_TRUSTED_ORIGINS: "http://localhost:8001"
-      DJANGO_ALLOWED_HOSTS: "localhost"
-      DJANGO_SECRET: "django-insecure-ydtr_#%%p3g188$cptutqw9s7f5b-rjmvgi^l@o^s(*&ob53fh-replaceme"
-      DB_NAME: "eviction"
-      DB_PASS: "<DB-PW>"
-      DB_HOST: "db"
-
+      NEXTGEN_PASSWORD: "nextgen-password" 
+      NEXTGEN_EMAIL: "nextgen-email@example.com"
+    volumes:
+      - pdfs:/scrape-storage
     depends_on:
       ui:
         condition: service_healthy
@@ -61,6 +66,7 @@ services:
 
   metabase:
     image: metabase/metabase:latest
+    restart: always
     volumes:
       - /dev/urandom:/dev/random:ro
       - metabase-data:/metabase-data
@@ -72,3 +78,4 @@ services:
 volumes:
   db:
   metabase-data:
+  pdfs:
