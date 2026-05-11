@@ -1,6 +1,7 @@
-import datetime
+from datetime import datetime, timedelta
 import logging
 import time
+from typing import Generator
 
 import requests
 from bs4 import BeautifulSoup
@@ -9,6 +10,7 @@ from django.core.files.base import ContentFile
 
 from apps.cases.models import CourtCase
 from apps.fcmcclerk.pyschema import DocketEntry
+from apps.fcmcclerk.tasks import ScrapeInstruction
 from apps.nextgen.models import ScanDocketEntry, Page
 
 BASE_URL = "https://secure.fcmcclerk.com"
@@ -31,7 +33,7 @@ def parse_scan_docket(soup):
             docket.append(
                 (
                     DocketEntry(
-                        date=datetime.datetime.strptime(
+                        date=datetime.strptime(
                             cells[0].get_text(strip=True), "%m/%d/%Y"
                         ),
                         text=text,
@@ -55,9 +57,11 @@ def extract_fields(content):
     return parse_fields(form)
 
 
-def scrape_pdfs(case_number):
+def scrape_pdfs(cinst):
 
     sess = requests.session()
+
+    case_obj = CourtCase.objects.get(case_number=cinst.case_number, source__name="FCMC")
 
     if settings.SCRAPE_PROXIES:
         sess.proxies.update(settings.SCRAPE_PROXIES)
@@ -75,14 +79,19 @@ def scrape_pdfs(case_number):
     )
     # print(fields)
 
-    sess.post(f"{BASE_URL}/nextgen/login", data=fields)
+    home = sess.post(f"{BASE_URL}/nextgen/login", data=fields)
+
+    home_fields = extract_fields(home.content.decode())
+    if "email" in home_fields or "password" in home_fields:
+        logging.error("invalid login credentials")
+        raise Exception("invalid credentials")
 
     search = sess.get(f"{BASE_URL}/nextgen/case/search")
 
     fields = extract_fields(search.content.decode())
 
     # print(fields)
-    fields["case_number"] = case_number
+    fields["case_number"] = cinst.case_number
 
     time.sleep(1)
 
@@ -98,10 +107,12 @@ def scrape_pdfs(case_number):
             form = f
             break
     if form is None:
-        logging.error("case not found %s", case_number)
-        # os.makedirs(path, exist_ok=True)
-        # with open(f"{path}/not-found.error", "w") as f:
-        #    pass
+        logging.error("case not found %s", cinst.case_number)
+        Page.objects.create(
+            case=case_obj,
+            content=listing.content.decode(),
+            return_code=410
+        )
         return
     case_data = parse_fields(form)
 
@@ -110,35 +121,58 @@ def scrape_pdfs(case_number):
     case = sess.post(f"{BASE_URL}/nextgen/case/view", data=case_data)
 
     soup = BeautifulSoup(case.content.decode(), "html.parser")
-
-    dkt = parse_scan_docket(soup)
-    # print(dkt)
-    case_obj = CourtCase.objects.get(case_number=case_number, source__name="FCMC")
-    for entry, link in dkt:
-        entry_obj, created = ScanDocketEntry.objects.get_or_create(
-            case=case_obj, date=entry.date, text=entry.text
-        )
-        if created and link is not None:
-            file = sess.get(link)
-            # print(file.headers)
-            if file.headers["Content-Type"] != "application/pdf":
-                cf = ContentFile(file.content, name="non-pdf.html")
-                entry_obj.scan = cf
-                entry_obj.save()
-                continue
-            save_name = (
-                file.headers["Content-Disposition"]
-                .split("filename=")[1]
-                .replace('"', "")
+    try:
+        dkt = parse_scan_docket(soup)
+        # print(dkt)
+        for entry, link in dkt:
+            entry_obj, created = ScanDocketEntry.objects.get_or_create(
+                case=case_obj, date=entry.date, text=entry.text
             )
-            cf = ContentFile(file.content, name=save_name)
-            entry_obj.scan = cf
-            entry_obj.filename = save_name
-            entry_obj.save()
-            time.sleep(5)
+            if created and link is not None:
+                logging.info("download %s...", entry.text[:20])
+                file = sess.get(link)
+                # print(file.headers)
+                if file.headers["Content-Type"] != "application/pdf":
+                    cf = ContentFile(file.content, name="non-pdf.html")
+                    entry_obj.scan = cf
+                    entry_obj.save()
+                    continue
+                save_name = (
+                    file.headers["Content-Disposition"]
+                    .split("filename=")[1]
+                    .replace('"', "")
+                )
+                cf = ContentFile(file.content, name=save_name)
+                entry_obj.scan = cf
+                entry_obj.filename = save_name
+                entry_obj.save()
+                time.sleep(5)
+        return_code = case.status_code
+    except Exception as e:
+        logging.error("unable to download case %s pdfs: %s", case_obj.case_number, e.__repr__())
+        return_code = 401
 
     Page.objects.create(
         case = case_obj,
         content=case.content.decode(),
-        return_code=case.status_code,
+        return_code=return_code,
+    )
+
+def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
+
+    cases_existing = set(CourtCase.objects.all().values_list("case_number",flat=True))
+    scraped_cases = set(Page.objects.all().values_list("case__case_number",flat=True))
+
+    not_scraped = list(sorted( cases_existing - scraped_cases, reverse=True))
+
+    logging.info("still %d cases to scrape", len(not_scraped))
+    for case_number in not_scraped[:100]:
+        yield ScrapeInstruction(case_number=case_number)
+        time.sleep(10)
+
+    if len(not_scraped) > 100:
+        yield ScrapeInstruction(restart=True, case_number=None)
+
+    yield ScrapeInstruction(
+        earliest=datetime.now() + timedelta(hours=6), case_number=None
     )
