@@ -13,6 +13,7 @@ from apps.nextgen.models import ScanDocketEntry
 
 BASE_URL = "https://secure.fcmcclerk.com"
 
+
 def parse_scan_docket(soup):
     table = soup.find("table", {"id": "dkt_table"})
     # Extract the data rows
@@ -27,13 +28,18 @@ def parse_scan_docket(soup):
             pdf_link = None
             if pdf is not None:
                 pdf_link = pdf.attrs["href"]
-            docket.append((DocketEntry(date=datetime.datetime.strptime(
-                        cells[0].get_text(strip=True), "%m/%d/%Y"
+            docket.append(
+                (
+                    DocketEntry(
+                        date=datetime.datetime.strptime(
+                            cells[0].get_text(strip=True), "%m/%d/%Y"
+                        ),
+                        text=text,
                     ),
-                    text=text,
-                ),pdf_link))
+                    pdf_link,
+                )
+            )
     return docket
-
 
 
 def parse_fields(form):
@@ -75,7 +81,7 @@ def scrape_pdfs(case_number):
 
     fields = extract_fields(search.content.decode())
 
-    #print(fields)
+    # print(fields)
     fields["case_number"] = case_number
 
     time.sleep(1)
@@ -108,8 +114,10 @@ def scrape_pdfs(case_number):
     dkt = parse_scan_docket(soup)
     print(dkt)
     case_obj = CourtCase.objects.get(case_number=case_number, source__name="FCMC")
-    for entry,link in dkt:
-        entry_obj, created = ScanDocketEntry.objects.get_or_create(case=case_obj, date=entry.date, text=entry.text)
+    for entry, link in dkt:
+        entry_obj, created = ScanDocketEntry.objects.get_or_create(
+            case=case_obj, date=entry.date, text=entry.text
+        )
         if created and link is not None:
             file = sess.get(link)
             print(file.headers)
@@ -119,7 +127,9 @@ def scrape_pdfs(case_number):
                 entry_obj.save()
                 continue
             save_name = (
-                file.headers["Content-Disposition"].split("filename=")[1].replace('"', "")
+                file.headers["Content-Disposition"]
+                .split("filename=")[1]
+                .replace('"', "")
             )
             cf = ContentFile(file.content, name=save_name)
             entry_obj.scan = cf

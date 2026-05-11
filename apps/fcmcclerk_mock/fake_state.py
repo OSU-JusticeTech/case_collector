@@ -87,8 +87,12 @@ def generate_year(year, total_cases=500):
             no_cases = vals[weekenddayofyear]
             weekenddayofyear += 1
 
-        case_type_distribution= np.array([629, 37087, 24018, 202])
-        cats = rng.choice(["CVE", "CVF", "CVG", "CVR"], no_cases, p=case_type_distribution/case_type_distribution.sum())
+        case_type_distribution = np.array([629, 37087, 24018, 202])
+        cats = rng.choice(
+            ["CVE", "CVF", "CVG", "CVR"],
+            no_cases,
+            p=case_type_distribution / case_type_distribution.sum(),
+        )
         for cat in cats:
             while rng.random() < 1 - CASE_WORKDAY_RATIO - CASE_WEEKEND_RATIO:
                 # print("skip", case_number)

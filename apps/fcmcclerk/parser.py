@@ -194,12 +194,12 @@ def parse_docket(soup) -> list[DocketEntry]:
                     **{k.lower(): v for k, v in p.items()},
                     **{
                         "balance": (
-                            p["Balance"].replace("$","").replace(",", "")
+                            p["Balance"].replace("$", "").replace(",", "")
                             if p["Balance"] != ""
                             else None
                         ),
                         "amount": (
-                            p["Amount"].replace("$","").replace(",", "")
+                            p["Amount"].replace("$", "").replace(",", "")
                             if p["Amount"] != ""
                             else None
                         ),

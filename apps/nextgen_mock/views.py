@@ -99,13 +99,12 @@ def case_view(request, request_date):
             return render(
                 request,
                 "nextgen_mock/view.html",
-                context={"case": case, "docket": docket,
-                         "request_date": request_date},
+                context={"case": case, "docket": docket, "request_date": request_date},
             )
 
 
 def case_image(request, request_date):
-    data = json.loads(base64.b64decode(request.GET.get("q","")))
+    data = json.loads(base64.b64decode(request.GET.get("q", "")))
     # print(data)
     case_number, i = json.loads(base64.b64decode(data["value"]))
     cases = fixture_at(datetime.fromisoformat(request_date).date())
@@ -113,6 +112,10 @@ def case_image(request, request_date):
     for case in cases:
         if case.case_number == case_number:
 
-            response = HttpResponse(case.docket[i].scan.data, content_type='application/pdf')
-            response['Content-Disposition'] = 'inline;filename='+case.docket[i].scan.filename
+            response = HttpResponse(
+                case.docket[i].scan.data, content_type="application/pdf"
+            )
+            response["Content-Disposition"] = (
+                "inline;filename=" + case.docket[i].scan.filename
+            )
             return response

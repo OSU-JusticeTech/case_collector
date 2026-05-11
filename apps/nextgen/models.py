@@ -3,8 +3,8 @@ from django.db import models
 from apps.cases.models import CourtCase
 from apps.fcmcclerk.pyschema import Case
 
-
 # Create your models here.
+
 
 class ScanDocketEntry(models.Model):
     date = models.DateField()
@@ -14,5 +14,6 @@ class ScanDocketEntry(models.Model):
     filename = models.CharField()
 
     def __str__(self):
-        return f"{self.case.case_number}: {self.date} {self.text[:20]}... {self.filename}"
-
+        return (
+            f"{self.case.case_number}: {self.date} {self.text[:20]}... {self.filename}"
+        )

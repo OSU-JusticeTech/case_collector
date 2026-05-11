@@ -77,4 +77,4 @@ class MyTest(TestCase):
                         scrape_pdfs(c.case_number)
                         break
 
-        self.assertEqual(ScanDocketEntry.objects.count(),10)
+        self.assertEqual(ScanDocketEntry.objects.count(), 10)
