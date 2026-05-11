@@ -109,9 +109,7 @@ def scrape_pdfs(cinst):
     if form is None:
         logging.error("case not found %s", cinst.case_number)
         Page.objects.create(
-            case=case_obj,
-            content=listing.content.decode(),
-            return_code=410
+            case=case_obj, content=listing.content.decode(), return_code=410
         )
         return
     case_data = parse_fields(form)
@@ -149,21 +147,24 @@ def scrape_pdfs(cinst):
                 time.sleep(5)
         return_code = case.status_code
     except Exception as e:
-        logging.error("unable to download case %s pdfs: %s", case_obj.case_number, e.__repr__())
+        logging.error(
+            "unable to download case %s pdfs: %s", case_obj.case_number, e.__repr__()
+        )
         return_code = 401
 
     Page.objects.create(
-        case = case_obj,
+        case=case_obj,
         content=case.content.decode(),
         return_code=return_code,
     )
 
+
 def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
 
-    cases_existing = set(CourtCase.objects.all().values_list("case_number",flat=True))
-    scraped_cases = set(Page.objects.all().values_list("case__case_number",flat=True))
+    cases_existing = set(CourtCase.objects.all().values_list("case_number", flat=True))
+    scraped_cases = set(Page.objects.all().values_list("case__case_number", flat=True))
 
-    not_scraped = list(sorted( cases_existing - scraped_cases, reverse=True))
+    not_scraped = list(sorted(cases_existing - scraped_cases, reverse=True))
 
     logging.info("still %d cases to scrape", len(not_scraped))
     for case_number in not_scraped[:100]:

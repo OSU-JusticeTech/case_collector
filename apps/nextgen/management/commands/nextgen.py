@@ -36,4 +36,3 @@ class Command(BaseCommand):
                     break
 
                 scrape_pdfs(cno)
-
