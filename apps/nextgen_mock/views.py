@@ -26,7 +26,7 @@ class LoginView(views.View):
     def post(self, request, request_date):
         form = LoginForm(request.POST)
         if form.is_valid():
-            return redirect("nextgen_mock:home", request_date=request_date)
+            return render(request, "nextgen_mock/home.html")
 
 
 def home(request, request_date):

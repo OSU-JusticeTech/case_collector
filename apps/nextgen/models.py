@@ -25,3 +25,6 @@ class Page(models.Model):
     scraped_at = models.DateTimeField(auto_now_add=True)
     content = models.CharField(null=True)
     return_code = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.case} {self.scraped_at} {self.return_code}"
