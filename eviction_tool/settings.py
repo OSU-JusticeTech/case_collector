@@ -165,6 +165,8 @@ STATIC_URL = "static/"
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), "scrape-storage")
+
 SCRAPE_PROXIES = {}  # dict(https="socks5://localhost:8080")
 
 NEXTGEN_EMAIL = os.environ.get("NEXTGEN_EMAIL")
