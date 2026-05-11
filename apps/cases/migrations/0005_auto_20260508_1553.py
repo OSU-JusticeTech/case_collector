@@ -3,7 +3,7 @@
 from django.db import migrations
 
 CREATE_SQL = """
-CREATE VIEW IF NOT EXISTS latest_overview AS
+CREATE VIEW latest_overview AS
 SELECT
     c.case_number,
     c.source_id,
@@ -159,7 +159,7 @@ LEFT JOIN (
 ;
 """
 
-DROP_SQL = "DROP VIEW IF EXISTS latest_overview;"
+DROP_SQL = ("DROP VIEW latest_overview;")
 
 
 class Migration(migrations.Migration):
