@@ -2,26 +2,17 @@ import datetime
 import logging
 import time
 
-from django.conf import settings
 from django.test import TestCase, Client
 from unittest.mock import patch
-import json
-from django.core.cache import cache
+
 
 from apps.cases.models import CourtCase, Source
-from apps.fcmcclerk.models import Page
 from apps.fcmcclerk.tasks import (
-    scrape_detail,
-    CACHE_KEY,
-    parse_page,
-    scrape_generator,
     ScrapeInstruction,
 )
 from apps.fcmcclerk_mock.fake_state import fixture_at
-from apps.nextgen.models import ScanDocketEntry
-from apps.nextgen.tasks import scrape_pdfs
-
-from django.test import TestCase, modify_settings
+from apps.nextgen.models import ScanDocketEntry, Page
+from apps.nextgen.tasks import scrape_pdfs, scrape_generator
 
 
 class FakeSession:
@@ -84,3 +75,34 @@ class MyTest(TestCase):
                         break
 
         self.assertEqual(ScanDocketEntry.objects.count(), 10)
+
+
+class IterateTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    @patch("apps.nextgen.tasks.requests.session")
+    def test_generator(self, mock_session_cls):
+        mock_session_cls.return_value = FakeSession(
+            self.client, datetime.datetime.now().date()
+        )
+        with self.settings(NEXTGEN_EMAIL="test@test.com", NEXTGEN_PASSWORD="test"):
+            # NEXTGEN_PASSWORD="secure"):
+            with patch("time.sleep", return_value=None):
+
+                cases = fixture_at(datetime.datetime.now().date())
+                src = Source.objects.create(name="FCMC")
+                for c in cases:
+                    if "CVG" in c.case_number:
+                        CourtCase.objects.create(case_number=c.case_number, source=src)
+
+                scraped = 0
+                while scraped < 12:
+                    for cinstr in scrape_generator():
+                        self.assertIsNotNone(cinstr.case_number)
+                        logging.info("scrape case %s", cinstr)
+                        scrape_pdfs(cinstr)
+                        scraped += 1
+                        if scraped >= 12:
+                            break
+                self.assertEqual(Page.objects.count(), 12)

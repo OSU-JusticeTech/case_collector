@@ -161,7 +161,12 @@ def scrape_pdfs(cinst):
 
 def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
 
-    cases_existing = set(CourtCase.objects.all().values_list("case_number", flat=True))
+    curyear = datetime.now().date().year
+    cases_existing = CourtCase.objects.all().values_list("case_number", flat=True)
+    print(cases_existing)
+    cases_existing = set(
+        [c for c in cases_existing if int(c.split(" ")[0]) > curyear - 2]
+    )
     scraped_cases = set(Page.objects.all().values_list("case__case_number", flat=True))
 
     not_scraped = list(sorted(cases_existing - scraped_cases, reverse=True))
