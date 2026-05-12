@@ -158,9 +158,12 @@ class SealingTest(TestCase):
 
             scrape_n_cases(70)
 
-        print(Page.objects.all())
+        # print(Page.objects.all())
 
         self.assertEqual(Page.objects.count(), 90)
+        sealed_pages = Page.objects.filter(return_code=410)
+        self.assertEqual(sealed_pages.count(), 1)
+        self.assertEqual(sealed_pages[0].number, 36)
 
 
 class LiveTest(TestCase):
@@ -176,4 +179,3 @@ class LiveTest(TestCase):
         for p in pages:
             self.assertEqual(p.return_code, 200)
             self.assertInHTML("Docket", p.content)
-
