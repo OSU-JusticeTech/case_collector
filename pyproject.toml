@@ -15,6 +15,7 @@ dependencies = [
     "pydot>=4.0.1",
     "pyparsing>=3.3.2",
     "requests[socks]>=2.33.1",
+    "tqdm>=4.67.3",
     "uvicorn>=0.44.0",
     "whitenoise>=6.12.0",
 ]
