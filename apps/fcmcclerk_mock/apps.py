@@ -16,6 +16,5 @@ class FcmcclerkMockConfig(AppConfig):
         if command in ["runserver", "test"]:
             from . import fake_state
 
-
             # Generate the random fixture on startup
             fake_state.EVICTION_FIXTURE = generate_random_fixture()

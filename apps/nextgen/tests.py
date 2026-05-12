@@ -10,7 +10,13 @@ from django.core.cache import cache
 
 from apps.cases.models import CourtCase, Source
 from apps.fcmcclerk.models import Page
-from apps.fcmcclerk.tasks import scrape_detail, CACHE_KEY, parse_page, scrape_generator, ScrapeInstruction
+from apps.fcmcclerk.tasks import (
+    scrape_detail,
+    CACHE_KEY,
+    parse_page,
+    scrape_generator,
+    ScrapeInstruction,
+)
 from apps.fcmcclerk_mock.fake_state import fixture_at
 from apps.nextgen.models import ScanDocketEntry
 from apps.nextgen.tasks import scrape_pdfs

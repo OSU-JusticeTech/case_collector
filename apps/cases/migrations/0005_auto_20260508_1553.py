@@ -161,7 +161,7 @@ LEFT JOIN (
 ;
 """
 
-DROP_SQL = ("DROP VIEW latest_overview;")
+DROP_SQL = "DROP VIEW latest_overview;"
 
 
 class Migration(migrations.Migration):

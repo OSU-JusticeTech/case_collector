@@ -69,9 +69,7 @@ def generate_year(year, total_cases=500):
         max_pos = np.argmax(weekend_caseloads)
         weekend_caseloads[max_pos] = rng.zipf(1.3) - 1
     # argmax always takes the first, accumulating non-zero values towards the end, so we need to reshuffle
-    rng.shuffle(
-        weekend_caseloads
-    )
+    rng.shuffle(weekend_caseloads)
     # print("total weekend cases", sum(weekend_caseloads))
 
     day = date(year, 1, 1)
@@ -111,21 +109,21 @@ def generate_year(year, total_cases=500):
 def generate_random_fixture(months=12):
     """
 
-      1291 weekend cases of 25k
+    1291 weekend cases of 25k
 
-      2025 distribution:
-          629 2025_CVE
-        37087 2025_CVF
-        24018 2025_CVG
-          202 2025_CVR
-      total: 61936
-      max assigned number: 066226
+    2025 distribution:
+        629 2025_CVE
+      37087 2025_CVF
+      24018 2025_CVG
+        202 2025_CVR
+    total: 61936
+    max assigned number: 066226
 
-      worked 321 days of the year
+    worked 321 days of the year
     """
 
     fixture = []
-    now = datetime(2026,5,12)
+    now = datetime(2026, 5, 12)
     for i in range(now.year - 2, now.year + 1):
         fixture += generate_year(i)
     return fixture
