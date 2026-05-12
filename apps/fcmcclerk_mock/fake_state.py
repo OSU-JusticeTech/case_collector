@@ -64,14 +64,15 @@ def generate_year(year, total_cases=500):
     rng = np.random.default_rng(year + 1234567)
 
     # rest is sealed or other category
-    vals = rng.zipf(1.3, 110) - 1
-    while sum(vals) > total_cases * CASE_WEEKEND_RATIO:
-        max_pos = np.argmax(vals)
-        vals[max_pos] = rng.zipf(1.3) - 1
+    weekend_caseloads = rng.zipf(1.3, 110) - 1
+    while sum(weekend_caseloads) > total_cases * CASE_WEEKEND_RATIO:
+        max_pos = np.argmax(weekend_caseloads)
+        weekend_caseloads[max_pos] = rng.zipf(1.3) - 1
+    # argmax always takes the first, accumulating non-zero values towards the end, so we need to reshuffle
     rng.shuffle(
-        vals
-    )  # argmax always takes the first, accumulating non-zero values towards the end
-    print(sum(vals))
+        weekend_caseloads
+    )
+    # print("total weekend cases", sum(weekend_caseloads))
 
     day = date(year, 1, 1)
     weekenddayofyear = 0
@@ -84,7 +85,7 @@ def generate_year(year, total_cases=500):
             std = mean / 2.32
             no_cases = max(round(rng.normal(mean, std)), 0)
         else:
-            no_cases = vals[weekenddayofyear]
+            no_cases = weekend_caseloads[weekenddayofyear]
             weekenddayofyear += 1
 
         case_type_distribution = np.array([629, 37087, 24018, 202])
@@ -96,6 +97,7 @@ def generate_year(year, total_cases=500):
         for cat in cats:
             while rng.random() < 1 - CASE_WORKDAY_RATIO - CASE_WEEKEND_RATIO:
                 # print("skip", case_number)
+                # this is most likely a sealed case
                 case_number += 1
             cases.append(Case.generate(f"{year} {cat} {case_number:06d}", filed=day))
             case_number += 1
@@ -110,14 +112,12 @@ def generate_random_fixture(months=12):
     """
 
       1291 weekend cases of 25k
-      Create a dict of fake eviction reports for the last `months` months.
-      URL -> content
 
       2025 distribution:
           629 2025_CVE
-    37087 2025_CVF
-    24018 2025_CVG
-      202 2025_CVR
+        37087 2025_CVF
+        24018 2025_CVG
+          202 2025_CVR
       total: 61936
       max assigned number: 066226
 
@@ -125,7 +125,7 @@ def generate_random_fixture(months=12):
     """
 
     fixture = []
-    now = datetime.now(timezone.utc)
+    now = datetime(2026,5,12)
     for i in range(now.year - 2, now.year + 1):
         fixture += generate_year(i)
     return fixture
