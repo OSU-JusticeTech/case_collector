@@ -163,7 +163,7 @@ class SealingTest(TestCase):
         self.assertEqual(Page.objects.count(), 90)
 
 
-class LiveTest:
+class LiveTest(TestCase):
     def test_session_call(self):
         scrape_n_cases(1)
         time.sleep(15)
@@ -171,4 +171,9 @@ class LiveTest:
 
         print(Page.objects.all())
 
-        self.assertEqual(Page.objects.count(), 2)
+        pages = Page.objects.all()
+        self.assertEqual(pages.count(), 2)
+        for p in pages:
+            self.assertEqual(p.return_code, 200)
+            self.assertInHTML("Docket", p.content)
+
