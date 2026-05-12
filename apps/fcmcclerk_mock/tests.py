@@ -32,10 +32,10 @@ class FixtureTest(TestCase):
             set([c.case_number for c in cases])
             - set([c.case_number for c in cases_new]),
             {
-                "2025 CVG 000135",
-                "2025 CVG 000153",
-                "2025 CVF 000152",
-                "2025 CVF 000138",
-                "2025 CVF 000136",
+                "2025 CVG 000169",
+                "2025 CVF 000166",
+                "2025 CVF 000165",
+                "2025 CVG 000168",
+                "2025 CVF 000154",
             },
         )

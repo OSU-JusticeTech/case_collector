@@ -29,13 +29,19 @@ class Command(BaseCommand):
             if os.path.isfile(fn):
                 content = open(fn).read()
                 case = parse_case(content)
-                #print(case.case_number)
+                # print(case.case_number)
 
                 parts = case.case_number.split(" ")
                 year = int(parts[0])
                 cat = parts[1]
                 number = int(parts[2])
-                pg,created = Page.objects.get_or_create(year=year, category=cat, number=number, content=content,return_code=203)
+                pg, created = Page.objects.get_or_create(
+                    year=year,
+                    category=cat,
+                    number=number,
+                    content=content,
+                    return_code=203,
+                )
                 if created:
                     pg.scraped_at = scrape_date
                     pg.save()
