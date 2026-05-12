@@ -97,7 +97,9 @@ def generate_year(year, total_cases=500):
                 # print("skip", case_number)
                 # this is most likely a sealed case
                 case_number += 1
-            cases.append(Case.generate(f"{year} {cat} {case_number:06d}", filed=day))
+            cases.append(
+                Case.generate(f"{year} {cat} {case_number:06d}", filed=day, rng=rng)
+            )
             case_number += 1
 
         day += timedelta(days=1)

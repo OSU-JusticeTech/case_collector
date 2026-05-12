@@ -1,7 +1,5 @@
 import os.path
-import random
 from datetime import timedelta
-from turtledemo.clock import jump
 
 import numpy as np
 from pydantic import BaseModel, Field, field_validator, ConfigDict
@@ -242,8 +240,8 @@ class Event(BaseModel):
     result: str
 
     @classmethod
-    def generate(cls, filed: datetime.date):
-        future_days = int(np.random.exponential(5) + 14)
+    def generate(cls, filed: datetime.date, rng):
+        future_days = int(rng.exponential(5) + 14)
         return Event(
             room="11B",
             judge="11B",
@@ -292,27 +290,29 @@ class Disposition(BaseModel):
     #    return self
 
     @staticmethod
-    def generate(filed):
-        future_days = np.random.exponential(5) + 14
-        code = random.choices(
-            [
-                "NOTICE OF DISMISSAL FILED",
-                "JUDGMENT HEARD BY MAGISTRATE",
-                "DISMISSAL HEARD BY MAGISTRATE",
-                "OTHER TERMINATION - ADMIN JUDGE",
-                "UNDISPOSED",
-                "DEFAULT JUDGMENTS",
-                "AGREED JUDGMENT BOTH CAUSE OF ACTION",
-                "BANKRUPTCY",
-                "OTHER TERMINATIONS",
-                "TRANSFER TO COURT OF COMMON PLEAS - ADMIN JUDGE",
-                "DISMISSED BY PLAINTIFF",
-                "AGREED JUDGMENT",
-                "JUDGMENT FOR DAMAGES",
-                "DISMISSED BY JUDGE",
-            ],
-            weights=[7976, 7493, 616, 6495, 27, 13, 10, 15, 4, 12, 30, 3, 7, 1],
-            k=1,
+    def generate(filed, rng):
+        future_days = rng.exponential(5) + 14
+        code_distr = {
+            "NOTICE OF DISMISSAL FILED": 7976,
+            "JUDGMENT HEARD BY MAGISTRATE": 7493,
+            "DISMISSAL HEARD BY MAGISTRATE": 616,
+            "OTHER TERMINATION - ADMIN JUDGE": 6495,
+            "UNDISPOSED": 27,
+            "DEFAULT JUDGMENTS": 13,
+            "AGREED JUDGMENT BOTH CAUSE OF ACTION": 10,
+            "BANKRUPTCY": 15,
+            "OTHER TERMINATIONS": 4,
+            "TRANSFER TO COURT OF COMMON PLEAS - ADMIN JUDGE": 12,
+            "DISMISSED BY PLAINTIFF": 30,
+            "AGREED JUDGMENT": 3,
+            "JUDGMENT FOR DAMAGES": 7,
+            "DISMISSED BY JUDGE": 1,
+        }
+
+        code = rng.choice(
+            list(code_distr.keys()),
+            1,
+            p=np.array(list(code_distr.values())) / sum(code_distr.values()),
         )
 
         return Disposition(
@@ -334,9 +334,9 @@ class Case(BaseModel):
     dispositions: list[Disposition]
 
     @staticmethod
-    def generate(num, filed):
-        disp = Disposition.generate(filed)
-        event = Event.generate(filed)
+    def generate(num, filed, rng):
+        disp = Disposition.generate(filed, rng)
+        event = Event.generate(filed, rng)
         pt = SideName.generate(Sides.PLAINTIFF)
         de = SideName.generate(Sides.DEFENDANT)
 

@@ -1,6 +1,7 @@
 import datetime
 import logging
 import time
+from collections import Counter
 
 from django.db.models import Model
 from django.test import TestCase, Client
@@ -8,9 +9,10 @@ from unittest.mock import patch
 import json
 from django.core.cache import cache
 
-from apps.cases.models import CourtCase
+from apps.cases.models import CourtCase, CaseSnapshot
 from apps.fcmcclerk.models import Page
 from apps.fcmcclerk.tasks import scrape_detail, CACHE_KEY, parse_page, scrape_generator
+from apps.fcmcclerk_mock.fake_state import fixture_at
 
 
 class FakeSession:
@@ -69,26 +71,69 @@ class MyTest(TestCase):
 
     @patch("apps.fcmcclerk.tasks.requests.session")
     def test_session_call(self, mock_session_cls):
-        mock_session_cls.return_value = FakeSession(
-            self.client, datetime.datetime.now().date()
-        )
+        now = datetime.datetime(2026, 5, 12)
+        mock_session_cls.return_value = FakeSession(self.client, now.date())
         with patch("time.sleep", return_value=None):
             scrape_n_cases(15)
 
+            cases = [c for c in fixture_at((now).date()) if "CVG" in c.case_number][
+                -15:
+            ]
+
+            should = [c.case_number for c in cases]
+
+            self.assertListEqual(
+                list(
+                    CourtCase.objects.order_by("case_number").values_list(
+                        "case_number", flat=True
+                    )
+                ),
+                should,
+            )
             cache.delete(CACHE_KEY)
 
             logging.warning("cleared cache")
             mock_session_cls.return_value = FakeSession(
                 self.client,
-                (datetime.datetime.now() + datetime.timedelta(days=2)).date(),
+                (now + datetime.timedelta(days=5)).date(),
             )
 
             scrape_n_cases(15)
 
-        print(Page.objects.all())
+        cases_fut = [
+            c
+            for c in fixture_at((now + datetime.timedelta(days=5)).date())
+            if "CVG" in c.case_number
+        ]
 
-        self.assertLess(0, CourtCase.objects.count())
+        should_rescrape = []
+        cases_part = [
+            c.model_dump_json(include={"case_number", "dispositions", "parties"})
+            for c in cases
+        ]
+        for c in reversed(cases_fut):
+            if (
+                c.model_dump_json(include={"case_number", "dispositions", "parties"})
+                in cases_part
+            ):
+                continue
+            should_rescrape.append(c)
+            if len(should_rescrape) >= 15:
+                break
+
+        self.assertSetEqual(
+            set(
+                CourtCase.objects.order_by("case_number").values_list(
+                    "case_number", flat=True
+                )
+            ),
+            set([c.case_number for c in should_rescrape]).union(set(should)),
+        )
         self.assertEqual(Page.objects.count(), 30)
+        snaps = CaseSnapshot.objects.values_list("case__case_number", flat=True)
+        self.assertDictEqual(
+            Counter(snaps), Counter([c.case_number for c in should_rescrape] + should)
+        )
 
 
 class SealingTest(TestCase):
@@ -118,7 +163,7 @@ class SealingTest(TestCase):
         self.assertEqual(Page.objects.count(), 90)
 
 
-class LiveTest(TestCase):
+class LiveTest:
     def test_session_call(self):
         scrape_n_cases(1)
         time.sleep(15)
