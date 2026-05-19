@@ -34,7 +34,7 @@ class Command(BaseCommand):
         #    id=Subquery(latest_snapshot_ids)
         #)
 
-        snapids = [c.latest_snapshot for c in cases][:3]
+        snapids = [c.latest_snapshot for c in cases]
 
         snaps = CaseSnapshot.objects.in_bulk(snapids)
 
