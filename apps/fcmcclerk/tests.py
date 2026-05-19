@@ -142,8 +142,9 @@ class SealingTest(TestCase):
 
     @patch("apps.fcmcclerk.tasks.requests.session")
     def test_session_call(self, mock_session_cls):
+        now = datetime.datetime(2026, 5, 12)
         mock_session_cls.return_value = FakeSession(
-            self.client, (datetime.datetime.now() - datetime.timedelta(days=100)).date()
+            self.client, (now - datetime.timedelta(days=100)).date()
         )
         with patch("time.sleep", return_value=None):
             scrape_n_cases(20)
@@ -153,7 +154,7 @@ class SealingTest(TestCase):
             logging.warning("cleared cache")
             mock_session_cls.return_value = FakeSession(
                 self.client,
-                (datetime.datetime.now() + datetime.timedelta(days=2)).date(),
+                (now + datetime.timedelta(days=2)).date(),
             )
 
             scrape_n_cases(70)
