@@ -62,6 +62,10 @@ class Event(models.Model):
     result = models.CharField()
     snapshot = models.ForeignKey(CaseSnapshot, on_delete=models.CASCADE)
 
+    class Meta:
+        ordering = ("start",)
+
+
 
 class Finance(models.Model):
     application = models.CharField()
@@ -71,7 +75,6 @@ class Finance(models.Model):
     balance = models.DecimalField(null=True, max_digits=10, decimal_places=2)
     snapshot = models.ForeignKey(CaseSnapshot, on_delete=models.CASCADE)
 
-
 class Disposition(models.Model):
     code = models.CharField()
     date = models.DateField(null=True)
@@ -79,3 +82,6 @@ class Disposition(models.Model):
     status = models.CharField()
     status_date = models.DateField()
     snapshot = models.ForeignKey(CaseSnapshot, on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ("date",)
