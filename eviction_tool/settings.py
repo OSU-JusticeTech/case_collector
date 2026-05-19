@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_extensions",
+    "rest_framework",
     "apps.fcmcclerk.apps.FCMCclerkConfig",
     "apps.nextgen.apps.NextgenConfig",
     "apps.geocode.apps.GeocodeConfig",
