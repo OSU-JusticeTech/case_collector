@@ -24,7 +24,7 @@ jobs:
 
       - name: Run tests
         # For example, using `pytest`
-        run: uv run manage.py test apps
+        run: uv run manage.py test apps --exclude-tag=online
 
   build-and-push-image:
     needs: test

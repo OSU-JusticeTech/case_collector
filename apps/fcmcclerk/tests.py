@@ -4,7 +4,7 @@ import time
 from collections import Counter
 
 from django.db.models import Model
-from django.test import TestCase, Client
+from django.test import TestCase, Client, tag
 from unittest.mock import patch
 import json
 from django.core.cache import cache
@@ -168,6 +168,7 @@ class SealingTest(TestCase):
         self.assertEqual(sealed_pages[0].number, 36)
 
 
+@tag("online")
 class LiveTest(TestCase):
     def test_session_call(self):
         scrape_n_cases(1)
