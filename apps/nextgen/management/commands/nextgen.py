@@ -16,7 +16,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         logging.info("start scraping")
-        logging.info("start scraping")
         scrape_cases = options.get("case_number", [])
         if len(scrape_cases) > 0:
             print("opt", scrape_cases)
