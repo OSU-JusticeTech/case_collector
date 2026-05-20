@@ -244,7 +244,7 @@ def compute_state_hash(obj: Case) -> bytes:
 
 
 def create_snapshot_if_changed(
-    source: Source, page: Page, parse_case: Case
+    source: Source, scraped_at: datetime, parse_case: Case
 ) -> tuple[CaseSnapshot, bool]:  # or int epoch
     """
     Returns (snapshot_id, created_new).
@@ -297,7 +297,7 @@ def create_snapshot_if_changed(
                 snapshot=snap,
             )
 
-    snap.created_at = page.scraped_at
+    snap.created_at = scraped_at
     snap.save()
 
     return snap, True
@@ -308,6 +308,6 @@ def parse_page(pg: Page):
     src, _ = Source.objects.get_or_create(name="FCMC")
     create_snapshot_if_changed(
         source=src,
-        page=pg,  # or int epoch
+        scraped_at=pg.scraped_at,  # or int epoch
         parse_case=case,
     )

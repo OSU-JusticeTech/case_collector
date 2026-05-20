@@ -287,11 +287,13 @@ def parse_finances(soup) -> list[Finance]:
 
     return f_obs
 
+def get_case_number(soup):
+    return soup.select_one("header.page-header h1 > span").get_text(strip=True)
 
 def parse_case(html):
     soup = BeautifulSoup(html, "html.parser")
 
-    case_number = soup.select_one("header.page-header h1 > span").get_text(strip=True)
+    case_number = get_case_number(soup)
 
     parties = parse_parties(soup)
     # print(parties)
