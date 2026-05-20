@@ -297,6 +297,9 @@ def create_snapshot_if_changed(
                 snapshot=snap,
             )
 
+    snap.created_at = page.scraped_at
+    snap.save()
+
     return snap, True
 
 
