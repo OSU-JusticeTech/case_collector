@@ -1,5 +1,8 @@
 from django.db import models
 
+from apps.cases.models import CaseSnapshot
+
+
 # Create your models here.
 
 
@@ -22,6 +25,8 @@ class Page(models.Model):
     content = models.CharField(null=True)
     return_code = models.IntegerField()
     overview_digest = models.CharField(null=True)
+
+    snapshot = models.ForeignKey(CaseSnapshot, on_delete=models.SET_NULL, null=True)
 
     class Meta:
         unique_together = ("year", "category", "number", "scraped_at")

@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from tqdm import tqdm
 
-from apps.cases.models import Source, CourtCase
+from apps.cases.models import Source, CourtCase, CaseSnapshot
 from apps.fcmcclerk.models import Page
 from apps.fcmcclerk.parser import parse_case
 from apps.fcmcclerk.tasks import (
@@ -23,12 +23,14 @@ class Command(BaseCommand):
 
             if case.case_number not in already_cleaned:
                 already_cleaned.add(case.case_number)
-                CourtCase.objects.filter(
-                    case_number=case.case_number, source=src
-                ).delete()
+                CaseSnapshot.objects.filter(case__case_number=case.case_number, case__source=src).delete()
 
             snap, created = create_snapshot_if_changed(
                 source=src,
                 scraped_at=pg.scraped_at,
                 parse_case=case,
             )
+
+            pg.snapshot = snap
+            pg.save()
+
