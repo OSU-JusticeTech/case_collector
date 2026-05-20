@@ -9,9 +9,10 @@ from unittest.mock import patch
 import json
 from django.core.cache import cache
 
-from apps.cases.models import CourtCase, CaseSnapshot
+from apps.cases.models import CourtCase, CaseSnapshot, Event
 from apps.fcmcclerk.models import Page
-from apps.fcmcclerk.tasks import scrape_detail, CACHE_KEY, parse_page, scrape_generator
+from apps.fcmcclerk.parser import parse_case
+from apps.fcmcclerk.tasks import scrape_detail, CACHE_KEY, parse_page, scrape_generator, ScrapeInstruction
 from apps.fcmcclerk_mock.fake_state import fixture_at
 
 
@@ -180,3 +181,22 @@ class LiveTest(TestCase):
         for p in pages:
             self.assertEqual(p.return_code, 200)
             self.assertInHTML("Docket", p.content)
+
+
+class TZTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    @patch("apps.fcmcclerk.tasks.requests.session")
+    def test_session_call(self, mock_session_cls):
+        now = datetime.datetime(2026, 5, 12)
+        mock_session_cls.return_value = FakeSession(self.client, now.date())
+        with patch("time.sleep", return_value=None):
+
+            pg = scrape_detail(ScrapeInstruction(case_number='2026 CVG 000065'))
+            parse_page(pg)
+
+
+            self.assertEqual(Event.objects.count(),1)
+            ev = Event.objects.first()
+            self.assertEqual(ev.start, datetime.datetime(2026,3,4,15,30,tzinfo=datetime.timezone.utc))

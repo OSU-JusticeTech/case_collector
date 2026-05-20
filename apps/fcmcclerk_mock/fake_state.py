@@ -37,10 +37,14 @@ def fixture_at(req_date):
             for de in case.docket:
                 if de.date <= req_date:
                     cp.docket.append(de)
+            cp.events = []
+            for ev in case.events:
+                if ev.end.date() <= req_date:
+                    cp.events.append(ev)
             cp.dispositions = []
-            for ev in case.dispositions:
-                if ev.date <= req_date:
-                    cp.dispositions.append(ev)
+            for di in case.dispositions:
+                if di.date <= req_date:
+                    cp.dispositions.append(di)
             if len(cp.dispositions) == 0:
                 filed = cp.docket[-1].date
                 cp.dispositions.append(

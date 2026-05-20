@@ -65,6 +65,9 @@ class Event(models.Model):
     class Meta:
         ordering = ("start",)
 
+    def __str__(self):
+        return f"{self.room} {self.start} {self.event} {self.result}"
+
 
 
 class Finance(models.Model):
