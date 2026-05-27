@@ -27,6 +27,12 @@ Sometimes, one-off tasks are required. These are best run in the ui container wi
 This discards all parsed snapshots and regenerates them from the raw saved pages.
 
 
+### export_cases
+    
+Exports the latest case snapshot for each case where the case number contains the second argument.
+
+    export_cases FCMC "2026 CVG" > cases_2026.json
+
 ## Backup & Restore
 
 To back up the database, run
