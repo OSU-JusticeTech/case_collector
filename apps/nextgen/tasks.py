@@ -7,8 +7,9 @@ import requests
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.files.base import ContentFile
+from django.db.models import OuterRef, Subquery, Q
 
-from apps.cases.models import CourtCase
+from apps.cases.models import CourtCase, CaseSnapshot
 from apps.fcmcclerk.pyschema import DocketEntry
 from apps.fcmcclerk.tasks import ScrapeInstruction
 from apps.nextgen.models import ScanDocketEntry, Page
@@ -145,6 +146,8 @@ def scrape_pdfs(cinst):
                 entry_obj.filename = save_name
                 entry_obj.save()
                 time.sleep(5)
+            elif not created and link is not None:
+                logging.info("skip download, exists: %s...", entry.text[:20])
         return_code = case.status_code
     except Exception as e:
         logging.error(
@@ -162,14 +165,44 @@ def scrape_pdfs(cinst):
 def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
 
     curyear = datetime.now().date().year
-    cases_existing = CourtCase.objects.all().values_list("case_number", flat=True)
-    print(cases_existing)
-    cases_existing = set(
-        [c for c in cases_existing if int(c.split(" ")[0]) > curyear - 2]
-    )
-    scraped_cases = set(Page.objects.all().values_list("case__case_number", flat=True))
 
-    not_scraped = list(sorted(cases_existing - scraped_cases, reverse=True))
+    latest_snapshot = (
+        CaseSnapshot.objects
+        .filter(case=OuterRef("pk"))
+        .order_by("-created_at")
+        .values("created_at")[:1]
+    )
+
+    latest_page = (
+        Page.objects
+        .filter(case=OuterRef("pk"))
+        .order_by("-scraped_at")
+        .values("scraped_at")[:1]
+    )
+
+    cases = (
+        CourtCase.objects.filter(
+            Q(case_number__startswith=str(curyear)) |
+            Q(case_number__startswith=str(curyear-1)) |
+            Q(case_number__startswith=str(curyear-2))
+        )
+        .annotate(
+            latest_snapshot_at=Subquery(latest_snapshot),
+            latest_page_at=Subquery(latest_page),
+        ).order_by("-case_number")
+    )
+
+    not_scraped = [
+        c.case_number
+        for c in cases
+        if (
+                c.latest_page_at is None
+                or (
+                        c.latest_snapshot_at
+                        and c.latest_page_at < c.latest_snapshot_at
+                )
+        )
+    ]
 
     logging.info("still %d cases to scrape", len(not_scraped))
     for case_number in not_scraped[:100]:

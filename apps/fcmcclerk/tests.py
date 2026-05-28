@@ -27,6 +27,7 @@ class FakeSession:
             def __init__(self, response):
                 self.status_code = response.status_code
                 self.content = response.content
+                self.headers = response.headers
 
             ok = True
 
@@ -36,6 +37,9 @@ class FakeSession:
         path = url.replace(
             "https://www.fcmcclerk.com",
             f"/fcmcclerk.com/{self.report_date.isoformat()}",
+        ).replace(
+            "https://secure.fcmcclerk.com",
+            f"/secure.fcmcclerk.com/{self.report_date.isoformat()}",
         )
         # print("get rewrote", path)
         response = self.client.get(path)
@@ -45,6 +49,9 @@ class FakeSession:
         path = url.replace(
             "https://www.fcmcclerk.com",
             f"/fcmcclerk.com/{self.report_date.isoformat()}",
+        ).replace(
+            "https://secure.fcmcclerk.com",
+            f"/secure.fcmcclerk.com/{self.report_date.isoformat()}",
         )
         # print("post rewrote", path)
         response = self.client.post(path, data=kwargs.get("data"))
