@@ -1,5 +1,8 @@
 from django.db import models
 
+from apps.geocode.models import Location
+
+
 # Create your models here.
 
 
@@ -36,6 +39,8 @@ class Party(models.Model):
     zip_code = models.CharField(null=True)
     role = models.CharField()
     snapshot = models.ForeignKey(CaseSnapshot, on_delete=models.CASCADE)
+
+    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return f"{self.side[:3]} {self.name} {self.address} {self.city} {self.state}/{self.zip_code} {self.role}"
