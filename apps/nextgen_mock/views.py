@@ -26,6 +26,8 @@ class LoginView(views.View):
     def post(self, request, request_date):
         form = LoginForm(request.POST)
         if form.is_valid():
+            if form.cleaned_data["password"]=="expired":
+                return render(request, "nextgen_mock/verify.html")
             return render(request, "nextgen_mock/home.html")
 
 

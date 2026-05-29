@@ -119,3 +119,29 @@ class UpdateTest(TestCase):
                         if scraped >= 15:
                             break
 
+
+class ExpireTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    @patch("apps.nextgen.tasks.requests.session")
+    def test_generator(self, mock_session_cls):
+        now = datetime.datetime(2026, 5, 12)
+        mock_session_cls.return_value = FakeSession(
+            self.client, now.date()
+        )
+        cno = '2026 CVG 000166'
+        src = Source.objects.create(name="FCMC")
+        CourtCase.objects.create(case_number=cno, source=src)
+
+        with patch("time.sleep", return_value=None):
+            with self.settings(NEXTGEN_EMAIL="test@test.com", NEXTGEN_PASSWORD="non-expired"):
+                scrape_pdfs(ScrapeInstruction(case_number=cno))
+                self.assertEqual(ScanDocketEntry.objects.exclude(filename="").count(), 1)
+
+            with self.assertRaises(Exception) as context:
+                with self.settings(NEXTGEN_EMAIL="test@test.com", NEXTGEN_PASSWORD="expired"):
+                    scrape_pdfs(ScrapeInstruction(case_number=cno))
+                    #self.assertEqual(ScanDocketEntry.objects.exclude(filename="").count(), 1)
+
+            self.assertEqual(str(context.exception),"validate email")

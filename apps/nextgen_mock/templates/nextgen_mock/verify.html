@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=800, width=device-width, initial-scale=1">
+
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="yXvGsjSvbmcEjYQCG6C38IcwS26DFfBJsN0mR6wI">
+
+    <title>NextGen Secure Access</title>
+
+
+    <link href="/nextgen/storage/css/app.20251214154952.css" rel="stylesheet">
+    <link href="/nextgen/fontawesome/css/all.min.css?v=6.5.1&r=1" rel="stylesheet">
+
+
+    
+    <style>
+    </style>
+
+</head>
+<body>
+    <div id="app" class="mb-5">
+                    <nav class="navbar navbar-expand-md navbar-light shadow-sm">
+                <div class="container">
+                    <a class="navbar-brand fs-6 lh-sm" href="/nextgen">
+                                                NextGen Secure Access
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <!-- Left Side Of Navbar -->
+                        <ul class="navbar-nav me-auto">
+                                                            <li class="nav-item">
+                                    <a class="nav-link" href="/nextgen/case/search">Search</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/nextgen/ecourt">eCourt</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/nextgen/briefcase">Briefcase</a>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                        Schedules
+                                    </a>
+
+                                    <div class="dropdown-menu dropdown-menu-start" aria-labelledby="navbarDropdown">
+                                        <a class="dropdown-item" href="/nextgen/attorney-schedule/search">
+                                            Attorney Schedule
+                                        </a>
+                                        <a class="dropdown-item" href="/nextgen/interpreter/schedule">
+                                            Interpreter Schedule
+                                        </a>
+                                    </div>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                        Reports
+                                    </a>
+
+                                    <div class="dropdown-menu dropdown-menu-start" aria-labelledby="navbarDropdown">
+                                        <a class="dropdown-item" href="/nextgen/reports/daily-arraignment">
+                                            Daily Arraignment
+                                        </a>
+                                        <a class="dropdown-item" href="/nextgen/reports/4d-list">
+                                            4D List
+                                        </a>
+                                        <a class="dropdown-item" href="/nextgen/reports/evictions">
+                                            Monthly Evictions
+                                        </a>
+                                    </div>
+                                </li>
+                                                    </ul>
+
+                        <!-- Right Side Of Navbar -->
+                        <ul class="navbar-nav ms-auto">
+                            <!-- Authentication Links -->
+                                                            <li class="nav-item d-sm-none d-lg-inline">
+                                    <a href="/nextgen/redirect/efiling-website" target="_blank" class="nav-link" data-toggle="tooltip" data-bs-placement="bottom" title="Open eFiling Website">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <span class="d-md-none">Open eFiling Website</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/nextgen/feature-request" class="nav-link" data-toggle="tooltip" data-bs-placement="bottom" title="Feature Request">
+                                        <i class="fas fa-comment"></i>
+                                        <span class="d-md-none">Feature Request</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <!-- Button trigger modal -->
+                                    <button type="button" class="nav-link" data-bs-toggle="modal" data-bs-target="#helpModal" data-toggle="tooltip" data-bs-placement="bottom" title="Help">
+                                        <i class="fas fa-question-circle"></i>
+                                        <span class="d-md-none">Help</span>
+                                    </button>
+                                </li>
+
+                                
+                                <li class="nav-item dropdown">
+                                    <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                        CURA Geography
+                                    </a>
+
+                                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                        <a class="dropdown-item" href="/nextgen/profile">
+                                            Profile
+                                        </a>
+                                        <a class="dropdown-item" href="/nextgen/logout"
+                                           onclick="event.preventDefault();
+                                                         document.getElementById('logout-form').submit();">
+                                            Logout
+                                        </a>
+
+                                        <form id="logout-form" action="/nextgen/logout" method="POST" class="d-none">
+                                            <input type="hidden" name="_token" value="yXvGsjSvbmcEjYQCG6C38IcwS26DFfBJsN0mR6wI">                                        </form>
+                                    </div>
+                                </li>
+                                                    </ul>
+                    </div>
+                </div>
+            </nav>
+        
+        <main class="py-4">
+
+            
+            
+            
+
+            <div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">Verify Your Email Address</div>
+
+                <div class="card-body">
+                    
+                    Before proceeding, please check your email for a verification link.
+                    If you did not receive the email or if your account is due for reverification,
+                    <form class="d-inline" method="POST" action="/nextgen/email/verification-notification">
+                        <input type="hidden" name="_token" value="yXvGsjSvbmcEjYQCG6C38IcwS26DFfBJsN0mR6wI">                        <button type="submit" class="btn btn-link p-0 m-0 align-baseline">click here to request a verification email</button>.
+                    </form>
+                    <p>
+                        If you no longer have access to the email address associated with this account.  A new user registration will need to be submitted.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+            <!-- Modal -->
+            <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="helpModalLabel">Help and Tips</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">Use the <i class="far fa-copy fa-lg fa-fw"></i> icon to copy the case number to your clipboard</li>
+                                <li class="list-group-item">Use the <i class="fas fa-external-link-alt fa-lg fa-fw"></i> icon to open the case on Secure Access</li>
+                                <li class="list-group-item">Use the <i class="fas fa-search fa-lg fa-fw"></i> icon to search for the case number on Secure Access</li>
+                                <li class="list-group-item">Use the <i class="fas fa-clone fa-lg fa-fw"></i> icon to view the Public Access Case Info in a pop-up</li>
+                                <li class="list-group-item">Use the <i class="fas fa-file-image fa-lg fa-fw"></i> icon to view scanned docket images</li>
+                                <li class="list-group-item">Hover over the abbreviations to view the full text</li>
+                                <li class="list-group-item">When viewing search results, at times a "Search" field is available to filter the records displayed (for example, filter by case number, name, jurisdiction, etc.)</li>
+                                <li class="list-group-item">
+                                    When filtering results, to view only cases without an event result, type the word "pending" or a back tick ` into the search field.
+                                    The backtick key is below the "Esc" key and to the left of the "1" key.
+                                </li>
+                                <li class="list-group-item">
+                                    When filtering results, Multiple search terms can be used at the same time.
+                                    For example, open an eCourt Docket for Courtroom 1A Criminal-Traffic and try searching for "OHP speed pending".
+                                </li>
+                                <li class="list-group-item">
+                                    Certain case information may not be available online due to confidentiality, court orders, or other relevant considerations.
+                                </li>
+                                <li class="list-group-item">
+                                    The Secure Access platform is a means to provide limited information about cases, but it may not always reflect the complete and up-to-date status of a case.
+                                    For the most accurate record, individuals are directed to consult the relevant Clerk's Office division,  Clerk's Case Management System, or physical case file.
+                                </li>
+                                <li class="list-group-item">
+                                    For performance reasons, data may be cached to decrease page load times.
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/nextgen/storage/js/app.20251214154952.js"></script>
+
+    <!-- Site JS -->
+    <script>
+        $(document).ready(function() {
+            $('.alert').alert()
+            $('#flash-overlay-modal').modal();
+            $('.tip').tooltip();
+            $("#alert-bottom").fadeTo(10000, 500).slideDown(500, function(){
+                $("#alert-bottom").slideUp(500);
+            });
+            $('.datatable').DataTable({paging: false});
+            $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
+
+            $('.btn-highlight').click(function() {
+                $(this).addClass('btn-success');
+                $(this).removeClass('btn-primary');
+            });
+            var theme = $('html').data('bs-theme');
+            if(theme === 'dark') {
+                $('.invertable').css({
+                    'filter': 'invert(80%)'
+                });
+            }
+        } );
+    </script>
+
+    </body>
+</html>

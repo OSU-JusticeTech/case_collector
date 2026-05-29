@@ -87,6 +87,10 @@ def scrape_pdfs(cinst):
         logging.error("invalid login credentials")
         raise Exception("invalid credentials")
 
+    if "Before proceeding, please check your email for a verification link." in home.content.decode():
+        logging.error("validation required")
+        raise Exception("validate email")
+
     search = sess.get(f"{BASE_URL}/nextgen/case/search")
 
     fields = extract_fields(search.content.decode())
@@ -124,6 +128,8 @@ def scrape_pdfs(cinst):
         dkt = parse_scan_docket(soup)
         # print(dkt)
         for entry, link in dkt:
+            #TODO: the PDF may arrive later to a docket entry, so we need to take care of docket entries getting a scan later
+            # probably this is not true and PETITION FILED does not have a PDF but it gets attached to IMAGE OF COMPLAINT
             entry_obj, created = ScanDocketEntry.objects.get_or_create(
                 case=case_obj, date=entry.date, text=entry.text
             )
