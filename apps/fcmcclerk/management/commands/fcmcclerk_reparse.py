@@ -9,7 +9,6 @@ from apps.fcmcclerk.tasks import (
 )
 
 
-
 class Command(BaseCommand):
     help = "Reparse all FCMC cases"
 
@@ -18,12 +17,18 @@ class Command(BaseCommand):
 
         already_cleaned = set()
 
-        for pg in tqdm(Page.objects.filter(return_code__gte=200, return_code__lt=300).order_by("scraped_at")):
+        for pg in tqdm(
+            Page.objects.filter(return_code__gte=200, return_code__lt=300).order_by(
+                "scraped_at"
+            )
+        ):
             case = parse_case(pg.content)
 
             if case.case_number not in already_cleaned:
                 already_cleaned.add(case.case_number)
-                CaseSnapshot.objects.filter(case__case_number=case.case_number, case__source=src).delete()
+                CaseSnapshot.objects.filter(
+                    case__case_number=case.case_number, case__source=src
+                ).delete()
 
             snap, created = create_snapshot_if_changed(
                 source=src,
@@ -33,4 +38,3 @@ class Command(BaseCommand):
 
             pg.snapshot = snap
             pg.save()
-

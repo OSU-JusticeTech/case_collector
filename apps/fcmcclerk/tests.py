@@ -12,7 +12,13 @@ from django.core.cache import cache
 from apps.cases.models import CourtCase, CaseSnapshot, Event
 from apps.fcmcclerk.models import Page
 from apps.fcmcclerk.parser import parse_case
-from apps.fcmcclerk.tasks import scrape_detail, CACHE_KEY, parse_page, scrape_generator, ScrapeInstruction
+from apps.fcmcclerk.tasks import (
+    scrape_detail,
+    CACHE_KEY,
+    parse_page,
+    scrape_generator,
+    ScrapeInstruction,
+)
 from apps.fcmcclerk_mock.fake_state import fixture_at
 
 
@@ -201,10 +207,12 @@ class TZTest(TestCase):
         mock_session_cls.return_value = FakeSession(self.client, now.date())
         with patch("time.sleep", return_value=None):
 
-            pg = scrape_detail(ScrapeInstruction(case_number='2026 CVG 000065'))
+            pg = scrape_detail(ScrapeInstruction(case_number="2026 CVG 000065"))
             parse_page(pg)
 
-
-            self.assertEqual(Event.objects.count(),1)
+            self.assertEqual(Event.objects.count(), 1)
             ev = Event.objects.first()
-            self.assertEqual(ev.start, datetime.datetime(2026,3,4,15,30,tzinfo=datetime.timezone.utc))
+            self.assertEqual(
+                ev.start,
+                datetime.datetime(2026, 3, 4, 15, 30, tzinfo=datetime.timezone.utc),
+            )

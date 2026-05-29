@@ -2,7 +2,6 @@ from django.db import models
 
 from apps.cases.models import CaseSnapshot
 
-
 # Create your models here.
 
 

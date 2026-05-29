@@ -167,6 +167,10 @@ class DocketEntry(BaseModel):
                         extra="Receipt: 12345  Date: ##/##/####",
                         amount=128,
                         balance=0,
+                    ),
+                    DocketEntry(
+                        date=filed + timedelta(days=1),
+                        text="IMAGE OF COMPLAINT",
                         scan=FileScan(
                             data=open(
                                 os.path.dirname(__file__)
@@ -175,9 +179,6 @@ class DocketEntry(BaseModel):
                             ).read(),
                             filename=f"{case_number} - {filed.strftime('%m %d %Y')} - DCOMP - CV Docket - {filed.strftime('%m %d %Y')}.pdf",
                         ),
-                    ),
-                    DocketEntry(
-                        date=filed + timedelta(days=1), text="IMAGE OF COMPLAINT"
                     ),
                     DocketEntry(
                         date=filed + timedelta(days=1),
