@@ -1,3 +1,5 @@
+import logging
+
 from arcgis.geocoding import geocode, Geocoder, batch_geocode
 from pprint import pprint
 
@@ -59,43 +61,47 @@ def geo():
         p_obj = addresses[a["attributes"]["ResultID"]][1]
         # print(p_obj)
 
-        attrs = a["attributes"]
-        loc = Location.objects.create(
-            full_address=a["address"],
-            street_number=attrs.get("AddNum", ""),
-            street_name=attrs.get("StName", ""),
-            street_type=attrs.get("StType", ""),
-            street_direction=attrs.get("StDir", ""),
-            unit_type=attrs.get("UnitType", ""),
-            unit_number=attrs.get("UnitName", ""),
-            city=attrs.get("City", ""),
-            county=attrs.get("Subregion", ""),
-            state=attrs.get("Region", ""),
-            state_code=attrs.get("RegionAbbr", ""),
-            postal_code=attrs.get("Postal", ""),
-            postal_code_ext=attrs.get("PostalExt", ""),
-            country=attrs.get("Country", ""),
-            rooftop=Point(
-                a["location"]["x"],  # longitude
-                a["location"]["y"],  # latitude
-                srid=4326,  # WGS84
-            ),
-            geocode_score=a.get("score"),
-            geocode_type=attrs.get("Addr_type", ""),
-            geocode_rank=attrs.get("Rank", -1),
-            raw_geocode=attrs,
-        )
+        try:
+            attrs = a["attributes"]
+            loc = Location.objects.create(
+                full_address=a["address"],
+                street_number=attrs.get("AddNum", ""),
+                street_name=attrs.get("StName", ""),
+                street_type=attrs.get("StType", ""),
+                street_direction=attrs.get("StDir", ""),
+                unit_type=attrs.get("UnitType", ""),
+                unit_number=attrs.get("UnitName", ""),
+                city=attrs.get("City", ""),
+                county=attrs.get("Subregion", ""),
+                state=attrs.get("Region", ""),
+                state_code=attrs.get("RegionAbbr", ""),
+                postal_code=attrs.get("Postal", ""),
+                postal_code_ext=attrs.get("PostalExt", ""),
+                country=attrs.get("Country", ""),
+                rooftop=Point(
+                    a["location"]["x"],  # longitude
+                    a["location"]["y"],  # latitude
+                    srid=4326,  # WGS84
+                ),
+                geocode_score=a.get("score"),
+                geocode_type=attrs.get("Addr_type", ""),
+                geocode_rank=attrs.get("Rank", -1),
+                raw_geocode=attrs,
+            )
 
-        matching_parties = Party.objects.filter(
-            address=p_obj.address,
-            city=p_obj.city,
-            state=p_obj.state,
-            zip_code=p_obj.zip_code,
-        )
+            matching_parties = Party.objects.filter(
+                address=p_obj.address,
+                city=p_obj.city,
+                state=p_obj.state,
+                zip_code=p_obj.zip_code,
+            )
 
-        for m in matching_parties:
-            m.location = loc
-            m.save()
+            for m in matching_parties:
+                m.location = loc
+                m.save()
+
+        except Exception as e:
+            logging.error("could not geolocate %s because of %s", a, e.__repr__())
 
         # print(a["address"])
         # pprint(a)
