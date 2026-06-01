@@ -2,6 +2,7 @@ from django.contrib.gis.db import models
 
 # Create your models here.
 
+
 class Location(models.Model):
     # Human-readable
     full_address = models.CharField()

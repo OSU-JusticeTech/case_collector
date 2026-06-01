@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_extensions",
     "rest_framework",
+    "django.contrib.gis",
     "apps.fcmcclerk.apps.FCMCclerkConfig",
     "apps.nextgen.apps.NextgenConfig",
     "apps.geocode.apps.GeocodeConfig",
@@ -91,7 +92,8 @@ WSGI_APPLICATION = "eviction_tool.wsgi.application"
 if "DB_NAME" in os.environ:
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.postgresql",
+            #"ENGINE": "django.db.backends.postgresql",
+            "ENGINE": "django.contrib.gis.db.backends.postgis",
             "NAME": os.getenv("DB_NAME", "scraper"),
             "USER": os.getenv("DB_USER", "postgres"),
             "PASSWORD": os.environ["DB_PASS"],
@@ -102,7 +104,8 @@ if "DB_NAME" in os.environ:
 else:
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.sqlite3",
+            #"ENGINE": "django.db.backends.sqlite3",
+            "ENGINE": "django.contrib.gis.db.backends.spatialite",
             "NAME": BASE_DIR / "db" / "db.sqlite3",
         }
     }
@@ -173,6 +176,9 @@ SCRAPE_PROXIES = {}  # dict(https="socks5://localhost:8080")
 
 NEXTGEN_EMAIL = os.environ.get("NEXTGEN_EMAIL")
 NEXTGEN_PASSWORD = os.environ.get("NEXTGEN_PASSWORD")
+
+GEOCODER_URL = os.environ.get("GEOCODER_URL","https://cura-gis-web.asc.ohio-state.edu/arcgis/rest/services/geocoding/USA/GeocodeServer/")
+
 
 GRAPH_MODELS = {
     "app_labels": ["cases", "fcmcclerk"],
