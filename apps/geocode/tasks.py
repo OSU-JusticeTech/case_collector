@@ -101,7 +101,7 @@ def geo():
                 m.save()
 
         except Exception as e:
-            logging.error("could not geolocate %s because of %s", a, e.__repr__())
+            logging.error("could not geolocate %d: %s to %s because of %s",p_obj.pk, p_obj, a, e.__repr__())
 
         # print(a["address"])
         # pprint(a)
