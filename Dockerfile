@@ -1,5 +1,6 @@
 FROM ghcr.io/astral-sh/uv:debian-slim
 
+RUN apt update && apt install -y libgdal-dev && rm -rf /var/lib/apt/lists/*
 # Copy the project into the image
 COPY . /app
 
