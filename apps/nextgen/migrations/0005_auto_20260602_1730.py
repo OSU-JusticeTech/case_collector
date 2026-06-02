@@ -45,8 +45,14 @@ analysis_summary AS (
 
 SELECT
     s.*,
-    sde.*,
-    cc.*
+    sde.id AS entry_id,
+    sde.date,
+    sde.text,
+    sde.scan,
+    sde.case_id,
+    sde.filename,
+    cc.source_id,
+    cc.case_number
 FROM analysis_summary s
 JOIN nextgen_scandocketentry_magdec_analyses link
   ON link.magdecanalysis_id = s.analysis_id
