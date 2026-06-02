@@ -17,11 +17,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         src = Source.objects.get(name=options["source"])
 
-        #print(src)
-
-        cases = CourtCase.objects.filter(source=src, case_number__contains=options["contains"])
-
-        #print(cases)
         latest_snapshot_ids = (
             CaseSnapshot.objects
             .filter(case=OuterRef('pk'))
@@ -30,10 +25,7 @@ class Command(BaseCommand):
         )
 
         cases = CourtCase.objects.filter(source=src, case_number__contains=options["contains"]).annotate(latest_snapshot=Subquery(latest_snapshot_ids))
-        #latest_snapshots = CaseSnapshot.objects.filter(
-        #    id=Subquery(latest_snapshot_ids)
-        #)
-
+        
         snapids = [c.latest_snapshot for c in cases]
 
         snaps = CaseSnapshot.objects.in_bulk(snapids)
