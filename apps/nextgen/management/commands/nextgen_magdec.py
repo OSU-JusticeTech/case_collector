@@ -98,120 +98,124 @@ class Command(BaseCommand):
 
         rois = load_rois(template_path + "/rois.json")
 
-        for sde in ScanDocketEntry.objects.filter(filename__contains=" DMAGDEC ", magdec_analyses__isnull=True):
-            #print(sde.text)
-            print(sde.filename)
+        while True:
 
-            pages = convert_from_path(sde.scan.path)
-            for pno, page in enumerate(pages):
-                print("page number", pno)
-                scan = cv2.cvtColor(np.array(page), cv2.COLOR_RGB2GRAY)
-                #print(scan)
+            for sde in ScanDocketEntry.objects.filter(filename__contains=" DMAGDEC ", magdec_analyses__isnull=True):
+                #print(sde.text)
+                logging.info("process %s", sde.filename)
 
-                #cv2.namedWindow("Scan", cv2.WINDOW_NORMAL)
-                #cv2.imshow("Scan", scan)
+                pages = convert_from_path(sde.scan.path)
+                for pno, page in enumerate(pages):
+                    logging.info("page number %d", pno)
+                    scan = cv2.cvtColor(np.array(page), cv2.COLOR_RGB2GRAY)
+                    #print(scan)
 
-                kp_scan, des_scan = orb.detectAndCompute(scan, None)
+                    #cv2.namedWindow("Scan", cv2.WINDOW_NORMAL)
+                    #cv2.imshow("Scan", scan)
 
-                #print(f"Template keypoints: {len(kp_template)}")
-                #print(f"Scan keypoints: {len(kp_scan)}")
+                    kp_scan, des_scan = orb.detectAndCompute(scan, None)
 
-                bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-                matches = bf.match(des_template, des_scan)
+                    #print(f"Template keypoints: {len(kp_template)}")
+                    #print(f"Scan keypoints: {len(kp_scan)}")
 
-                # Sort matches by distance (lower = better)
-                matches = sorted(matches, key=lambda x: x.distance)
+                    bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+                    matches = bf.match(des_template, des_scan)
 
-                # Keep only the best matches
-                num_good_matches = int(len(matches) * 0.15)
-                good_matches = matches[:num_good_matches]
+                    # Sort matches by distance (lower = better)
+                    matches = sorted(matches, key=lambda x: x.distance)
 
-                #print(f"Good matches used: {len(good_matches)}")
+                    # Keep only the best matches
+                    num_good_matches = int(len(matches) * 0.15)
+                    good_matches = matches[:num_good_matches]
 
-                #match_vis = cv2.drawMatches(
-                #    template, kp_template,
-                #    scan, kp_scan,
-                #    good_matches, None,
-                #    flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS
-                #)
-                #cv2.namedWindow("Feature Matches", cv2.WINDOW_NORMAL)
-                #cv2.imshow("Feature Matches", match_vis)
+                    #print(f"Good matches used: {len(good_matches)}")
 
-                # --------------------------------------------------------
-                # 5. Estimate affine transform (rotation + scale)
-                # --------------------------------------------------------
-                src_pts = np.float32(
-                    [kp_scan[m.trainIdx].pt for m in good_matches]
-                ).reshape(-1, 1, 2)
+                    #match_vis = cv2.drawMatches(
+                    #    template, kp_template,
+                    #    scan, kp_scan,
+                    #    good_matches, None,
+                    #    flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS
+                    #)
+                    #cv2.namedWindow("Feature Matches", cv2.WINDOW_NORMAL)
+                    #cv2.imshow("Feature Matches", match_vis)
 
-                dst_pts = np.float32(
-                    [kp_template[m.queryIdx].pt for m in good_matches]
-                ).reshape(-1, 1, 2)
+                    # --------------------------------------------------------
+                    # 5. Estimate affine transform (rotation + scale)
+                    # --------------------------------------------------------
+                    src_pts = np.float32(
+                        [kp_scan[m.trainIdx].pt for m in good_matches]
+                    ).reshape(-1, 1, 2)
 
-                # Estimate affine transformation
-                M, inliers = cv2.estimateAffinePartial2D(
-                    src_pts,
-                    dst_pts,
-                    method=cv2.RANSAC,
-                    ransacReprojThreshold=5.0
-                )
+                    dst_pts = np.float32(
+                        [kp_template[m.queryIdx].pt for m in good_matches]
+                    ).reshape(-1, 1, 2)
 
-                if M is None:
-                    raise RuntimeError("Could not estimate affine transformation")
-
-                #print("Estimated affine transform:\n", M)
-
-                # --------------------------------------------------------
-                # 6. Warp scan to template coordinate system
-                # --------------------------------------------------------
-                aligned_scan = cv2.warpAffine(
-                    scan,
-                    M,
-                    (template.shape[1], template.shape[0]),
-                    flags=cv2.INTER_LINEAR
-                )
-
-                kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9))
-
-                dilated_align = cv2.dilate(255 - aligned_scan, kernel)
-                # diffimg = ((255-template.astype(np.float32)) - (blur_aligned.astype(np.float32))) .clip(min=0).astype(np.uint8)
-
-                diffimg = ((255 - template_check).astype(np.int32) - dilated_align.astype(np.int32)).clip(min=0).astype(
-                    np.uint8)
-                #print("subtract", diffimg)
-
-                summ = diffimg.sum()
-                #print("sum of diff", summ)
-
-                #print("data", {"good_matches": len(good_matches), "M": M.tolist(), "diffsum": int(summ)})
-
-                result = process_image(aligned_scan, rois, white_threshold=250)
-
-                magdec = MagdecAnalysis.objects.create(
-                    page_number = pno,
-                    good_matches=len(good_matches),
-                    diff_sum=int(summ),
-                    m11=M[0][0],
-                    m12=M[0][1],
-                    m13=M[0][2],
-                    m21=M[1][0],
-                    m22=M[1][1],
-                    m23=M[1][2],
-                )
-                sde.magdec_analyses.add(magdec)
-
-                for item in result["counts"]:
-                    RoiCount.objects.create(
-                        result=magdec,
-                        roi_id=item["roi_id"],
-                        color_hex=item["color_hex"],
-                        count_nonwhite=item["count_nonwhite"],
+                    # Estimate affine transformation
+                    M, inliers = cv2.estimateAffinePartial2D(
+                        src_pts,
+                        dst_pts,
+                        method=cv2.RANSAC,
+                        ransacReprojThreshold=5.0
                     )
 
-                #print(result, "result")
+                    if M is None:
+                        raise RuntimeError("Could not estimate affine transformation")
+
+                    #print("Estimated affine transform:\n", M)
+
+                    # --------------------------------------------------------
+                    # 6. Warp scan to template coordinate system
+                    # --------------------------------------------------------
+                    aligned_scan = cv2.warpAffine(
+                        scan,
+                        M,
+                        (template.shape[1], template.shape[0]),
+                        flags=cv2.INTER_LINEAR
+                    )
+
+                    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9))
+
+                    dilated_align = cv2.dilate(255 - aligned_scan, kernel)
+                    # diffimg = ((255-template.astype(np.float32)) - (blur_aligned.astype(np.float32))) .clip(min=0).astype(np.uint8)
+
+                    diffimg = ((255 - template_check).astype(np.int32) - dilated_align.astype(np.int32)).clip(min=0).astype(
+                        np.uint8)
+                    #print("subtract", diffimg)
+
+                    summ = diffimg.sum()
+                    #print("sum of diff", summ)
+
+                    #print("data", {"good_matches": len(good_matches), "M": M.tolist(), "diffsum": int(summ)})
+
+                    result = process_image(aligned_scan, rois, white_threshold=250)
+
+                    magdec = MagdecAnalysis.objects.create(
+                        page_number = pno,
+                        good_matches=len(good_matches),
+                        diff_sum=int(summ),
+                        m11=M[0][0],
+                        m12=M[0][1],
+                        m13=M[0][2],
+                        m21=M[1][0],
+                        m22=M[1][1],
+                        m23=M[1][2],
+                    )
+                    sde.magdec_analyses.add(magdec)
+
+                    for item in result["counts"]:
+                        RoiCount.objects.create(
+                            result=magdec,
+                            roi_id=item["roi_id"],
+                            color_hex=item["color_hex"],
+                            count_nonwhite=item["count_nonwhite"],
+                        )
+
+                    #print(result, "result")
+                    #break
+                    #page.save("page_image.jpg", "jpg")
                 #break
-                #page.save("page_image.jpg", "jpg")
-            #break
-        #scan = cv2.imread(scan_path, cv2.IMREAD_GRAYSCALE)
-        #cv2.waitKey(0)
-        #cv2.destroyAllWindows()
+            #scan = cv2.imread(scan_path, cv2.IMREAD_GRAYSCALE)
+            #cv2.waitKey(0)
+            #cv2.destroyAllWindows()
+            logging.info("all done, sleep 6h")
+            time.sleep(6*3600)
