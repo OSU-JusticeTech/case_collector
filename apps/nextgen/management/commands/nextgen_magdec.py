@@ -9,7 +9,8 @@ import numpy as np
 from django.core.management import BaseCommand
 from pdf2image import convert_from_path
 
-from apps.nextgen.models import ScanDocketEntry
+from apps.nextgen.models import ScanDocketEntry, MagdecAnalysis, RoiCount
+
 
 def load_rois(rois_json_path: str) -> list[dict]:
     with open(rois_json_path, "r") as f:
@@ -85,8 +86,8 @@ class Command(BaseCommand):
         template = cv2.imread(template_path + "/template.png", cv2.IMREAD_GRAYSCALE)
         template_check = cv2.imread(template_path + "/template-checker.png", cv2.IMREAD_GRAYSCALE)
 
-        print(template)
-        print(template_check)
+        #print(template)
+        #print(template_check)
 
         orb = cv2.ORB_create(
             nfeatures=5000,
@@ -97,23 +98,23 @@ class Command(BaseCommand):
 
         rois = load_rois(template_path + "/rois.json")
 
-        for sde in ScanDocketEntry.objects.filter(filename__contains=" DMAGDEC "):
-            print(sde.text)
+        for sde in ScanDocketEntry.objects.filter(filename__contains=" DMAGDEC ", magdec_analyses__isnull=True):
+            #print(sde.text)
             print(sde.filename)
 
             pages = convert_from_path(sde.scan.path)
             for pno, page in enumerate(pages):
-                print(pno)
+                print("page number", pno)
                 scan = cv2.cvtColor(np.array(page), cv2.COLOR_RGB2GRAY)
-                print(scan)
+                #print(scan)
 
                 #cv2.namedWindow("Scan", cv2.WINDOW_NORMAL)
                 #cv2.imshow("Scan", scan)
 
                 kp_scan, des_scan = orb.detectAndCompute(scan, None)
 
-                print(f"Template keypoints: {len(kp_template)}")
-                print(f"Scan keypoints: {len(kp_scan)}")
+                #print(f"Template keypoints: {len(kp_template)}")
+                #print(f"Scan keypoints: {len(kp_scan)}")
 
                 bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
                 matches = bf.match(des_template, des_scan)
@@ -125,7 +126,7 @@ class Command(BaseCommand):
                 num_good_matches = int(len(matches) * 0.15)
                 good_matches = matches[:num_good_matches]
 
-                print(f"Good matches used: {len(good_matches)}")
+                #print(f"Good matches used: {len(good_matches)}")
 
                 #match_vis = cv2.drawMatches(
                 #    template, kp_template,
@@ -158,7 +159,7 @@ class Command(BaseCommand):
                 if M is None:
                     raise RuntimeError("Could not estimate affine transformation")
 
-                print("Estimated affine transform:\n", M)
+                #print("Estimated affine transform:\n", M)
 
                 # --------------------------------------------------------
                 # 6. Warp scan to template coordinate system
@@ -177,17 +178,38 @@ class Command(BaseCommand):
 
                 diffimg = ((255 - template_check).astype(np.int32) - dilated_align.astype(np.int32)).clip(min=0).astype(
                     np.uint8)
-                print("subtract", diffimg)
+                #print("subtract", diffimg)
 
                 summ = diffimg.sum()
-                print("sum of diff", summ)
+                #print("sum of diff", summ)
 
-                print("data", {"good_matches": len(good_matches), "M": M.tolist(), "diffsum": int(summ)})
+                #print("data", {"good_matches": len(good_matches), "M": M.tolist(), "diffsum": int(summ)})
 
                 result = process_image(aligned_scan, rois, white_threshold=250)
 
-                print(result, "result")
-                break
+                magdec = MagdecAnalysis.objects.create(
+                    page_number = pno,
+                    good_matches=len(good_matches),
+                    diff_sum=int(summ),
+                    m11=M[0][0],
+                    m12=M[0][1],
+                    m13=M[0][2],
+                    m21=M[1][0],
+                    m22=M[1][1],
+                    m23=M[1][2],
+                )
+                sde.magdec_analyses.add(magdec)
+
+                for item in result["counts"]:
+                    RoiCount.objects.create(
+                        result=magdec,
+                        roi_id=item["roi_id"],
+                        color_hex=item["color_hex"],
+                        count_nonwhite=item["count_nonwhite"],
+                    )
+
+                #print(result, "result")
+                #break
                 #page.save("page_image.jpg", "jpg")
             break
         #scan = cv2.imread(scan_path, cv2.IMREAD_GRAYSCALE)
