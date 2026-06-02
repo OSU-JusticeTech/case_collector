@@ -211,7 +211,7 @@ class Command(BaseCommand):
                 #print(result, "result")
                 #break
                 #page.save("page_image.jpg", "jpg")
-            break
+            #break
         #scan = cv2.imread(scan_path, cv2.IMREAD_GRAYSCALE)
         #cv2.waitKey(0)
         #cv2.destroyAllWindows()
