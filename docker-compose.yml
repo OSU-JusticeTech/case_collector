@@ -1,15 +1,20 @@
 services:
 
   db:
-    image: postgres:18
+    image: postgis/postgis:18-3.6
     restart: always
     shm_size: 128mb
+    # expose the database to the internet only with tls enabled
+    #ports:
+    #  - "15432:5432"
     volumes:
       - db:/var/lib/postgresql
+      # - ./certfolder:/var/lib/postgresql-tls
     environment:
       POSTGRES_PASSWORD: <DB-PW>
       POSTGRES_DB: eviction
       POSTGRES_USER: postgres
+    # command: -c ssl=on -c ssl_cert_file=/var/lib/postgresql-tls/certificate.crt -c ssl_key_file=/var/lib/postgresql-tls/privatekey.key
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 60s
@@ -36,18 +41,31 @@ services:
       start_period: 30s
       timeout: 10s
       retries: 3
-  
+
+  geocoder:
+    image: ghcr.io/osu-justicetech/case_collector:main
+    command: ["sh","-c","uv run manage.py geocode"]
+    restart: always
+    #command: ["sleep", "10000"]
+    env_file: "django_env"
+
+    depends_on:
+      ui:
+        condition: service_healthy
+        restart: true
+
+
+
   scraper_public:
     image: ghcr.io/osu-justicetech/case_collector:main
     command: ["sh","-c","uv run manage.py fcmcclerk"]
     restart: always
     env_file: "django_env"
-    
     depends_on:
       ui:
         condition: service_healthy
         restart: true
- 
+
   scraper_nextgen:
     image: ghcr.io/osu-justicetech/case_collector:main
     command: ["sh","-c","uv run manage.py nextgen"]
@@ -63,6 +81,18 @@ services:
         condition: service_healthy
         restart: true
 
+  magdec_analysis:
+    image: ghcr.io/osu-justicetech/case_collector:main
+    command: ["sh","-c","uv run manage.py nextgen_magdec"]
+    restart: always
+    #command: ["sleep", "10000"]
+    env_file: "django_env"
+    volumes:
+      - pdfs:/scrape-storage
+    depends_on:
+      ui:
+        condition: service_healthy
+        restart: true
 
   metabase:
     image: metabase/metabase:latest
