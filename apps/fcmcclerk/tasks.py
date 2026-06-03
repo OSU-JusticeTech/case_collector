@@ -306,8 +306,10 @@ def create_snapshot_if_changed(
 def parse_page(pg: Page):
     case = parse_case(pg.content)
     src, _ = Source.objects.get_or_create(name="FCMC")
-    create_snapshot_if_changed(
+    snap, created = create_snapshot_if_changed(
         source=src,
         scraped_at=pg.scraped_at,  # or int epoch
         parse_case=case,
     )
+    pg.snapshot = snap
+    pg.save()

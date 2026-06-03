@@ -24,7 +24,7 @@ class Command(BaseCommand):
         scrape_date = datetime.fromisoformat(options["scrape_time"])
         print(scrape_date)
         files = glob(options["dir_glob"])
-        print("importing ", len(files))
+        logging.info("importing %d files", len(files))
         for fn in tqdm(files):
             if os.path.isfile(fn):
                 content = open(fn).read()
