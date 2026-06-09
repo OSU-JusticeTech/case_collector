@@ -62,8 +62,8 @@ def geo():
         # print(p_obj)
 
         try:
-            attrs = a["attributes"]
-            loc = Location.objects.create(
+            attrs = {k:v for k,v in a["attributes"].items() if k != "ResultID"}
+            loc, _ = Location.objects.get_or_create(
                 full_address=a["address"],
                 street_number=attrs.get("AddNum", ""),
                 street_name=attrs.get("StName", ""),
