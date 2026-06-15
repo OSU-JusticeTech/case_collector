@@ -216,3 +216,15 @@ class TZTest(TestCase):
                 ev.start,
                 datetime.datetime(2026, 3, 4, 15, 30, tzinfo=datetime.timezone.utc),
             )
+
+
+class OldScrapeTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    @patch("apps.fcmcclerk.tasks.requests.session")
+    def test_session_call(self, mock_session_cls):
+        now = datetime.datetime(2026, 5, 12)
+        mock_session_cls.return_value = FakeSession(self.client, now.date())
+        with patch("time.sleep", return_value=None):
+            scrape_n_cases(1500)

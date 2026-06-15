@@ -153,6 +153,8 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
 
         yield ScrapeInstruction(case_number=case.case_number, digest=case.digest)
 
+    logging.info("all cases from CSVs are done, pick the 1000 cases from cases with number years y y-1 y-2 that were scraped last")
+
     # print(resp.content)
     yield ScrapeInstruction(
         earliest=datetime.now() + timedelta(hours=6), case_number=None

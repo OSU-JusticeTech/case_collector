@@ -60,7 +60,7 @@ def fixture_at(req_date):
     return new_cases
 
 
-def generate_year(year, total_cases=500):
+def generate_year(year, total_cases=100):
 
     CASE_WEEKEND_RATIO = 0.0194938
     CASE_WORKDAY_RATIO = 0.912828
