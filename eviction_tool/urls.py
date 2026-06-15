@@ -30,4 +30,8 @@ urlpatterns = [
         "secure.fcmcclerk.com/",
         include("apps.nextgen_mock.urls", namespace="nextgen_mock"),
     ),
+    path(
+        "attending/",
+        include("apps.attending.urls", namespace="attending"),
+    ),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
