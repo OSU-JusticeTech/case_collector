@@ -19,11 +19,11 @@
         .candidate-pool { display: flex; flex-wrap: wrap; gap: 8px; overflow-y: auto; flex: 1; align-content: flex-start; padding-right: 5px; background: #222; padding: 10px; border-radius: 4px; border: 1px solid #444; }
 
         .badge {
+            position: absolute;
             background: #2563eb; color: white; padding: 6px 10px; border-radius: 4px;
             cursor: grab; font-weight: bold; font-size: 13px; display: inline-flex;
             align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.4);
             user-select: none; touch-action: none;
-            position: absolute;
             transform-origin: center center;
         }
 
@@ -41,6 +41,16 @@
         .controls button { flex: 1; padding: 8px; background: #444; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
         .controls button:hover { background: #555; }
 
+        /* Slider Styling */
+        .slider-group { background: #222; padding: 10px; border-radius: 4px; border: 1px solid #444; margin-top: 5px; display: flex; flex-direction: column; gap: 10px; }
+        .slider-item label { display: flex; justify-content: space-between; font-size: 12px; color: #cbd5e1; margin-bottom: 4px; }
+        .slider-item input[type="range"] { width: 100%; cursor: pointer; margin: 0; }
+
+        /* Loading Spinner CSS */
+        .loading-container { display: none; align-items: center; justify-content: center; gap: 10px; background: #3b82f6; color: white; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; font-weight: bold; }
+        .spinner { width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         h3 { margin-top: 0; margin-bottom: 10px; font-size: 16px; color: #e2e8f0; }
         h4 { margin-top: 15px; margin-bottom: 8px; font-size: 14px; color: #cbd5e1; }
     </style>
@@ -51,6 +61,11 @@
         <h3>Target Workspace Sheet</h3>
         <select class="file-selector" id="file-select" onchange="loadWorkspace()"></select>
 
+        <div id="loading-status" class="loading-container">
+            <div class="spinner"></div>
+            <span>Running OCR Engine...</span>
+        </div>
+
         <div class="controls">
             <div class="btn-group">
                 <button onclick="rotateImage(-90)">↺ Rotate Left</button>
@@ -59,6 +74,23 @@
             <div class="btn-group">
                 <button onclick="zoomImage(0.1)">＋ Zoom In</button>
                 <button onclick="zoomImage(-0.1)">－ Zoom Out</button>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-item">
+                    <label for="x-offset-slider">
+                        <span>Horizontal Offset (X):</span>
+                        <span id="x-offset-value">0px</span>
+                    </label>
+                    <input type="range" id="x-offset-slider" min="-200" max="200" value="0" oninput="updateOffsets(this.value, null)">
+                </div>
+                <div class="slider-item">
+                    <label for="y-offset-slider">
+                        <span>Vertical Offset (Y):</span>
+                        <span id="y-offset-value">0px</span>
+                    </label>
+                    <input type="range" id="y-offset-slider" min="-200" max="200" value="0" oninput="updateOffsets(null, this.value)">
+                </div>
             </div>
         </div>
 
@@ -78,6 +110,8 @@
         let currentFile = "";
         let currentRotation = 0;
         let currentZoom = 0.5;
+        let currentXOffset = 0;
+        let currentYOffset = 0;
         let masterData = {};
         let displayOrder = [];
         let imgNaturalWidth = 0;
@@ -99,21 +133,40 @@
             currentFile = document.getElementById('file-select').value;
             if (!currentFile) return;
 
-            const res = await fetch(`/attending/load/${currentFile}`);
-            const data = await res.json();
+            // Show the loading banner before starting the network requests
+            const loader = document.getElementById('loading-status');
+            loader.style.display = 'flex';
 
-            masterData = data.master_data;
-            displayOrder = data.display_order;
-            currentRotation = data.rotation || 0;
-            currentZoom = data.zoom || 0.5;
+            try {
+                const res = await fetch(`/attending/load/${currentFile}`);
+                const data = await res.json();
 
-            const img = document.getElementById('sheet-img');
-            img.src = `/attending/data/${currentFile}`;
-            img.onload = () => {
-                imgNaturalWidth = img.naturalWidth;
-                imgNaturalHeight = img.naturalHeight;
-                applyTransforms();
-            };
+                masterData = data.master_data;
+                displayOrder = data.display_order;
+                currentRotation = data.rotation || 0;
+                currentZoom = data.zoom || 0.5;
+
+                currentXOffset = data.x_offset || 0;
+                currentYOffset = data.y_offset || 0;
+
+                document.getElementById('x-offset-slider').value = currentXOffset;
+                document.getElementById('x-offset-value').innerText = `${currentXOffset}px`;
+                document.getElementById('y-offset-slider').value = currentYOffset;
+                document.getElementById('y-offset-value').innerText = `${currentYOffset}px`;
+
+                const img = document.getElementById('sheet-img');
+                img.src = `/attending/data/${currentFile}`;
+                img.onload = () => {
+                    imgNaturalWidth = img.naturalWidth;
+                    imgNaturalHeight = img.naturalHeight;
+                    applyTransforms();
+                    // Hide spinner once the UI transformations map completely
+                    loader.style.display = 'none';
+                };
+            } catch (err) {
+                console.error("Failed to load layout details:", err);
+                loader.style.display = 'none'; // Clear loading loop if api breaks
+            }
         }
 
         function renderBadges() {
@@ -146,8 +199,11 @@
                 badge.appendChild(input);
 
                 if (item.present && item.x !== null && item.y !== null) {
-                    badge.style.left = (item.x * scaleFactor) + "px";
-                    badge.style.top = (item.y * scaleFactor) + "px";
+                    const adjustedX = (item.x * scaleFactor) + currentXOffset;
+                    const adjustedY = (item.y * scaleFactor) + currentYOffset;
+
+                    badge.style.left = adjustedX + "px";
+                    badge.style.top = adjustedY + "px";
 
                     if (item.is_ocr) {
                         badge.classList.add('staged');
@@ -164,7 +220,25 @@
         }
 
         function allowDrop(e) { e.preventDefault(); }
-        function dragStart(e, num) { e.dataTransfer.setData("text/plain", num); }
+
+        function dragStart(e, num) {
+            e.dataTransfer.setData("text/plain", num);
+
+            const originalBadge = document.getElementById(`badge-${num}`);
+            const dragGhost = originalBadge.cloneNode(true);
+
+            dragGhost.style.position = "absolute";
+            dragGhost.style.top = "-1000px";
+            dragGhost.style.left = "-1000px";
+            dragGhost.style.transform = "none";
+
+            document.body.appendChild(dragGhost);
+
+            const rect = originalBadge.getBoundingClientRect();
+            e.dataTransfer.setDragImage(dragGhost, rect.width / 2, rect.height / 2);
+
+            setTimeout(() => { dragGhost.remove(); }, 0);
+        }
 
         function dropToImage(e) {
             e.preventDefault();
@@ -196,8 +270,9 @@
             const num = e.dataTransfer.getData("text/plain");
             masterData[num].present = true;
             masterData[num].is_ocr = false;
-            masterData[num].x = rawX / scaleFactor;
-            masterData[num].y = rawY / scaleFactor;
+
+            masterData[num].x = (rawX - currentXOffset) / scaleFactor;
+            masterData[num].y = (rawY - currentYOffset) / scaleFactor;
             renderBadges();
         }
 
@@ -241,12 +316,26 @@
             applyTransforms();
         }
 
+        function updateOffsets(xVal, yVal) {
+            if (xVal !== null) {
+                currentXOffset = parseInt(xVal, 10);
+                document.getElementById('x-offset-value').innerText = `${currentXOffset}px`;
+            }
+            if (yVal !== null) {
+                currentYOffset = parseInt(yVal, 10);
+                document.getElementById('y-offset-value').innerText = `${currentYOffset}px`;
+            }
+            renderBadges();
+        }
+
         async function saveData() {
             const payload = {
                 master_data: masterData,
                 display_order: displayOrder,
                 rotation: currentRotation,
-                zoom: currentZoom
+                zoom: currentZoom,
+                x_offset: currentXOffset,
+                y_offset: currentYOffset
             };
             const res = await fetch(`/api/save/${currentFile}`, {
                 method: 'POST',

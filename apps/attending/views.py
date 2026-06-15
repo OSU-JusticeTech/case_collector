@@ -55,7 +55,7 @@ class FileLoad(APIView):
 
         if os.path.exists(docket_path):
             with open(docket_path, 'r') as f:
-                possible_numbers = [str(n) for n in json.load(f)]
+                possible_numbers = list(sorted([str(n) for n in json.load(f)]))
         else:
             return Response({"error": f"Missing docket target file: {base_name}.txtdocket.json"}, status=404)
 
