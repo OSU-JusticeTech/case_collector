@@ -1,6 +1,6 @@
 from django.urls import path, re_path
 
-from apps.attending.views import base, FileList, FileLoad, data
+from apps.attending.views import base, FileList, FileLoad, data, Save
 
 app_name = "attending"
 urlpatterns = [
@@ -8,5 +8,5 @@ urlpatterns = [
     path("files", FileList.as_view(), name="files"),
     path("load/<str:filename>", FileLoad.as_view(), name="load"),
     path("data/<str:filename>", data, name="data"),
-
+    path("save/<str:filename>", Save.as_view(), name="save"),
 ]
