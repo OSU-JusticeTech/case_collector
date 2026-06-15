@@ -113,7 +113,7 @@ def get_best_docket(ocr_values):
                 results = [dict(zip(cols, row)) for row in rows]
                 #print("rows", results)
                 numends = [r["case_num"] for r in results]
-                print("possible", numends)
+                #print("possible", numends)
                 return best_start_time, list(sorted(numends))
 
 class FileLoad(APIView):
@@ -123,26 +123,21 @@ class FileLoad(APIView):
         FILENAME_RE = re.compile(r"^[a-zA-Z0-9._-]+$")
         if not FILENAME_RE.match(filename):
             raise Http404()
+
         base_name = os.path.splitext(filename)[0]
-        #docket_path = os.path.join(DATA_DIR, f"{base_name}.txtdocket.json")
         result_path = os.path.join(DATA_DIR, f"{base_name}_result.json")
 
+        # --- 1. HANDLE SAVED DATA CACHE WITH MIGRATION LAYER ---
         if os.path.exists(result_path):
             with open(result_path, 'r') as f:
-                return Response(json.load(f))
+                saved_data = json.load(f)
+            return Response(saved_data)
 
-        #if os.path.exists(docket_path):
-        #    with open(docket_path, 'r') as f:
-        #        possible_numbers = list(sorted([str(n) for n in json.load(f)]))
-        #else:
-        #    return Response({"error": f"Missing docket target file: {base_name}.txtdocket.json"}, status=404)
-
+        # --- 2. RUN COLD-START OCR PROCESS ---
         img_path = os.path.join(DATA_DIR, filename)
-
-        # Generate the hOCR data using the proper pytesseract function
         img = Image.open(img_path)
         img = ImageOps.exif_transpose(img)
-        img.rotate(90)
+
         hocr_bytes = pytesseract.image_to_pdf_or_hocr(img, extension='hocr', config="--psm 12")
         hocr_data = hocr_bytes.decode('utf-8')
 
@@ -161,43 +156,64 @@ class FileLoad(APIView):
                 num = num_match.group(1)
                 rough_numbers.append(int(num))
 
-        print("rough", rough_numbers)
+        best_start, raw_possible_numbers = get_best_docket(rough_numbers)
 
-        best_start, possible_numbers = get_best_docket(rough_numbers)
+        # CRITICAL FIX: Ensure all targeted numbers are stored strictly as STRINGS
+        possible_numbers = [str(n) for n in raw_possible_numbers]
 
-        #possible_numbers = []
-
+        # First pass: Collect all bounding boxes found by OCR matching our docket strings
         for x0, y0, x1, y1, text in matches:
             clean_text = text.strip()
             num_match = re.search(r"([1-9][0-9]{2,})", clean_text)
             if num_match:
-                num = num_match.group(1)
-                if num in possible_numbers and num not in ocr_found_numbers:
-                    ocr_found_numbers[num] = {
+                num = str(num_match.group(1))  # Keep as string
+                if num in possible_numbers:
+                    if num not in ocr_found_numbers:
+                        ocr_found_numbers[num] = []
+
+                    ocr_found_numbers[num].append({
                         "x": int(x0) + (int(x1) - int(x0)) // 2,
                         "y": int(y0) + (int(y1) - int(y0)) // 2,
                         "note": clean_text.replace(num, "").replace("-", "").strip()[:3]
-                    }
-                    display_order.append(num)
+                    })
+
+        # --- 3. RESTRUCTURE MASTER DATA USING UNIQUE GENERATED IDs ---
+        lbl_index = 0
 
         for num in possible_numbers:
-            if num in ocr_found_numbers:
-                master_data[num] = {
+            num_str = str(num)
+
+            # Check if this string number exists in our matches coordinate lists
+            if num_str in ocr_found_numbers and len(ocr_found_numbers[num_str]) > 0:
+                ocr_instance = ocr_found_numbers[num_str].pop(0)
+
+                uid = f"lbl_{num_str}_{lbl_index}"
+                lbl_index += 1
+
+                master_data[uid] = {
+                    "id": uid,
+                    "number": num_str,
                     "present": True,
-                    "note": ocr_found_numbers[num]["note"],
-                    "x": ocr_found_numbers[num]["x"],
-                    "y": ocr_found_numbers[num]["y"],
+                    "note": ocr_instance["note"],
+                    "x": ocr_instance["x"],
+                    "y": ocr_instance["y"],
                     "is_ocr": True
                 }
+                display_order.append(uid)
             else:
-                master_data[num] = {
+                uid = f"lbl_{num_str}_{lbl_index}"
+                lbl_index += 1
+
+                master_data[uid] = {
+                    "id": uid,
+                    "number": num_str,
                     "present": False,
                     "note": "",
                     "x": None,
                     "y": None,
                     "is_ocr": False
                 }
-                display_order.append(num)
+                display_order.append(uid)
 
         tz_ohio = ZoneInfo("America/New_York")
         return Response({
@@ -205,5 +221,7 @@ class FileLoad(APIView):
             "display_order": display_order,
             "rotation": 0,
             "zoom": 0.5,
-            "detected_date": best_start.astimezone(tz_ohio).isoformat()
+            "x_offset": 0,
+            "y_offset": 0,
+            "detected_date": best_start.astimezone(tz_ohio).isoformat() if best_start else None
         })
