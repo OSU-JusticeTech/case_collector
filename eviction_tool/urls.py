@@ -34,4 +34,8 @@ urlpatterns = [
         "attending/",
         include("apps.attending.urls", namespace="attending"),
     ),
+    path(
+        "nextgen/",
+        include("apps.nextgen.urls", namespace="nextgen"),
+    ),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
