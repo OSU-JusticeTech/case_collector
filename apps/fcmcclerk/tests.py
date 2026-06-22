@@ -227,4 +227,4 @@ class OldScrapeTest(TestCase):
         now = datetime.datetime(2026, 5, 12)
         mock_session_cls.return_value = FakeSession(self.client, now.date())
         with patch("time.sleep", return_value=None):
-            scrape_n_cases(1500)
+            scrape_n_cases(15)

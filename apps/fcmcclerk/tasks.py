@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 
 from django.core.cache import cache
-from django.db.models import Q
+from django.db.models import Q, OuterRef, Subquery
 from pydantic import BaseModel
 
 from apps.cases.models import (
@@ -90,9 +90,9 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
     missed = set()
 
     parts = csv_cases[0].case_number.split(" ")
-    year = int(parts[0])
+    now_year = int(parts[0])
     cat = parts[1]
-    existing_set = Page.objects.filter(year__gte=year - 2, category=cat).values_list(
+    existing_set = Page.objects.filter(year__gte=now_year - 2, category=cat).values_list(
         "year", "category", "number", "overview_digest"
     )
     logging.info("compare cases to list of %d existing", len(existing_set))
@@ -154,6 +154,11 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
         yield ScrapeInstruction(case_number=case.case_number, digest=case.digest)
 
     logging.info("all cases from CSVs are done, pick the 1000 cases from cases with number years y y-1 y-2 that were scraped last")
+
+    logging.info("get date of earliest in csv data")
+
+    for op in Page.objects.filter(category=cat,year__gte=now_year - 2, return_code__lt=300).order_by("scraped_at")[:300]:
+        yield ScrapeInstruction(case_number=f"{op.year} {op.category} {op.number:06d}", digest=op.overview_digest)
 
     # print(resp.content)
     yield ScrapeInstruction(
