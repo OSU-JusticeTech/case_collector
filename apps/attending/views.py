@@ -1,6 +1,8 @@
 import json
+import math
 import os
 import re
+from collections import Counter
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -56,6 +58,7 @@ class Save(APIView):
 
 def get_best_docket(ocr_values):
 
+    #print("look for values", ocr_values)
     values_sql = ",".join(f"({v})" for v in ocr_values)
 
     sql = f"""
@@ -115,6 +118,7 @@ def get_best_docket(ocr_values):
                 numends = [r["case_num"] for r in results]
                 #print("possible", numends)
                 return best_start_time, list(sorted(numends))
+    return None, []
 
 class FileLoad(APIView):
     permission_classes = (IsAuthenticated,)
@@ -138,12 +142,22 @@ class FileLoad(APIView):
         img = Image.open(img_path)
         img = ImageOps.exif_transpose(img)
 
-        hocr_bytes = pytesseract.image_to_pdf_or_hocr(img, extension='hocr', config="--psm 12")
-        hocr_data = hocr_bytes.decode('utf-8')
 
-        master_data = {}
-        display_order = []
-        ocr_found_numbers = {}
+        rotestimates = {}
+
+        for angle in [0,90,180,270]:
+            rotated = img.rotate(angle)
+            osd = pytesseract.image_to_osd(rotated, output_type='dict')
+            #print("osd", angle, osd)
+            rotestimates[angle] = osd
+
+        calrots = [(a-(-d["orientation"]%360))%360 for a,d in rotestimates.items()]
+        bestrotccw = Counter(calrots).most_common(1)[0][0]
+
+        rotated = img.rotate(bestrotccw)
+
+        hocr_bytes = pytesseract.image_to_pdf_or_hocr(rotated, extension='hocr', config="--psm 11")
+        hocr_data = hocr_bytes.decode('utf-8')
 
         word_pattern = r"<span[^>]*class='ocrx_word'[^>]*title='bbox (\d+) (\d+) (\d+) (\d+)[^']*'>\s*([^\s<]+)"
         matches = re.findall(word_pattern, hocr_data)
@@ -158,8 +172,29 @@ class FileLoad(APIView):
 
         best_start, raw_possible_numbers = get_best_docket(rough_numbers)
 
+        master_data = {}
+        display_order = []
+        ocr_found_numbers = {}
+
         # CRITICAL FIX: Ensure all targeted numbers are stored strictly as STRINGS
         possible_numbers = [str(n) for n in raw_possible_numbers]
+
+        def rotate_point(x, y, w, h, angle_deg):
+            cx = w / 2
+            cy = h / 2
+
+            theta = math.radians(angle_deg)
+
+            # Translate point to origin
+            dx = x - cx
+            dy = y - cy
+
+            # Rotate
+            rx = dx * math.cos(theta) - dy * math.sin(theta)
+            ry = dx * math.sin(theta) + dy * math.cos(theta)
+
+            # Translate back
+            return rx + cx, ry + cy
 
         # First pass: Collect all bounding boxes found by OCR matching our docket strings
         for x0, y0, x1, y1, text in matches:
@@ -171,9 +206,14 @@ class FileLoad(APIView):
                     if num not in ocr_found_numbers:
                         ocr_found_numbers[num] = []
 
+                    x = int(x0) + (int(x1) - int(x0)) // 2
+                    y = int(y0) + (int(y1) - int(y0)) // 2
+
+                    rx,ry = rotate_point(x,y,rotated.width, rotated.height,bestrotccw)
+
                     ocr_found_numbers[num].append({
-                        "x": int(x0) + (int(x1) - int(x0)) // 2,
-                        "y": int(y0) + (int(y1) - int(y0)) // 2,
+                        "x": rx,
+                        "y": ry,
                         "note": clean_text.replace(num, "").replace("-", "").strip()[:3]
                     })
 
@@ -219,7 +259,7 @@ class FileLoad(APIView):
         return Response({
             "master_data": master_data,
             "display_order": display_order,
-            "rotation": 0,
+            "rotation": (-bestrotccw)%360,
             "zoom": 0.5,
             "x_offset": 0,
             "y_offset": 0,
