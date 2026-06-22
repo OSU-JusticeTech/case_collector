@@ -148,6 +148,7 @@
         let displayOrder = [];
         let imgNaturalWidth = 0;
         let imgNaturalHeight = 0;
+        let targetDate = "";
 
         async function init() {
             const res = await fetch('{% url "attending:files" %}');
@@ -157,7 +158,7 @@
             selector.innerHTML = ""; // Prevent doubling options
             files.forEach(f => {
                 let opt = document.createElement('option');
-                opt.value = f.name;
+                opt.value = f.pk;
                 // Place a diagnostic checkmark character indicator if its completion key evaluates true
                 opt.innerText = f.processed ? `✓ ${f.name}` : f.name;
                 selector.appendChild(opt);
@@ -204,6 +205,7 @@
                 // Hydrate map parameters directly via explicit unique hash strings mapping
                 masterData = data.master_data || {};
                 displayOrder = data.display_order || [];
+                targetDate = data.detected_date;
 
                 const img = document.getElementById('sheet-img');
                 img.src = `/attending/data/${currentFile}`;
@@ -431,11 +433,13 @@
                 rotation: currentRotation,
                 zoom: currentZoom,
                 x_offset: currentXOffset,
-                y_offset: currentYOffset
+                y_offset: currentYOffset,
+                detected_date: targetDate,
             };
-            const res = await fetch(`/api/save/${currentFile}`, {
+            const res = await fetch(`/attending/save/${currentFile}`, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: {'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'},
                 body: JSON.stringify(payload)
             });
             if(res.ok) {
@@ -443,7 +447,7 @@
                 const selector = document.getElementById('file-select');
                 const selectedOpt = selector.options[selector.selectedIndex];
                 if (!selectedOpt.innerText.startsWith('✓ ')) {
-                    selectedOpt.innerText = `✓ ${selectedOpt.value}`;
+                    selectedOpt.innerText = `✓ ${selectedOpt.innerText}`;
                 }
             }
         }

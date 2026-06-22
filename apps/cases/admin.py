@@ -62,14 +62,22 @@ def link_listing(objs, revname, attr=("title",)):
 
 
 class SnapshotAdmin(admin.ModelAdmin):
-    readonly_fields = ("parties", "docket")
+    readonly_fields = ("case","parties","events", "docket")
     date_hierarchy = "created_at"
+
 
     def parties(self, obj):
         return link_listing(
             obj.party_set.all(),
             "admin:cases_party_change",
             attr=("side", "role", "name", "address", "city"),
+        )
+
+    def events(self, obj):
+        return link_listing(
+            obj.event_set.all(),
+            "admin:cases_event_change",
+            attr=("start", "result"),
         )
 
     def docket(self, obj):

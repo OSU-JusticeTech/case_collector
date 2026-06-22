@@ -12,7 +12,7 @@ from PIL import Image, ImageOps
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, FileResponse
 
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from pyarrow.lib import Date32Array
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -20,6 +20,7 @@ from rest_framework.views import APIView
 
 from django.db import connection
 
+from apps.attending.models import CheckinSheet
 
 # Create your views here.
 
@@ -32,34 +33,36 @@ class FileList(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        files = os.listdir(DATA_DIR)
-        images = sorted([{"name": f, "processed": False} for f in files if f.lower().endswith(('.jpg', '.jpeg', '.png'))], key=lambda x: x["name"])
+        files = CheckinSheet.objects.all()
+        images = sorted([{"name": f.filename, "processed": f.validated,"pk": f.pk} for f in files], key=lambda x: x["name"])
         return Response(images)
 
 @login_required
 def data(request, filename):
-    FILENAME_RE = re.compile(r"^[a-zA-Z0-9._-]+$")
-    if not FILENAME_RE.match(filename):
-        raise Http404()
-    return FileResponse(open(DATA_DIR / filename, "rb"))
+    sheet = get_object_or_404(CheckinSheet, pk=filename)
+    return FileResponse(sheet.photo.file)
 
 class Save(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, filename):
-        FILENAME_RE = re.compile(r"^[a-zA-Z0-9._-]+$")
-        if not FILENAME_RE.match(filename):
-            raise Http404()
-        print(request.data)
+        sheet = get_object_or_404(CheckinSheet, pk=filename)
 
+        sheet.processed = request.data
+        sheet.validated = True
+        sheet.save()
         return Response({"success": True})
 
 
 
-def get_best_docket(ocr_values):
+def get_best_docket(ocr_values, sheet):
 
     #print("look for values", ocr_values)
     values_sql = ",".join(f"({v})" for v in ocr_values)
+
+    extra = ""
+    if sheet.possible_start is not None and sheet.possible_end is not None:
+        extra = f"WHERE ce.start >= '{sheet.possible_start}' AND ce.start <= '{sheet.possible_end}'"
 
     sql = f"""
     WITH
@@ -73,6 +76,7 @@ def get_best_docket(ocr_values):
         FROM cases_event ce
         JOIN latest_snapshot ls
           ON ce.snapshot_id = ls.id
+        {extra}
     ),
     ocr_count AS (
         SELECT COUNT(DISTINCT num) AS total
@@ -90,12 +94,14 @@ def get_best_docket(ocr_values):
     ORDER BY matches DESC, coverage DESC;
     """
 
+    print(sql)
+
     with connection.cursor() as cursor:
         cursor.execute(sql)
         rows = cursor.fetchall()
         cols = [col[0] for col in cursor.description]
         results = [dict(zip(cols, row)) for row in rows]
-        #print("match", results)
+        print("match", results)
         if len(results) > 0:
             if results[0]["coverage"] > 0.5:
                 best_start_time = results[0]["start_time"]  # from your ranking query
@@ -124,22 +130,14 @@ class FileLoad(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, filename):
-        FILENAME_RE = re.compile(r"^[a-zA-Z0-9._-]+$")
-        if not FILENAME_RE.match(filename):
-            raise Http404()
+        sheet = get_object_or_404(CheckinSheet, pk=filename)
 
-        base_name = os.path.splitext(filename)[0]
-        result_path = os.path.join(DATA_DIR, f"{base_name}_result.json")
-
-        # --- 1. HANDLE SAVED DATA CACHE WITH MIGRATION LAYER ---
-        if os.path.exists(result_path):
-            with open(result_path, 'r') as f:
-                saved_data = json.load(f)
-            return Response(saved_data)
+        print("proc", sheet.processed)
+        if sheet.processed:
+            return Response(sheet.processed)
 
         # --- 2. RUN COLD-START OCR PROCESS ---
-        img_path = os.path.join(DATA_DIR, filename)
-        img = Image.open(img_path)
+        img = Image.open(sheet.photo)
         img = ImageOps.exif_transpose(img)
 
 
@@ -170,7 +168,7 @@ class FileLoad(APIView):
                 num = num_match.group(1)
                 rough_numbers.append(int(num))
 
-        best_start, raw_possible_numbers = get_best_docket(rough_numbers)
+        best_start, raw_possible_numbers = get_best_docket(rough_numbers, sheet)
 
         master_data = {}
         display_order = []
@@ -214,7 +212,7 @@ class FileLoad(APIView):
                     ocr_found_numbers[num].append({
                         "x": rx,
                         "y": ry,
-                        "note": clean_text.replace(num, "").replace("-", "").strip()[:3]
+                        "note": clean_text.replace(num, "").replace("-", "").strip()
                     })
 
         # --- 3. RESTRUCTURE MASTER DATA USING UNIQUE GENERATED IDs ---

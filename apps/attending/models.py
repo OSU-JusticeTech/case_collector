@@ -11,7 +11,7 @@ class CheckinSheet(models.Model):
     possible_start = models.DateField(null=True, blank=True)
     possible_end = models.DateField(null=True, blank=True)
 
-    processed = models.JSONField(null=True)
+    processed = models.JSONField(null=True, blank=True)
     validated = models.BooleanField(default=False)
 
     def __str__(self):
