@@ -14,7 +14,7 @@ from django.http import Http404, FileResponse
 
 from django.shortcuts import render, get_object_or_404
 from pyarrow.lib import Date32Array
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -43,7 +43,9 @@ def data(request, filename):
     return FileResponse(sheet.photo.file)
 
 class Save(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (DjangoModelPermissions,)
+
+    queryset = CheckinSheet.objects.all()
 
     def post(self, request, filename):
         sheet = get_object_or_404(CheckinSheet, pk=filename)
@@ -94,14 +96,14 @@ def get_best_docket(ocr_values, sheet):
     ORDER BY matches DESC, coverage DESC;
     """
 
-    print(sql)
+    #print(sql)
 
     with connection.cursor() as cursor:
         cursor.execute(sql)
         rows = cursor.fetchall()
         cols = [col[0] for col in cursor.description]
         results = [dict(zip(cols, row)) for row in rows]
-        print("match", results)
+        #print("match", results)
         if len(results) > 0:
             if results[0]["coverage"] > 0.5:
                 best_start_time = results[0]["start_time"]  # from your ranking query
@@ -126,6 +128,135 @@ def get_best_docket(ocr_values, sheet):
                 return best_start_time, list(sorted(numends))
     return None, []
 
+def extract_sheet(sheet):
+    # --- 2. RUN COLD-START OCR PROCESS ---
+    img = Image.open(sheet.photo)
+    img = ImageOps.exif_transpose(img)
+
+    rotestimates = {}
+
+    for angle in [0, 90, 180, 270]:
+        rotated = img.rotate(angle)
+        osd = pytesseract.image_to_osd(rotated, output_type='dict')
+        # print("osd", angle, osd)
+        rotestimates[angle] = osd
+
+    calrots = [(a - (-d["orientation"] % 360)) % 360 for a, d in rotestimates.items()]
+    bestrotccw = Counter(calrots).most_common(1)[0][0]
+
+    rotated = img.rotate(bestrotccw)
+
+    hocr_bytes = pytesseract.image_to_pdf_or_hocr(rotated, extension='hocr', config="--psm 11")
+    hocr_data = hocr_bytes.decode('utf-8')
+
+    word_pattern = r"<span[^>]*class='ocrx_word'[^>]*title='bbox (\d+) (\d+) (\d+) (\d+)[^']*'>\s*([^\s<]+)"
+    matches = re.findall(word_pattern, hocr_data)
+
+    rough_numbers = []
+    for x0, y0, x1, y1, text in matches:
+        clean_text = text.strip()
+        num_match = re.search(r"([1-9][0-9]{2,})", clean_text)
+        if num_match:
+            num = num_match.group(1)
+            rough_numbers.append(int(num))
+
+    best_start, raw_possible_numbers = get_best_docket(rough_numbers, sheet)
+
+    master_data = {}
+    display_order = []
+    ocr_found_numbers = {}
+
+    # CRITICAL FIX: Ensure all targeted numbers are stored strictly as STRINGS
+    possible_numbers = [str(n) for n in raw_possible_numbers]
+
+    def rotate_point(x, y, w, h, angle_deg):
+        cx = w / 2
+        cy = h / 2
+
+        theta = math.radians(angle_deg)
+
+        # Translate point to origin
+        dx = x - cx
+        dy = y - cy
+
+        # Rotate
+        rx = dx * math.cos(theta) - dy * math.sin(theta)
+        ry = dx * math.sin(theta) + dy * math.cos(theta)
+
+        # Translate back
+        return rx + cx, ry + cy
+
+    # First pass: Collect all bounding boxes found by OCR matching our docket strings
+    for x0, y0, x1, y1, text in matches:
+        clean_text = text.strip()
+        num_match = re.search(r"([1-9][0-9]{2,})", clean_text)
+        if num_match:
+            num = str(num_match.group(1))  # Keep as string
+            if num in possible_numbers:
+                if num not in ocr_found_numbers:
+                    ocr_found_numbers[num] = []
+
+                x = int(x0) + (int(x1) - int(x0)) // 2
+                y = int(y0) + (int(y1) - int(y0)) // 2
+
+                rx, ry = rotate_point(x, y, rotated.width, rotated.height, bestrotccw)
+
+                ocr_found_numbers[num].append({
+                    "x": rx,
+                    "y": ry,
+                    "note": clean_text.replace(num, "").replace("-", "").strip()
+                })
+
+    # --- 3. RESTRUCTURE MASTER DATA USING UNIQUE GENERATED IDs ---
+    lbl_index = 0
+
+    for num in possible_numbers:
+        num_str = str(num)
+
+        # Check if this string number exists in our matches coordinate lists
+        if num_str in ocr_found_numbers and len(ocr_found_numbers[num_str]) > 0:
+            ocr_instance = ocr_found_numbers[num_str].pop(0)
+
+            uid = f"lbl_{num_str}_{lbl_index}"
+            lbl_index += 1
+
+            master_data[uid] = {
+                "id": uid,
+                "number": num_str,
+                "present": True,
+                "note": ocr_instance["note"],
+                "x": ocr_instance["x"],
+                "y": ocr_instance["y"],
+                "is_ocr": True
+            }
+            display_order.append(uid)
+        else:
+            uid = f"lbl_{num_str}_{lbl_index}"
+            lbl_index += 1
+
+            master_data[uid] = {
+                "id": uid,
+                "number": num_str,
+                "present": False,
+                "note": "",
+                "x": None,
+                "y": None,
+                "is_ocr": False
+            }
+            display_order.append(uid)
+
+    tz_ohio = ZoneInfo("America/New_York")
+    return {
+        "master_data": master_data,
+        "display_order": display_order,
+        "rotation": (-bestrotccw) % 360,
+        "zoom": 0.5,
+        "x_offset": 0,
+        "y_offset": 0,
+        "detected_date": best_start.astimezone(tz_ohio).isoformat() if best_start else None
+    }
+
+
 class FileLoad(APIView):
     permission_classes = (IsAuthenticated,)
 
@@ -136,130 +267,4 @@ class FileLoad(APIView):
         if sheet.processed:
             return Response(sheet.processed)
 
-        # --- 2. RUN COLD-START OCR PROCESS ---
-        img = Image.open(sheet.photo)
-        img = ImageOps.exif_transpose(img)
-
-
-        rotestimates = {}
-
-        for angle in [0,90,180,270]:
-            rotated = img.rotate(angle)
-            osd = pytesseract.image_to_osd(rotated, output_type='dict')
-            #print("osd", angle, osd)
-            rotestimates[angle] = osd
-
-        calrots = [(a-(-d["orientation"]%360))%360 for a,d in rotestimates.items()]
-        bestrotccw = Counter(calrots).most_common(1)[0][0]
-
-        rotated = img.rotate(bestrotccw)
-
-        hocr_bytes = pytesseract.image_to_pdf_or_hocr(rotated, extension='hocr', config="--psm 11")
-        hocr_data = hocr_bytes.decode('utf-8')
-
-        word_pattern = r"<span[^>]*class='ocrx_word'[^>]*title='bbox (\d+) (\d+) (\d+) (\d+)[^']*'>\s*([^\s<]+)"
-        matches = re.findall(word_pattern, hocr_data)
-
-        rough_numbers = []
-        for x0, y0, x1, y1, text in matches:
-            clean_text = text.strip()
-            num_match = re.search(r"([1-9][0-9]{2,})", clean_text)
-            if num_match:
-                num = num_match.group(1)
-                rough_numbers.append(int(num))
-
-        best_start, raw_possible_numbers = get_best_docket(rough_numbers, sheet)
-
-        master_data = {}
-        display_order = []
-        ocr_found_numbers = {}
-
-        # CRITICAL FIX: Ensure all targeted numbers are stored strictly as STRINGS
-        possible_numbers = [str(n) for n in raw_possible_numbers]
-
-        def rotate_point(x, y, w, h, angle_deg):
-            cx = w / 2
-            cy = h / 2
-
-            theta = math.radians(angle_deg)
-
-            # Translate point to origin
-            dx = x - cx
-            dy = y - cy
-
-            # Rotate
-            rx = dx * math.cos(theta) - dy * math.sin(theta)
-            ry = dx * math.sin(theta) + dy * math.cos(theta)
-
-            # Translate back
-            return rx + cx, ry + cy
-
-        # First pass: Collect all bounding boxes found by OCR matching our docket strings
-        for x0, y0, x1, y1, text in matches:
-            clean_text = text.strip()
-            num_match = re.search(r"([1-9][0-9]{2,})", clean_text)
-            if num_match:
-                num = str(num_match.group(1))  # Keep as string
-                if num in possible_numbers:
-                    if num not in ocr_found_numbers:
-                        ocr_found_numbers[num] = []
-
-                    x = int(x0) + (int(x1) - int(x0)) // 2
-                    y = int(y0) + (int(y1) - int(y0)) // 2
-
-                    rx,ry = rotate_point(x,y,rotated.width, rotated.height,bestrotccw)
-
-                    ocr_found_numbers[num].append({
-                        "x": rx,
-                        "y": ry,
-                        "note": clean_text.replace(num, "").replace("-", "").strip()
-                    })
-
-        # --- 3. RESTRUCTURE MASTER DATA USING UNIQUE GENERATED IDs ---
-        lbl_index = 0
-
-        for num in possible_numbers:
-            num_str = str(num)
-
-            # Check if this string number exists in our matches coordinate lists
-            if num_str in ocr_found_numbers and len(ocr_found_numbers[num_str]) > 0:
-                ocr_instance = ocr_found_numbers[num_str].pop(0)
-
-                uid = f"lbl_{num_str}_{lbl_index}"
-                lbl_index += 1
-
-                master_data[uid] = {
-                    "id": uid,
-                    "number": num_str,
-                    "present": True,
-                    "note": ocr_instance["note"],
-                    "x": ocr_instance["x"],
-                    "y": ocr_instance["y"],
-                    "is_ocr": True
-                }
-                display_order.append(uid)
-            else:
-                uid = f"lbl_{num_str}_{lbl_index}"
-                lbl_index += 1
-
-                master_data[uid] = {
-                    "id": uid,
-                    "number": num_str,
-                    "present": False,
-                    "note": "",
-                    "x": None,
-                    "y": None,
-                    "is_ocr": False
-                }
-                display_order.append(uid)
-
-        tz_ohio = ZoneInfo("America/New_York")
-        return Response({
-            "master_data": master_data,
-            "display_order": display_order,
-            "rotation": (-bestrotccw)%360,
-            "zoom": 0.5,
-            "x_offset": 0,
-            "y_offset": 0,
-            "detected_date": best_start.astimezone(tz_ohio).isoformat() if best_start else None
-        })
+        return Response(extract_sheet(sheet))
