@@ -158,12 +158,15 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
     logging.info("get date of earliest in csv data")
 
     for op in Page.objects.filter(category=cat,year__gte=now_year - 2, return_code__lt=300).order_by("scraped_at")[:300]:
+        logging.info("rescrape old case %s from %s",f"{op.year} {op.category} {op.number:06d}", op.scraped_at)
         yield ScrapeInstruction(case_number=f"{op.year} {op.category} {op.number:06d}", digest=op.overview_digest)
 
+    yield ScrapeInstruction(restart=True, case_number=None)
+
     # print(resp.content)
-    yield ScrapeInstruction(
-        earliest=datetime.now() + timedelta(hours=6), case_number=None
-    )
+    #yield ScrapeInstruction(
+    #    earliest=datetime.now() + timedelta(hours=6), case_number=None
+    #)
 
 
 class CaseNotFound(Exception):
