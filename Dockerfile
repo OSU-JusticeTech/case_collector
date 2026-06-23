@@ -1,6 +1,6 @@
 FROM ghcr.io/astral-sh/uv:debian-slim
 
-RUN apt update && apt install -y libgdal-dev libsqlite3-mod-spatialite poppler-utils && rm -rf /var/lib/apt/lists/*
+RUN apt update && apt install -y libgdal-dev libsqlite3-mod-spatialite poppler-utils tesseract-ocr && rm -rf /var/lib/apt/lists/*
 # Copy the project into the image
 COPY . /app
 
