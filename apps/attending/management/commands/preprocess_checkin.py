@@ -11,5 +11,8 @@ class Command(BaseCommand):
 
         for c in tqdm(CheckinSheet.objects.all()):
             if c.processed is None:
-                c.processed = extract_sheet(c)
-                c.save()
+                try:
+                    c.processed = extract_sheet(c)
+                    c.save()
+                except Exception as e:
+                    print("couldn't process", c.filename, e.__repr__())

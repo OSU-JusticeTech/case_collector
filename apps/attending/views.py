@@ -267,4 +267,16 @@ class FileLoad(APIView):
         if sheet.processed:
             return Response(sheet.processed)
 
-        return Response(extract_sheet(sheet))
+        try:
+            res = extract_sheet(sheet)
+        except:
+            res = {
+        "master_data": {},
+        "display_order": [],
+        "rotation": 0,
+        "zoom": 0.5,
+        "x_offset": 0,
+        "y_offset": 0,
+        "detected_date": None
+    }
+        return Response(res)
