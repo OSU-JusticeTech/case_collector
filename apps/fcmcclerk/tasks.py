@@ -147,6 +147,7 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
                     case_number=f"{first[0]} {first[1]} {first[2]:06d}",
                     digest="missing",
                 )
+                proced.add(first) # otherwise the missing ones are scraped over and over.
 
         if (year, cat, number, case.digest) in existing_set:
             continue
