@@ -1,6 +1,7 @@
 import csv
 import hashlib
 import logging
+import re
 import time
 from datetime import datetime, timedelta
 from typing import Any, Generator
@@ -177,6 +178,25 @@ class CaseNotFound(Exception):
 class ErrorFetchingOverview(Exception):
     pass
 
+def extract_overview(html):
+    soup = BeautifulSoup(html, "html.parser")
+
+    # Find the Overview heading
+    overview = soup.find(id="overview")
+
+    # Find the first table after the Overview anchor
+    table = overview.find_next("table")
+
+    metadata_td = table.find_all("td")[1]
+    text = metadata_td.get_text(separator=" ", strip=True)
+
+    status = re.search(r"Status:\s*(.+?)(?=\s+Filed:|$)", text).group(1).strip()
+    filed_str = re.search(r"Filed:\s*([0-9/]+)", text).group(1)
+
+    filed = datetime.strptime(filed_str, "%m/%d/%Y").date()
+
+    return status, filed
+
 
 def scrape_detail(instruction: ScrapeInstruction):
     case_number = instruction.case_number
@@ -238,6 +258,10 @@ def scrape_detail(instruction: ScrapeInstruction):
     case = sess.post(
         f"{BASE_URL}/case/view", data={"_token": token, "case_id": casetokens[0]}
     )
+    try:
+        status, filed = extract_overview(case.content.decode())
+    except:
+        status, filed = None, None
     pg = Page.objects.create(
         year=year,
         category=cat,
@@ -245,6 +269,8 @@ def scrape_detail(instruction: ScrapeInstruction):
         content=case.content.decode(),
         return_code=case.status_code,
         overview_digest=digest,
+        status=status,
+        filed=filed,
     )
     return pg
 
