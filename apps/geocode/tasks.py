@@ -11,7 +11,7 @@ from apps.cases.models import Party
 from apps.geocode.models import Location
 
 
-def geo():
+def geo(skip = None):
 
     g = Geocoder(settings.GEOCODER_URL)
 
@@ -21,6 +21,7 @@ def geo():
     except:
         pass
 
+    skip_list = set() if skip is None else skip
     addresses = []
     uniq = set()
     for p in Party.objects.filter(location__isnull=True):
@@ -43,6 +44,8 @@ def geo():
         }
         hashable = tuple(addr.values())
         if hashable not in uniq:
+            if hashable in skip_list:
+                continue
             uniq.add(hashable)
             addresses.append((addr, p))
             if len(addresses) >= batch_size:
@@ -56,9 +59,11 @@ def geo():
     )
 
     print("resultlen", len(res))
+    unfindable = set()
     for a in res:
         # print(a["attributes"]['ResultID'])
         p_obj = addresses[a["attributes"]["ResultID"]][1]
+        p_addr = addresses[a["attributes"]["ResultID"]][0]
         # print(p_obj)
 
         try:
@@ -101,9 +106,11 @@ def geo():
                 m.save()
 
         except Exception as e:
+            hashable = tuple(p_addr.values())
+            unfindable.add(hashable)
             logging.error("could not geolocate %d: %s to %s because of %s",p_obj.pk, p_obj, a, e.__repr__())
 
         # print(a["address"])
         # pprint(a)
         # break
-    return len(res)
+    return {"geocoded_count":len(res), "unfindable": unfindable}

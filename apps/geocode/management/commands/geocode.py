@@ -12,8 +12,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         logging.info("start geocoding")
 
+        last_unfindable = set()
         while True:
-            num = geo()
-            if num == 0:
+            d = geo(skip=last_unfindable)
+            print("geocoding new addresses", d["geocoded_count"])
+            if d["geocoded_count"] == 0:
                 time.sleep(6 * 3600)
+            last_unfindable.update(d["unfindable"])
             time.sleep(10)
