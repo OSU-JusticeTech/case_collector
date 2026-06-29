@@ -27,6 +27,9 @@ class Page(models.Model):
 
     snapshot = models.ForeignKey(CaseSnapshot, on_delete=models.SET_NULL, null=True)
 
+    status = models.CharField(null=True, blank=True)
+    filed = models.DateField(null=True, blank=True)
+
     class Meta:
         unique_together = ("year", "category", "number", "scraped_at")
 
