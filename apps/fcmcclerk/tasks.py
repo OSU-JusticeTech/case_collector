@@ -7,12 +7,13 @@ from datetime import datetime, timedelta
 from typing import Any, Generator
 from unicodedata import category
 
+import numpy as np
 import requests
 from bs4 import BeautifulSoup
 from django.conf import settings
 
 from django.core.cache import cache
-from django.db.models import Q, OuterRef, Subquery
+from django.db.models import Q, OuterRef, Subquery, Max
 from pydantic import BaseModel
 
 from apps.cases.models import (
@@ -88,7 +89,6 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
     # cache.set(CACHE_KEY,42, timeout=10)
     csv_cases = load_case_csvs()
     proced = set()
-    missed = set()
 
     parts = csv_cases[0].case_number.split(" ")
     now_year = int(parts[0])
@@ -108,67 +108,39 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
         parts = case.case_number.split(" ")
         if ci % 100 == 0:
             logging.info(
-                "processed %d of %d csv cases, currently missed: %d",
+                "processed %d of %d csv cases",
                 ci,
                 len(csv_cases),
-                len(missed),
             )
 
         year = int(parts[0])
         cat = parts[1]
         number = int(parts[2])
         proced.add((year, cat, number))
-        # existing = Page.objects.filter(
-        #    year=year, category=cat, number=number, overview_digest=case.digest
-        # )
-
-        if ci % 50 == 0:
-            # this is an expensive operation that only needs to be checked occasionally
-            newer = (
-                Page.objects.filter(category=cat)
-                .filter(Q(year=year, number__gt=number) | Q(year__gt=year))
-                .values_list("year", "category", "number")
-            )
-            missed = set(newer) - proced
-            # print("newer", sorted(set(newer)))
-            # print("missed", missed)
-            logging.info(
-                "missed cases before current one and not yet scraped: %s", missed
-            )
-            for first in missed:
-                case_cache = cache.get(CACHE_KEY)
-                if case_cache is None:
-                    yield ScrapeInstruction(restart=True, case_number=None)
-                if Page.objects.filter(
-                    category=first[1], year=first[0], number=first[2], return_code=410
-                ).exists():
-                    proced.add(first)
-                    continue
-                yield ScrapeInstruction(
-                    case_number=f"{first[0]} {first[1]} {first[2]:06d}",
-                    digest="missing",
-                )
-                proced.add(first) # otherwise the missing ones are scraped over and over.
 
         if (year, cat, number, case.digest) in existing_set:
             continue
 
         yield ScrapeInstruction(case_number=case.case_number, digest=case.digest)
 
-    logging.info("all cases from CSVs are done, pick the 1000 cases from cases with number years y y-1 y-2 that were scraped last")
+    logging.info("all cases from CSVs are done, pick the 300 cases with number years y y-1 y-2 that need urgent rescrape")
 
-    logging.info("get date of earliest in csv data")
+    # the parameters were fitted to the CDF of all Docket entries relative to the filing date
+    def CDF(t, tau=14.3, beta=0.74):
+        return 1 - np.exp(- (t / tau) ** beta)
 
-    for op in Page.objects.filter(category=cat,year__gte=now_year - 2, return_code__lt=300).order_by("scraped_at")[:300]:
-        logging.info("rescrape old case %s from %s",f"{op.year} {op.category} {op.number:06d}", op.scraped_at)
-        yield ScrapeInstruction(case_number=f"{op.year} {op.category} {op.number:06d}", digest=op.overview_digest)
+    qs = Page.objects.filter(category="CVG", year__gte=now_year - 2, return_code__lt=300).values("year",
+                                                                                                      "category",
+                                                                                                      "number",
+                                                                                                      "filed").annotate(latest_scraped_at=Max("scraped_at"))
+
+    for op in sorted(qs, key=lambda x: CDF((datetime.now().date() - x['filed']).days) - CDF(
+        (x['latest_scraped_at'].date() - x['filed']).days), reverse=True)[:300]:
+
+        logging.info("rescrape old case %s, filed %s last scraped at %s",f"{op["year"]} {op["category"]} {op["number"]:06d}", op["filed"], op["latest_scraped_at"])
+        yield ScrapeInstruction(case_number=f"{op["year"]} {op["category"]} {op["number"]:06d}", digest="rescrape")
 
     yield ScrapeInstruction(restart=True, case_number=None)
-
-    # print(resp.content)
-    #yield ScrapeInstruction(
-    #    earliest=datetime.now() + timedelta(hours=6), case_number=None
-    #)
 
 
 class CaseNotFound(Exception):
