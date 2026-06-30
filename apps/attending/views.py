@@ -1,4 +1,5 @@
 import json
+import logging
 import math
 import os
 import re
@@ -137,9 +138,12 @@ def extract_sheet(sheet):
 
     for angle in [0, 90, 180, 270]:
         rotated = img.rotate(angle)
-        osd = pytesseract.image_to_osd(rotated, output_type='dict')
-        # print("osd", angle, osd)
-        rotestimates[angle] = osd
+        try:
+            osd = pytesseract.image_to_osd(rotated, output_type='dict')
+            # print("osd", angle, osd)
+            rotestimates[angle] = osd
+        except Exception as e:
+            print("osd failed", e.__repr__())
 
     calrots = [(a - (-d["orientation"] % 360)) % 360 for a, d in rotestimates.items()]
     bestrotccw = Counter(calrots).most_common(1)[0][0]
@@ -269,7 +273,8 @@ class FileLoad(APIView):
 
         try:
             res = extract_sheet(sheet)
-        except:
+        except Exception as e:
+            logging.error("failed to extract sheet %s", e.__repr__())
             res = {
         "master_data": {},
         "display_order": [],
