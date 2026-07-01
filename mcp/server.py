@@ -12,7 +12,7 @@ from fastmcp.server.auth.providers.jwt import JWTVerifier
 
 
 authelia_verifier = JWTVerifier(
-    jwks_uri="https://edrn.felix.nlogn.org/authelia/api/oidc/jwks",
+    jwks_uri="http://authelia:9091/authelia/api/oidc/jwks",
     issuer="https://edrn.felix.nlogn.org/authelia",
     audience="https://edrn.felix.nlogn.org",
 )
