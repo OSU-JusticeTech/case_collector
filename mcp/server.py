@@ -8,9 +8,10 @@ import psycopg
 from psycopg.rows import dict_row
 from fastmcp import FastMCP
 from mcp.types import TextContent
-from fastmcp.server.auth import TokenVerifier
+from fastmcp.server.auth.providers.jwt import JWTVerifier
 
-authelia_verifier = TokenVerifier(
+
+authelia_verifier = JWTVerifier(
     jwks_uri="https://edrn.felix.nlogn.org/authelia/api/oidc/jwks",
     issuer="https://edrn.felix.nlogn.org/authelia",
     audience="https://edrn.felix.nlogn.org",
