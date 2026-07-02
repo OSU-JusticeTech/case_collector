@@ -161,14 +161,13 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
     logging.info("scrape the most urgent closed 30 cases")
 
     qs = (
-        Page.objects.filter(category="CVG", year__gte=now_year - 2)
-        .exclude(status="CLOSED")
+        Page.objects.filter(category="CVG", year__gte=now_year - 2, status="CLOSED")
         .values("year", "category", "number", "filed")
         .annotate(
             latest_scraped_at=Max("scraped_at"),
             latest_return_code=Subquery(latest_return_code_sq),
         )
-        .filter(latest_return_code__gte=300)
+        .filter(latest_return_code__lt=300)
     )
 
     for op in sorted(qs, key=lambda x: CDF((datetime.now().date() - x['filed']).days) - CDF(
