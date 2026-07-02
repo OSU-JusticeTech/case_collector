@@ -9,6 +9,8 @@ from psycopg.rows import dict_row
 from fastmcp import FastMCP
 from mcp.types import TextContent
 from fastmcp.server.auth.providers.jwt import JWTVerifier
+import json
+from datetime import date, datetime
 
 
 authelia_verifier = JWTVerifier(
@@ -76,12 +78,12 @@ def query_tool(sql: str) -> str:
                 rows = cur.fetchall()
 
                 # Convert date/datetime fields to string for clean JSON serialization
-                import json
-                from datetime import date, datetime
 
                 def json_serial(obj):
-                    if isinstance(obj, (datetime, date)):
+                    if isinstance(obj, datetime):
                         return obj.astimezone(tz_ohio).isoformat()
+                    if isinstance(obj, date):
+                        return obj.isoformat()
                     raise TypeError(f"Type {type(obj)} not serializable")
 
                 return json.dumps(rows, default=json_serial)
