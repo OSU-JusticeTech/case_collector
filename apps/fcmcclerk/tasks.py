@@ -129,15 +129,52 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
     def CDF(t, tau=14.3, beta=0.74):
         return 1 - np.exp(- (t / tau) ** beta)
 
-    qs = Page.objects.filter(category="CVG", year__gte=now_year - 2, return_code__lt=300).values("year",
-                                                                                                      "category",
-                                                                                                      "number",
-                                                                                                      "filed").annotate(latest_scraped_at=Max("scraped_at"))
+    # Subquery: for a given (year, category, number), get the return_code
+    # of the most recently scraped Page — regardless of what that return_code is.
+    latest_return_code_sq = Page.objects.filter(
+        year=OuterRef("year"),
+        category=OuterRef("category"),
+        number=OuterRef("number"),
+    ).order_by("-scraped_at").values("return_code")[:1]
+
+    qs = (
+        Page.objects.filter(category="CVG", year__gte=now_year - 2)
+        .exclude(status="CLOSED")
+        .values("year", "category", "number", "filed")
+        .annotate(
+            latest_scraped_at=Max("scraped_at"),
+            latest_return_code=Subquery(latest_return_code_sq),
+        )
+        .filter(latest_return_code__lt=300)
+    )
+
+    for op in sorted(
+            qs,
+            key=lambda x: CDF((datetime.now().date() - x["filed"]).days)
+                          - CDF((x["latest_scraped_at"].date() - x["filed"]).days),
+            reverse=True,
+    )[:300]:
+
+        logging.info("rescrape open case %s, filed %s last scraped at %s",f"{op["year"]} {op["category"]} {op["number"]:06d}", op["filed"], op["latest_scraped_at"])
+        yield ScrapeInstruction(case_number=f"{op["year"]} {op["category"]} {op["number"]:06d}", digest="rescrape")
+
+    logging.info("scrape the most urgent closed 30 cases")
+
+    qs = (
+        Page.objects.filter(category="CVG", year__gte=now_year - 2)
+        .exclude(status="CLOSED")
+        .values("year", "category", "number", "filed")
+        .annotate(
+            latest_scraped_at=Max("scraped_at"),
+            latest_return_code=Subquery(latest_return_code_sq),
+        )
+        .filter(latest_return_code__gte=300)
+    )
 
     for op in sorted(qs, key=lambda x: CDF((datetime.now().date() - x['filed']).days) - CDF(
-        (x['latest_scraped_at'].date() - x['filed']).days), reverse=True)[:300]:
-
-        logging.info("rescrape old case %s, filed %s last scraped at %s",f"{op["year"]} {op["category"]} {op["number"]:06d}", op["filed"], op["latest_scraped_at"])
+            (x['latest_scraped_at'].date() - x['filed']).days), reverse=True)[:30]:
+        logging.info("rescrape closed case %s, filed %s last scraped at %s",
+                     f"{op["year"]} {op["category"]} {op["number"]:06d}", op["filed"], op["latest_scraped_at"])
         yield ScrapeInstruction(case_number=f"{op["year"]} {op["category"]} {op["number"]:06d}", digest="rescrape")
 
     yield ScrapeInstruction(restart=True, case_number=None)
