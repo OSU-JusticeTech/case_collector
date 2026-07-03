@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "apps.fcmcclerk_mock.apps.FcmcclerkMockConfig",
     "apps.nextgen_mock.apps.NextgenMockConfig",
     "apps.cases.apps.CasesConfig",
+    "apps.violations.apps.ViolationsConfig",
     "apps.attending.apps.AttendingConfig",
 ]
 
