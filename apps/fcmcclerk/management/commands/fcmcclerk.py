@@ -3,6 +3,8 @@ import time
 from datetime import datetime
 
 from django.core.management.base import BaseCommand
+from django.db import connection
+
 from apps.fcmcclerk.tasks import (
     scrape_detail,
     parse_page,
@@ -24,6 +26,11 @@ def scrape_and_parse(instr: ScrapeInstruction):
 
     time.sleep(15)
 
+def refresh_latest_overview():
+    if connection.vendor != "sqlite":
+        # Postgres (or other vendors that support materialized views)
+        with connection.cursor() as cursor:
+            cursor.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY latest_overview")
 
 class Command(BaseCommand):
     help = "Scrapes a FCMC case"
@@ -39,7 +46,11 @@ class Command(BaseCommand):
             for case_number in scrape_cases:
                 scrape_and_parse(ScrapeInstruction(case_number=case_number))
             return
+
+
         while True:
+            logging.info("refresh materialized")
+            refresh_latest_overview()
             for cno in scrape_generator():
                 logging.info("next case %s", cno)
                 if cno.restart:
