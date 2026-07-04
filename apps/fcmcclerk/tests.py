@@ -46,6 +46,9 @@ class FakeSession:
         ).replace(
             "https://secure.fcmcclerk.com",
             f"/secure.fcmcclerk.com/{self.report_date.isoformat()}",
+        ).replace(
+            "https://portal.columbus.gov",
+            f"/portal.columbus.gov/{self.report_date.isoformat()}",
         )
         # print("get rewrote", path)
         response = self.client.get(path)
@@ -58,6 +61,9 @@ class FakeSession:
         ).replace(
             "https://secure.fcmcclerk.com",
             f"/secure.fcmcclerk.com/{self.report_date.isoformat()}",
+        ).replace(
+            "https://portal.columbus.gov",
+            f"/portal.columbus.gov/{self.report_date.isoformat()}",
         )
         # print("post rewrote", path)
         response = self.client.post(path, data=kwargs.get("data"))

@@ -31,7 +31,7 @@ urlpatterns = [
         include("apps.nextgen_mock.urls", namespace="nextgen_mock"),
     ),
     path(
-        "https://portal.columbus.gov/",
+        "portal.columbus.gov/",
         include("apps.violations_mock.urls", namespace="violations_mock"),
     ),
     path(
