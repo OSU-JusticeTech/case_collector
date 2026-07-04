@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "apps.nextgen_mock.apps.NextgenMockConfig",
     "apps.cases.apps.CasesConfig",
     "apps.violations.apps.ViolationsConfig",
+    "apps.violations_mock.apps.ViolationsMockConfig",
     "apps.attending.apps.AttendingConfig",
 ]
 
