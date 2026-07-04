@@ -1,6 +1,12 @@
+import csv
+import time
+from datetime import datetime
+
 import requests
 from bs4 import BeautifulSoup
 from django.conf import settings
+
+from apps.violations.models import CodeViolation
 
 hdrs = {"Origin":"https://portal.columbus.gov",
         "Referer":"https://portal.columbus.gov/permits/Cap/CapHome.aspx?module=Enforcement",
@@ -98,7 +104,6 @@ def parse_aspnet_partial_response(response: str) -> list[dict[str, str]]:
     return results
 
 BASE_URL = "https://portal.columbus.gov"
-#BASE_URL = "http://localhost:8000"
 
 def get_csv(day):
     sess = requests.session()
@@ -147,5 +152,11 @@ def get_csv(day):
     table = sess.get("https://portal.columbus.gov/Permits/Export2CSV.ashx?flag=1248",
                      headers=hdrs)
 
-    print(table.content)
+    inf = csv.DictReader(table.content.decode().splitlines())
+    for row in inf:
+        prep = {k.lower().replace(" ","_"):v for k,v in row.items() if k!=""}
+        prep["date"] = datetime.strptime(prep["date"], "%m/%d/%Y")
+        CodeViolation.objects.create(**prep)
+
+    time.sleep(10)
 

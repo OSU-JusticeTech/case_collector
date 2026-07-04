@@ -6,6 +6,7 @@ from django.test import TestCase, Client, tag
 
 from apps.fcmcclerk.tests import FakeSession
 from apps.violations.tasks import get_csv
+from apps.violations.models import CodeViolation
 
 
 # Create your tests here.
@@ -22,6 +23,5 @@ class BasicTest(TestCase):
         )
         with patch("time.sleep", return_value=None):
             get_csv(now.date())
-        # print(Page.objects.all())
 
-        self.assertEqual(8, 90)
+        self.assertEqual(CodeViolation.objects.count(), 10)
