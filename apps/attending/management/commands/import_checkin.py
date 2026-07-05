@@ -1,4 +1,5 @@
 import hashlib
+import os.path
 from pathlib import Path
 from datetime import datetime
 
@@ -47,7 +48,11 @@ class Command(BaseCommand):
         created = 0
         skipped = 0
 
-        for path in folder.iterdir():
+        if os.path.isdir(folder):
+            files = list(folder.iterdir())
+        else:
+            files = [folder]
+        for path in files:
             if not path.is_file() or path.suffix.lower() not in image_exts:
                 continue
 
@@ -69,6 +74,6 @@ class Command(BaseCommand):
                 obj.photo.save(path.name, File(f), save=False)
                 obj.save()
 
-            created += 1
+        created += 1
 
         self.stdout.write(f"Created: {created}, Skipped: {skipped}")
