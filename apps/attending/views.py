@@ -134,21 +134,29 @@ def extract_sheet(sheet):
     img = Image.open(sheet.photo)
     img = ImageOps.exif_transpose(img)
 
-    rotestimates = {}
+    def best_rotation_eng(img, lang='eng'):
+        scores = {}
+        for angle in [0, 90, 180, 270]:
+            rotated = img.rotate(angle)
+            try:
+                data = pytesseract.image_to_data(
+                    rotated, lang=lang, config='--psm 11',
+                    output_type=pytesseract.Output.DICT
+                )
+            except Exception as e:
+                print("ocr failed", angle, e.__repr__())
+                scores[angle] = -1
+                continue
+            confs = [int(c) for c in data['conf'] if c not in ('-1', -1)]
+            # sum of confidences rewards both "confident" and "lots of text found"
+            score = sum(confs)
+            scores[angle] = score
+            print("angle", angle, "score", score, "n_words", len(confs))
+        return max(scores, key=scores.get), scores
 
-    for angle in [0, 90, 180, 270]:
-        rotated = img.rotate(angle)
-        try:
-            osd = pytesseract.image_to_osd(rotated, output_type='dict')
-            # print("osd", angle, osd)
-            rotestimates[angle] = osd
-        except Exception as e:
-            print("osd failed", e.__repr__())
-
-    calrots = [(a - (-d["orientation"] % 360)) % 360 for a, d in rotestimates.items()]
-    bestrotccw = Counter(calrots).most_common(1)[0][0]
-
-    rotated = img.rotate(bestrotccw)
+    bestrot, scores = best_rotation_eng(img)
+    print("chosen rotation", bestrot, scores)
+    rotated = img.rotate(bestrot)
 
     hocr_bytes = pytesseract.image_to_pdf_or_hocr(rotated, extension='hocr', config="--psm 11")
     hocr_data = hocr_bytes.decode('utf-8')
@@ -163,7 +171,7 @@ def extract_sheet(sheet):
         if num_match:
             num = num_match.group(1)
             rough_numbers.append(int(num))
-
+    print("rough", rough_numbers)
     best_start, raw_possible_numbers = get_best_docket(rough_numbers, sheet)
 
     master_data = {}
@@ -203,7 +211,7 @@ def extract_sheet(sheet):
                 x = int(x0) + (int(x1) - int(x0)) // 2
                 y = int(y0) + (int(y1) - int(y0)) // 2
 
-                rx, ry = rotate_point(x, y, rotated.width, rotated.height, bestrotccw)
+                rx, ry = rotate_point(x, y, rotated.width, rotated.height, bestrot)
 
                 ocr_found_numbers[num].append({
                     "x": rx,
@@ -253,7 +261,7 @@ def extract_sheet(sheet):
     return {
         "master_data": master_data,
         "display_order": display_order,
-        "rotation": (-bestrotccw) % 360,
+        "rotation": (-bestrot) % 360,
         "zoom": 0.5,
         "x_offset": 0,
         "y_offset": 0,
