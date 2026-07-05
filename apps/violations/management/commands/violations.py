@@ -6,6 +6,7 @@ from django.core.management import BaseCommand
 
 from apps.fcmcclerk.tasks import ScrapeInstruction
 from apps.nextgen.tasks import scrape_pdfs, scrape_generator
+from apps.violations.tasks import get_csv
 
 
 class Command(BaseCommand):
@@ -17,7 +18,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         logging.info("start scraping")
 
-
+        get_csv(datetime(2026,6,1))
         return
         while True:
             for cno in scrape_generator():

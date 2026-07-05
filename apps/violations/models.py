@@ -13,4 +13,4 @@ class CodeViolation(models.Model):
     scraped_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.date} {self.record_type} {self.record_type} {self.address} {self.status}"
+        return f"{self.date} {self.record_number} {self.record_type} {self.address} {self.status}"

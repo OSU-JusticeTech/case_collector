@@ -5,6 +5,7 @@ from datetime import datetime
 import requests
 from bs4 import BeautifulSoup
 from django.conf import settings
+from django.db.models import Max, OuterRef, Subquery
 
 from apps.violations.models import CodeViolation
 
@@ -125,7 +126,6 @@ def get_csv(day):
 
     for k in set(post_data.keys()) - set(form_data.keys()):
         form_data[k] = post_data[k]
-        print(k, " = ", post_data[k])
 
     form_data["ctl00$PlaceHolderMain$generalSearchForm$txtGSStartDate"] = day.strftime("%m/%d/%Y")  # "05/15/2025"
     form_data["ctl00$PlaceHolderMain$generalSearchForm$txtGSEndDate"] = day.strftime("%m/%d/%Y")  # "05/15/2025"
@@ -145,7 +145,6 @@ def get_csv(day):
         "ctl00$ScriptManager1"] = "ctl00$PlaceHolderMain$dgvPermitList$updatePanel|ctl00$PlaceHolderMain$dgvPermitList$gdvPermitList$gdvPermitListtop4btnExport"
     form_data["__EVENTTARGET"] = "ctl00$PlaceHolderMain$dgvPermitList$gdvPermitList$gdvPermitListtop4btnExport"
 
-    print("form_data", form_data)
 
     resp = sess.post("https://portal.columbus.gov/permits/Cap/CapHome.aspx?module=Enforcement", data=form_data,
                      headers=hdrs)
@@ -153,10 +152,34 @@ def get_csv(day):
                      headers=hdrs)
 
     inf = csv.DictReader(table.content.decode().splitlines())
+    data = []
     for row in inf:
-        prep = {k.lower().replace(" ","_"):v for k,v in row.items() if k!=""}
-        prep["date"] = datetime.strptime(prep["date"], "%m/%d/%Y")
+        prep = {k.lower().replace(" ", "_"): v for k, v in row.items() if k != ""}
+        prep["date"] = datetime.strptime(prep["date"], "%m/%d/%Y").date()
+        data.append(prep)
+
+
+    latest_scraped_at = (
+        CodeViolation.objects
+        .filter(record_number=OuterRef("record_number"))
+        .order_by("-scraped_at")
+        .values("scraped_at")[:1]
+    )
+
+    record_numbers = [r["record_number"] for r in data]
+
+    latest_qs = CodeViolation.objects.filter(record_number__in=record_numbers,
+                                             scraped_at=Subquery(latest_scraped_at))
+
+    latest_by_record = {obj.record_number: obj for obj in latest_qs}
+
+    for prep in data:
+        latest = latest_by_record.get(prep["record_number"])
+        if latest and all(getattr(latest, f) == v for f, v in prep.items()):
+            continue
         CodeViolation.objects.create(**prep)
 
     time.sleep(10)
+
+
 
