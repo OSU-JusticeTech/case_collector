@@ -134,6 +134,8 @@ def extract_sheet(sheet):
     img = Image.open(sheet.photo)
     img = ImageOps.exif_transpose(img)
 
+    word_pattern = r"<span[^>]*class='ocrx_word'[^>]*title='bbox (\d+) (\d+) (\d+) (\d+)[^']*'>\s*([^\s<]+)"
+
     def best_rotation_eng(img, lang='eng'):
         scores = {}
         for angle in [0, 90, 180, 270]:
@@ -154,19 +156,57 @@ def extract_sheet(sheet):
             print("angle", angle, "score", score, "n_words", len(confs))
         return max(scores, key=scores.get), scores
 
-    bestrot, scores = best_rotation_eng(img)
-    print("chosen rotation", bestrot, scores)
-    rotated = img.rotate(bestrot)
+    def best_rotation_by_docket(img, sheet, lang='eng'):
+        results = {}
+        for angle in [0, 90, 180, 270]:
+            rotated = img.rotate(angle, expand=True)
+            try:
+                hocr_bytes = pytesseract.image_to_pdf_or_hocr(
+                    rotated, extension='hocr', lang=lang, config="--psm 11"
+                )
+            except Exception as e:
+                print("ocr failed", angle, e.__repr__())
+                continue
+            hocr_data = hocr_bytes.decode('utf-8')
+            matches = re.findall(word_pattern, hocr_data)
+            rough_numbers = []
+            for x0, y0, x1, y1, text in matches:
+                clean_text = text.strip()
+                num_match = re.search(r"([1-9][0-9]{2,})", clean_text)
+                if num_match:
+                    rough_numbers.append(int(num_match.group(1)))
 
-    hocr_bytes = pytesseract.image_to_pdf_or_hocr(rotated, extension='hocr', config="--psm 11")
+            if not rough_numbers:
+                continue
+
+            best_start, raw_possible_numbers = get_best_docket(rough_numbers, sheet)
+            # assumes get_best_docket gives some notion of match quality —
+            # e.g. len(raw_possible_numbers), or a score it already returns
+            score = len(raw_possible_numbers) if raw_possible_numbers else 0
+            results[angle] = (score, best_start, raw_possible_numbers, rough_numbers)
+            print("angle", angle, "score", score, "best_start", best_start)
+
+        if not results:
+            return None, None, None
+
+        best_angle = max(results, key=lambda a: results[a][0])
+        score, best_start, raw_possible_numbers, rough_numbers = results[best_angle]
+        return best_angle, best_start, raw_possible_numbers
+
+    #bestrot, scores = best_rotation_eng(img)
+    bestrot, eventtime, pono = best_rotation_by_docket(img, sheet)
+    print("chosen rotation", bestrot, eventtime, len(pono))
+    rotated = img.rotate(bestrot, expand=True)
+
+    hocr_bytes = pytesseract.image_to_pdf_or_hocr(rotated, extension='hocr', lang="eng", config="--psm 11")
     hocr_data = hocr_bytes.decode('utf-8')
 
-    word_pattern = r"<span[^>]*class='ocrx_word'[^>]*title='bbox (\d+) (\d+) (\d+) (\d+)[^']*'>\s*([^\s<]+)"
     matches = re.findall(word_pattern, hocr_data)
 
     rough_numbers = []
     for x0, y0, x1, y1, text in matches:
         clean_text = text.strip()
+        #print("clean=", clean_text)
         num_match = re.search(r"([1-9][0-9]{2,})", clean_text)
         if num_match:
             num = num_match.group(1)
