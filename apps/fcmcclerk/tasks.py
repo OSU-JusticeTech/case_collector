@@ -162,6 +162,10 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
             reverse=True,
     )[:300]:
 
+        if CDF((datetime.now().date() - op["filed"]).days) - CDF((op["latest_scraped_at"].date() - op["filed"]).days) == 0.0:
+            logging.info("all other open cases have 0 probability of new content")
+            break
+
         logging.info("rescrape open case %s, filed %s last scraped at %s",f"{op["year"]} {op["category"]} {op["number"]:06d}", op["filed"], op["latest_scraped_at"])
         yield ScrapeInstruction(case_number=f"{op["year"]} {op["category"]} {op["number"]:06d}", digest="rescrape")
 
