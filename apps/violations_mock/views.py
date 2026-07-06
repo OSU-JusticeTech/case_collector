@@ -4,8 +4,8 @@ from django import views
 from django.http import HttpResponse
 from django.shortcuts import render
 
-
 # Create your views here.
+
 
 class SearchView(views.View):
 
@@ -18,9 +18,7 @@ class SearchView(views.View):
 
 def download(request, request_date):
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = (
-        f"attachment;filename=RecordList20260704.csv"
-    )
+    response["Content-Disposition"] = f"attachment;filename=RecordList20260704.csv"
 
     resp = '"Date","Record Number","Record Type","Address","Description","Status",\n'
 

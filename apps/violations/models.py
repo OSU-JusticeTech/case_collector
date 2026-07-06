@@ -2,6 +2,7 @@ from django.db import models
 
 # Create your models here.
 
+
 class CodeViolation(models.Model):
     date = models.DateField()
     record_number = models.CharField()

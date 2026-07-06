@@ -18,7 +18,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         logging.info("start scraping")
 
-        get_csv(datetime(2026,6,1))
+        get_csv(datetime(2026, 6, 1))
         return
         while True:
             for cno in scrape_generator():

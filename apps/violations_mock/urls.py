@@ -1,8 +1,6 @@
 from django.urls import path
 
-from apps.violations_mock.views import (
-    SearchView, download
-)
+from apps.violations_mock.views import SearchView, download
 
 app_name = "violations_mock"
 urlpatterns = [

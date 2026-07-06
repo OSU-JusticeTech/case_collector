@@ -8,8 +8,8 @@ from apps.fcmcclerk.tests import FakeSession
 from apps.violations.tasks import get_csv
 from apps.violations.models import CodeViolation
 
-
 # Create your tests here.
+
 
 class BasicTest(TestCase):
     def setUp(self):
