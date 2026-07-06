@@ -87,7 +87,10 @@ def scrape_pdfs(cinst):
         logging.error("invalid login credentials")
         raise Exception("invalid credentials")
 
-    if "Before proceeding, please check your email for a verification link." in home.content.decode():
+    if (
+        "Before proceeding, please check your email for a verification link."
+        in home.content.decode()
+    ):
         logging.error("validation required")
         raise Exception("validate email")
 
@@ -128,7 +131,7 @@ def scrape_pdfs(cinst):
         dkt = parse_scan_docket(soup)
         # print(dkt)
         for entry, link in dkt:
-            #TODO: the PDF may arrive later to a docket entry, so we need to take care of docket entries getting a scan later
+            # TODO: the PDF may arrive later to a docket entry, so we need to take care of docket entries getting a scan later
             # probably this is not true and PETITION FILED does not have a PDF but it gets attached to IMAGE OF COMPLAINT
             entry_obj, created = ScanDocketEntry.objects.get_or_create(
                 case=case_obj, date=entry.date, text=entry.text
@@ -173,40 +176,36 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
     curyear = datetime.now().date().year
 
     latest_snapshot = (
-        CaseSnapshot.objects
-        .filter(case=OuterRef("pk"))
+        CaseSnapshot.objects.filter(case=OuterRef("pk"))
         .order_by("-created_at")
         .values("created_at")[:1]
     )
 
     latest_page = (
-        Page.objects
-        .filter(case=OuterRef("pk"))
+        Page.objects.filter(case=OuterRef("pk"))
         .order_by("-scraped_at")
         .values("scraped_at")[:1]
     )
 
     cases = (
         CourtCase.objects.filter(
-            Q(case_number__startswith=str(curyear)) |
-            Q(case_number__startswith=str(curyear-1)) |
-            Q(case_number__startswith=str(curyear-2))
+            Q(case_number__startswith=str(curyear))
+            | Q(case_number__startswith=str(curyear - 1))
+            | Q(case_number__startswith=str(curyear - 2))
         )
         .annotate(
             latest_snapshot_at=Subquery(latest_snapshot),
             latest_page_at=Subquery(latest_page),
-        ).order_by("-case_number")
+        )
+        .order_by("-case_number")
     )
 
     not_scraped = [
         c.case_number
         for c in cases
         if (
-                c.latest_page_at is None
-                or (
-                        c.latest_snapshot_at
-                        and c.latest_page_at < c.latest_snapshot_at
-                )
+            c.latest_page_at is None
+            or (c.latest_snapshot_at and c.latest_page_at < c.latest_snapshot_at)
         )
     ]
 

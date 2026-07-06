@@ -27,21 +27,28 @@ from apps.attending.models import CheckinSheet
 
 DATA_DIR = Path("/home/felix/Dokumente/osu/eviction/court-extracted/checkin/data")
 
+
 def base(request):
     return render(request, "attending/base.html")
+
 
 class FileList(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
         files = CheckinSheet.objects.all()
-        images = sorted([{"name": f.filename, "processed": f.validated,"pk": f.pk} for f in files], key=lambda x: x["name"])
+        images = sorted(
+            [{"name": f.filename, "processed": f.validated, "pk": f.pk} for f in files],
+            key=lambda x: x["name"],
+        )
         return Response(images)
+
 
 @login_required
 def data(request, filename):
     sheet = get_object_or_404(CheckinSheet, pk=filename)
     return FileResponse(sheet.photo.file)
+
 
 class Save(APIView):
     permission_classes = (DjangoModelPermissions,)
@@ -57,10 +64,9 @@ class Save(APIView):
         return Response({"success": True})
 
 
-
 def get_best_docket(ocr_values, sheet):
 
-    #print("look for values", ocr_values)
+    # print("look for values", ocr_values)
     values_sql = ",".join(f"({v})" for v in ocr_values)
 
     extra = ""
@@ -97,14 +103,14 @@ def get_best_docket(ocr_values, sheet):
     ORDER BY matches DESC, coverage DESC;
     """
 
-    #print(sql)
+    # print(sql)
 
     with connection.cursor() as cursor:
         cursor.execute(sql)
         rows = cursor.fetchall()
         cols = [col[0] for col in cursor.description]
         results = [dict(zip(cols, row)) for row in rows]
-        #print("match", results)
+        # print("match", results)
         if len(results) > 0:
             if results[0]["coverage"] > 0.5:
                 best_start_time = results[0]["start_time"]  # from your ranking query
@@ -123,11 +129,12 @@ def get_best_docket(ocr_values, sheet):
                 rows = cursor.fetchall()
                 cols = [col[0] for col in cursor.description]
                 results = [dict(zip(cols, row)) for row in rows]
-                #print("rows", results)
+                # print("rows", results)
                 numends = [r["case_num"] for r in results]
-                #print("possible", numends)
+                # print("possible", numends)
                 return best_start_time, list(sorted(numends))
     return None, []
+
 
 def extract_sheet(sheet):
     # --- 2. RUN COLD-START OCR PROCESS ---
@@ -136,38 +143,40 @@ def extract_sheet(sheet):
 
     word_pattern = r"<span[^>]*class='ocrx_word'[^>]*title='bbox (\d+) (\d+) (\d+) (\d+)[^']*'>\s*([^\s<]+)"
 
-    def best_rotation_eng(img, lang='eng'):
+    def best_rotation_eng(img, lang="eng"):
         scores = {}
         for angle in [0, 90, 180, 270]:
             rotated = img.rotate(angle)
             try:
                 data = pytesseract.image_to_data(
-                    rotated, lang=lang, config='--psm 11',
-                    output_type=pytesseract.Output.DICT
+                    rotated,
+                    lang=lang,
+                    config="--psm 11",
+                    output_type=pytesseract.Output.DICT,
                 )
             except Exception as e:
                 print("ocr failed", angle, e.__repr__())
                 scores[angle] = -1
                 continue
-            confs = [int(c) for c in data['conf'] if c not in ('-1', -1)]
+            confs = [int(c) for c in data["conf"] if c not in ("-1", -1)]
             # sum of confidences rewards both "confident" and "lots of text found"
             score = sum(confs)
             scores[angle] = score
             print("angle", angle, "score", score, "n_words", len(confs))
         return max(scores, key=scores.get), scores
 
-    def best_rotation_by_docket(img, sheet, lang='eng'):
+    def best_rotation_by_docket(img, sheet, lang="eng"):
         results = {}
         for angle in [0, 90, 180, 270]:
             rotated = img.rotate(angle, expand=True)
             try:
                 hocr_bytes = pytesseract.image_to_pdf_or_hocr(
-                    rotated, extension='hocr', lang=lang, config="--psm 11"
+                    rotated, extension="hocr", lang=lang, config="--psm 11"
                 )
             except Exception as e:
                 print("ocr failed", angle, e.__repr__())
                 continue
-            hocr_data = hocr_bytes.decode('utf-8')
+            hocr_data = hocr_bytes.decode("utf-8")
             matches = re.findall(word_pattern, hocr_data)
             rough_numbers = []
             for x0, y0, x1, y1, text in matches:
@@ -193,20 +202,22 @@ def extract_sheet(sheet):
         score, best_start, raw_possible_numbers, rough_numbers = results[best_angle]
         return best_angle, best_start, raw_possible_numbers
 
-    #bestrot, scores = best_rotation_eng(img)
+    # bestrot, scores = best_rotation_eng(img)
     bestrot, eventtime, pono = best_rotation_by_docket(img, sheet)
     print("chosen rotation", bestrot, eventtime, len(pono))
     rotated = img.rotate(bestrot, expand=True)
 
-    hocr_bytes = pytesseract.image_to_pdf_or_hocr(rotated, extension='hocr', lang="eng", config="--psm 11")
-    hocr_data = hocr_bytes.decode('utf-8')
+    hocr_bytes = pytesseract.image_to_pdf_or_hocr(
+        rotated, extension="hocr", lang="eng", config="--psm 11"
+    )
+    hocr_data = hocr_bytes.decode("utf-8")
 
     matches = re.findall(word_pattern, hocr_data)
 
     rough_numbers = []
     for x0, y0, x1, y1, text in matches:
         clean_text = text.strip()
-        #print("clean=", clean_text)
+        # print("clean=", clean_text)
         num_match = re.search(r"([1-9][0-9]{2,})", clean_text)
         if num_match:
             num = num_match.group(1)
@@ -253,11 +264,13 @@ def extract_sheet(sheet):
 
                 rx, ry = rotate_point(x, y, rotated.width, rotated.height, bestrot)
 
-                ocr_found_numbers[num].append({
-                    "x": rx,
-                    "y": ry,
-                    "note": clean_text.replace(num, "").replace("-", "").strip()
-                })
+                ocr_found_numbers[num].append(
+                    {
+                        "x": rx,
+                        "y": ry,
+                        "note": clean_text.replace(num, "").replace("-", "").strip(),
+                    }
+                )
 
     # --- 3. RESTRUCTURE MASTER DATA USING UNIQUE GENERATED IDs ---
     lbl_index = 0
@@ -279,7 +292,7 @@ def extract_sheet(sheet):
                 "note": ocr_instance["note"],
                 "x": ocr_instance["x"],
                 "y": ocr_instance["y"],
-                "is_ocr": True
+                "is_ocr": True,
             }
             display_order.append(uid)
         else:
@@ -293,7 +306,7 @@ def extract_sheet(sheet):
                 "note": "",
                 "x": None,
                 "y": None,
-                "is_ocr": False
+                "is_ocr": False,
             }
             display_order.append(uid)
 
@@ -305,7 +318,9 @@ def extract_sheet(sheet):
         "zoom": 0.5,
         "x_offset": 0,
         "y_offset": 0,
-        "detected_date": best_start.astimezone(tz_ohio).isoformat() if best_start else None
+        "detected_date": (
+            best_start.astimezone(tz_ohio).isoformat() if best_start else None
+        ),
     }
 
 
@@ -324,12 +339,12 @@ class FileLoad(APIView):
         except Exception as e:
             logging.error("failed to extract sheet %s", e.__repr__())
             res = {
-        "master_data": {},
-        "display_order": [],
-        "rotation": 0,
-        "zoom": 0.5,
-        "x_offset": 0,
-        "y_offset": 0,
-        "detected_date": None
-    }
+                "master_data": {},
+                "display_order": [],
+                "rotation": 0,
+                "zoom": 0.5,
+                "x_offset": 0,
+                "y_offset": 0,
+                "detected_date": None,
+            }
         return Response(res)

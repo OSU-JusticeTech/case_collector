@@ -40,30 +40,38 @@ class FakeSession:
         return FakeResponse(response)
 
     def get(self, url, *args, **kwargs):
-        path = url.replace(
-            "https://www.fcmcclerk.com",
-            f"/fcmcclerk.com/{self.report_date.isoformat()}",
-        ).replace(
-            "https://secure.fcmcclerk.com",
-            f"/secure.fcmcclerk.com/{self.report_date.isoformat()}",
-        ).replace(
-            "https://portal.columbus.gov",
-            f"/portal.columbus.gov/{self.report_date.isoformat()}",
+        path = (
+            url.replace(
+                "https://www.fcmcclerk.com",
+                f"/fcmcclerk.com/{self.report_date.isoformat()}",
+            )
+            .replace(
+                "https://secure.fcmcclerk.com",
+                f"/secure.fcmcclerk.com/{self.report_date.isoformat()}",
+            )
+            .replace(
+                "https://portal.columbus.gov",
+                f"/portal.columbus.gov/{self.report_date.isoformat()}",
+            )
         )
         # print("get rewrote", path)
         response = self.client.get(path)
         return self._build_response(response)
 
     def post(self, url, *args, **kwargs):
-        path = url.replace(
-            "https://www.fcmcclerk.com",
-            f"/fcmcclerk.com/{self.report_date.isoformat()}",
-        ).replace(
-            "https://secure.fcmcclerk.com",
-            f"/secure.fcmcclerk.com/{self.report_date.isoformat()}",
-        ).replace(
-            "https://portal.columbus.gov",
-            f"/portal.columbus.gov/{self.report_date.isoformat()}",
+        path = (
+            url.replace(
+                "https://www.fcmcclerk.com",
+                f"/fcmcclerk.com/{self.report_date.isoformat()}",
+            )
+            .replace(
+                "https://secure.fcmcclerk.com",
+                f"/secure.fcmcclerk.com/{self.report_date.isoformat()}",
+            )
+            .replace(
+                "https://portal.columbus.gov",
+                f"/portal.columbus.gov/{self.report_date.isoformat()}",
+            )
         )
         # print("post rewrote", path)
         response = self.client.post(path, data=kwargs.get("data"))
@@ -182,9 +190,9 @@ class SealingTest(TestCase):
         # print(Page.objects.all())
 
         self.assertEqual(Page.objects.count(), 90)
-        #sealed_pages = Page.objects.filter(return_code=410)
-        #self.assertEqual(sealed_pages.count(), 1)
-        #self.assertEqual(sealed_pages[0].number, 36)
+        # sealed_pages = Page.objects.filter(return_code=410)
+        # self.assertEqual(sealed_pages.count(), 1)
+        # self.assertEqual(sealed_pages[0].number, 36)
 
 
 @tag("online")

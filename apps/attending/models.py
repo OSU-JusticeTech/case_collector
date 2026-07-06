@@ -2,6 +2,7 @@ from django.db import models
 
 # Create your models here.
 
+
 class CheckinSheet(models.Model):
     photo = models.ImageField(null=True, upload_to="checkin")
     filename = models.CharField()

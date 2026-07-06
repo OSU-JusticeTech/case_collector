@@ -93,9 +93,9 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
     parts = csv_cases[0].case_number.split(" ")
     now_year = int(parts[0])
     cat = parts[1]
-    existing_set = Page.objects.filter(year__gte=now_year - 2, category=cat).values_list(
-        "year", "category", "number", "overview_digest"
-    )
+    existing_set = Page.objects.filter(
+        year__gte=now_year - 2, category=cat
+    ).values_list("year", "category", "number", "overview_digest")
     logging.info("compare cases to list of %d existing", len(existing_set))
     cache_check_time = 0
     for ci, case in enumerate(csv_cases):
@@ -123,25 +123,35 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
 
         yield ScrapeInstruction(case_number=case.case_number, digest=case.digest)
 
-    logging.info("all cases from CSVs are done, pick the 300 cases with number years y y-1 y-2 that need urgent rescrape")
+    logging.info(
+        "all cases from CSVs are done, pick the 300 cases with number years y y-1 y-2 that need urgent rescrape"
+    )
 
     # the parameters were fitted to the CDF of all Docket entries relative to the filing date
     def CDF(t, tau=14.3, beta=0.74):
-        return 1 - np.exp(- (t / tau) ** beta)
+        return 1 - np.exp(-((t / tau) ** beta))
 
     # Subquery: for a given (year, category, number), get the return_code
     # of the most recently scraped Page — regardless of what that return_code is.
-    latest_return_code_sq = Page.objects.filter(
-        year=OuterRef("year"),
-        category=OuterRef("category"),
-        number=OuterRef("number"),
-    ).order_by("-scraped_at").values("return_code")[:1]
+    latest_return_code_sq = (
+        Page.objects.filter(
+            year=OuterRef("year"),
+            category=OuterRef("category"),
+            number=OuterRef("number"),
+        )
+        .order_by("-scraped_at")
+        .values("return_code")[:1]
+    )
 
-    latest_status_sq = Page.objects.filter(
-        year=OuterRef("year"),
-        category=OuterRef("category"),
-        number=OuterRef("number"),
-    ).order_by("-scraped_at").values("status")[:1]
+    latest_status_sq = (
+        Page.objects.filter(
+            year=OuterRef("year"),
+            category=OuterRef("category"),
+            number=OuterRef("number"),
+        )
+        .order_by("-scraped_at")
+        .values("status")[:1]
+    )
 
     qs = (
         Page.objects.filter(category="CVG", year__gte=now_year - 2)
@@ -156,18 +166,30 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
     )
 
     for op in sorted(
-            qs,
-            key=lambda x: CDF((datetime.now().date() - x["filed"]).days)
-                          - CDF((x["latest_scraped_at"].date() - x["filed"]).days),
-            reverse=True,
+        qs,
+        key=lambda x: CDF((datetime.now().date() - x["filed"]).days)
+        - CDF((x["latest_scraped_at"].date() - x["filed"]).days),
+        reverse=True,
     )[:300]:
 
-        if CDF((datetime.now().date() - op["filed"]).days) - CDF((op["latest_scraped_at"].date() - op["filed"]).days) == 0.0:
+        if (
+            CDF((datetime.now().date() - op["filed"]).days)
+            - CDF((op["latest_scraped_at"].date() - op["filed"]).days)
+            == 0.0
+        ):
             logging.info("all other open cases have 0 probability of new content")
             break
 
-        logging.info("rescrape open case %s, filed %s last scraped at %s",f"{op["year"]} {op["category"]} {op["number"]:06d}", op["filed"], op["latest_scraped_at"])
-        yield ScrapeInstruction(case_number=f"{op["year"]} {op["category"]} {op["number"]:06d}", digest="rescrape")
+        logging.info(
+            "rescrape open case %s, filed %s last scraped at %s",
+            f"{op["year"]} {op["category"]} {op["number"]:06d}",
+            op["filed"],
+            op["latest_scraped_at"],
+        )
+        yield ScrapeInstruction(
+            case_number=f"{op["year"]} {op["category"]} {op["number"]:06d}",
+            digest="rescrape",
+        )
 
     logging.info("scrape the most urgent closed 30 cases")
 
@@ -182,11 +204,22 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
         .filter(latest_return_code__lt=300, latest_status="CLOSED")
     )
 
-    for op in sorted(qs, key=lambda x: CDF((datetime.now().date() - x['filed']).days) - CDF(
-            (x['latest_scraped_at'].date() - x['filed']).days), reverse=True)[:30]:
-        logging.info("rescrape closed case %s, filed %s last scraped at %s",
-                     f"{op["year"]} {op["category"]} {op["number"]:06d}", op["filed"], op["latest_scraped_at"])
-        yield ScrapeInstruction(case_number=f"{op["year"]} {op["category"]} {op["number"]:06d}", digest="rescrape")
+    for op in sorted(
+        qs,
+        key=lambda x: CDF((datetime.now().date() - x["filed"]).days)
+        - CDF((x["latest_scraped_at"].date() - x["filed"]).days),
+        reverse=True,
+    )[:30]:
+        logging.info(
+            "rescrape closed case %s, filed %s last scraped at %s",
+            f"{op["year"]} {op["category"]} {op["number"]:06d}",
+            op["filed"],
+            op["latest_scraped_at"],
+        )
+        yield ScrapeInstruction(
+            case_number=f"{op["year"]} {op["category"]} {op["number"]:06d}",
+            digest="rescrape",
+        )
 
     yield ScrapeInstruction(restart=True, case_number=None)
 
@@ -197,6 +230,7 @@ class CaseNotFound(Exception):
 
 class ErrorFetchingOverview(Exception):
     pass
+
 
 def extract_overview(html):
     soup = BeautifulSoup(html, "html.parser")

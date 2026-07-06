@@ -7,8 +7,8 @@ from rest_framework.views import APIView
 
 from apps.nextgen.models import ScanDocketEntry
 
-
 # Create your views here.
+
 
 class DownloadScanView(APIView):
     authentication_classes = [BasicAuthentication]

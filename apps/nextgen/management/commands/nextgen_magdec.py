@@ -23,6 +23,7 @@ def load_rois(rois_json_path: str) -> list[dict]:
             raise ValueError(f"ROI id={roi.get('id')} does not have 4 corners.")
     return rois
 
+
 def polygon_mask(shape_hw, corners_xy: np.ndarray) -> np.ndarray:
     """
     Create a binary mask for a polygon defined by corners (4x2) in image coordinates.
@@ -33,7 +34,10 @@ def polygon_mask(shape_hw, corners_xy: np.ndarray) -> np.ndarray:
     cv2.fillPoly(mask, [pts], 255)
     return mask
 
-def count_nonwhite_pixels(gray: np.ndarray, roi_mask: np.ndarray, white_threshold: int = 250) -> int:
+
+def count_nonwhite_pixels(
+    gray: np.ndarray, roi_mask: np.ndarray, white_threshold: int = 250
+) -> int:
     """
     Count pixels inside roi_mask that are NOT white, using a threshold.
     - mode="grayscale": uses gray < white_threshold
@@ -42,35 +46,43 @@ def count_nonwhite_pixels(gray: np.ndarray, roi_mask: np.ndarray, white_threshol
     """
     assert gray.shape[:2] == roi_mask.shape, "Mask and image must align"
 
-    #gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
-    nonwhite = (gray < white_threshold)
+    # gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
+    nonwhite = gray < white_threshold
 
     # Apply mask
     nonwhite_in_roi = nonwhite & (roi_mask > 0)
     return int(np.count_nonzero(nonwhite_in_roi))
 
+
 def process_image(img, rois: list[dict], white_threshold: int) -> dict:
-    #img = cv2.imread(image_path, cv2.IMREAD_COLOR)
+    # img = cv2.imread(image_path, cv2.IMREAD_COLOR)
     H, W = img.shape[:2]
 
     # Build per-ROI masks once (and reuse)
-    results = {
-        "counts": []  # list aligned to rois order used here
-    }
+    results = {"counts": []}  # list aligned to rois order used here
 
     for roi in rois:
         corners = np.array(roi["corners"], dtype=np.float32)  # [[x,y], ...] TL,TR,BR,BL
         # Validate corners inside image bounds
-        if np.any(corners[:, 0] < 0) or np.any(corners[:, 0] >= W) or np.any(corners[:, 1] < 0) or np.any(corners[:, 1] >= H):
-            raise ValueError(f"ROI id={roi.get('id')} has corners outside image bounds for")
+        if (
+            np.any(corners[:, 0] < 0)
+            or np.any(corners[:, 0] >= W)
+            or np.any(corners[:, 1] < 0)
+            or np.any(corners[:, 1] >= H)
+        ):
+            raise ValueError(
+                f"ROI id={roi.get('id')} has corners outside image bounds for"
+            )
 
         mask = polygon_mask((H, W), corners)
         count = count_nonwhite_pixels(img, mask, white_threshold=white_threshold)
-        results["counts"].append({
-            "roi_id": roi.get("id"),
-            "color_hex": roi.get("color_hex"),
-            "count_nonwhite": count
-        })
+        results["counts"].append(
+            {
+                "roi_id": roi.get("id"),
+                "color_hex": roi.get("color_hex"),
+                "count_nonwhite": count,
+            }
+        )
 
     return results
 
@@ -84,39 +96,39 @@ class Command(BaseCommand):
         template_path = str(Path(__file__).resolve().parent.parent.parent / "files")
 
         template = cv2.imread(template_path + "/template.png", cv2.IMREAD_GRAYSCALE)
-        template_check = cv2.imread(template_path + "/template-checker.png", cv2.IMREAD_GRAYSCALE)
-
-        #print(template)
-        #print(template_check)
-
-        orb = cv2.ORB_create(
-            nfeatures=5000,
-            scaleFactor=1.2,
-            nlevels=8
+        template_check = cv2.imread(
+            template_path + "/template-checker.png", cv2.IMREAD_GRAYSCALE
         )
+
+        # print(template)
+        # print(template_check)
+
+        orb = cv2.ORB_create(nfeatures=5000, scaleFactor=1.2, nlevels=8)
         kp_template, des_template = orb.detectAndCompute(template, None)
 
         rois = load_rois(template_path + "/rois.json")
 
         while True:
 
-            for sde in ScanDocketEntry.objects.filter(filename__contains=" DMAGDEC ", magdec_analyses__isnull=True):
-                #print(sde.text)
+            for sde in ScanDocketEntry.objects.filter(
+                filename__contains=" DMAGDEC ", magdec_analyses__isnull=True
+            ):
+                # print(sde.text)
                 logging.info("process %s", sde.filename)
 
                 pages = convert_from_path(sde.scan.path)
                 for pno, page in enumerate(pages):
                     logging.info("page number %d", pno)
                     scan = cv2.cvtColor(np.array(page), cv2.COLOR_RGB2GRAY)
-                    #print(scan)
+                    # print(scan)
 
-                    #cv2.namedWindow("Scan", cv2.WINDOW_NORMAL)
-                    #cv2.imshow("Scan", scan)
+                    # cv2.namedWindow("Scan", cv2.WINDOW_NORMAL)
+                    # cv2.imshow("Scan", scan)
 
                     kp_scan, des_scan = orb.detectAndCompute(scan, None)
 
-                    #print(f"Template keypoints: {len(kp_template)}")
-                    #print(f"Scan keypoints: {len(kp_scan)}")
+                    # print(f"Template keypoints: {len(kp_template)}")
+                    # print(f"Scan keypoints: {len(kp_scan)}")
 
                     bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
                     matches = bf.match(des_template, des_scan)
@@ -128,16 +140,16 @@ class Command(BaseCommand):
                     num_good_matches = int(len(matches) * 0.15)
                     good_matches = matches[:num_good_matches]
 
-                    #print(f"Good matches used: {len(good_matches)}")
+                    # print(f"Good matches used: {len(good_matches)}")
 
-                    #match_vis = cv2.drawMatches(
+                    # match_vis = cv2.drawMatches(
                     #    template, kp_template,
                     #    scan, kp_scan,
                     #    good_matches, None,
                     #    flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS
-                    #)
-                    #cv2.namedWindow("Feature Matches", cv2.WINDOW_NORMAL)
-                    #cv2.imshow("Feature Matches", match_vis)
+                    # )
+                    # cv2.namedWindow("Feature Matches", cv2.WINDOW_NORMAL)
+                    # cv2.imshow("Feature Matches", match_vis)
 
                     # --------------------------------------------------------
                     # 5. Estimate affine transform (rotation + scale)
@@ -152,16 +164,13 @@ class Command(BaseCommand):
 
                     # Estimate affine transformation
                     M, inliers = cv2.estimateAffinePartial2D(
-                        src_pts,
-                        dst_pts,
-                        method=cv2.RANSAC,
-                        ransacReprojThreshold=5.0
+                        src_pts, dst_pts, method=cv2.RANSAC, ransacReprojThreshold=5.0
                     )
 
                     if M is None:
                         raise RuntimeError("Could not estimate affine transformation")
 
-                    #print("Estimated affine transform:\n", M)
+                    # print("Estimated affine transform:\n", M)
 
                     # --------------------------------------------------------
                     # 6. Warp scan to template coordinate system
@@ -170,7 +179,7 @@ class Command(BaseCommand):
                         scan,
                         M,
                         (template.shape[1], template.shape[0]),
-                        flags=cv2.INTER_LINEAR
+                        flags=cv2.INTER_LINEAR,
                     )
 
                     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9))
@@ -178,19 +187,25 @@ class Command(BaseCommand):
                     dilated_align = cv2.dilate(255 - aligned_scan, kernel)
                     # diffimg = ((255-template.astype(np.float32)) - (blur_aligned.astype(np.float32))) .clip(min=0).astype(np.uint8)
 
-                    diffimg = ((255 - template_check).astype(np.int32) - dilated_align.astype(np.int32)).clip(min=0).astype(
-                        np.uint8)
-                    #print("subtract", diffimg)
+                    diffimg = (
+                        (
+                            (255 - template_check).astype(np.int32)
+                            - dilated_align.astype(np.int32)
+                        )
+                        .clip(min=0)
+                        .astype(np.uint8)
+                    )
+                    # print("subtract", diffimg)
 
                     summ = diffimg.sum()
-                    #print("sum of diff", summ)
+                    # print("sum of diff", summ)
 
-                    #print("data", {"good_matches": len(good_matches), "M": M.tolist(), "diffsum": int(summ)})
+                    # print("data", {"good_matches": len(good_matches), "M": M.tolist(), "diffsum": int(summ)})
 
                     result = process_image(aligned_scan, rois, white_threshold=250)
 
                     magdec = MagdecAnalysis.objects.create(
-                        page_number = pno,
+                        page_number=pno,
                         good_matches=len(good_matches),
                         diff_sum=int(summ),
                         m11=M[0][0],
@@ -210,12 +225,12 @@ class Command(BaseCommand):
                             count_nonwhite=item["count_nonwhite"],
                         )
 
-                    #print(result, "result")
-                    #break
-                    #page.save("page_image.jpg", "jpg")
-                #break
-            #scan = cv2.imread(scan_path, cv2.IMREAD_GRAYSCALE)
-            #cv2.waitKey(0)
-            #cv2.destroyAllWindows()
+                    # print(result, "result")
+                    # break
+                    # page.save("page_image.jpg", "jpg")
+                # break
+            # scan = cv2.imread(scan_path, cv2.IMREAD_GRAYSCALE)
+            # cv2.waitKey(0)
+            # cv2.destroyAllWindows()
             logging.info("all done, sleep 6h")
-            time.sleep(6*3600)
+            time.sleep(6 * 3600)

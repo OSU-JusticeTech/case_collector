@@ -78,4 +78,3 @@ class Migration(migrations.Migration):
             reverse_sql=DROP_SQL,
         )
     ]
-

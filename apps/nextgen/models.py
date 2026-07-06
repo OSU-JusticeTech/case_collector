@@ -5,6 +5,7 @@ from apps.fcmcclerk.pyschema import Case
 
 # Create your models here.
 
+
 class MagdecAnalysis(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -21,11 +22,10 @@ class MagdecAnalysis(models.Model):
     m22 = models.FloatField()
     m23 = models.FloatField()
 
+
 class RoiCount(models.Model):
     result = models.ForeignKey(
-        MagdecAnalysis,
-        on_delete=models.CASCADE,
-        related_name="roi_counts"
+        MagdecAnalysis, on_delete=models.CASCADE, related_name="roi_counts"
     )
 
     roi_id = models.IntegerField()
@@ -48,8 +48,6 @@ class ScanDocketEntry(models.Model):
         return (
             f"{self.case.case_number}: {self.date} {self.text[:20]}... {self.filename}"
         )
-
-
 
 
 class Page(models.Model):

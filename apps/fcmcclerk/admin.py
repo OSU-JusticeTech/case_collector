@@ -7,8 +7,16 @@ from apps.fcmcclerk.models import Page
 
 class PageAdmin(admin.ModelAdmin):
     date_hierarchy = "scraped_at"
-    list_display = ["year", "category", "number", "scraped_at", "return_code", "status","filed"]
-    list_filter = ["return_code", "year", "category","status","filed"]
+    list_display = [
+        "year",
+        "category",
+        "number",
+        "scraped_at",
+        "return_code",
+        "status",
+        "filed",
+    ]
+    list_filter = ["return_code", "year", "category", "status", "filed"]
     search_fields = ["year", "category", "number"]
 
 
