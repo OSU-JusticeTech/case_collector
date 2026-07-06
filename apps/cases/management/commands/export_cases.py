@@ -18,14 +18,15 @@ class Command(BaseCommand):
         src = Source.objects.get(name=options["source"])
 
         latest_snapshot_ids = (
-            CaseSnapshot.objects
-            .filter(case=OuterRef('pk'))
-            .order_by('-created_at')
-            .values('id')[:1]
+            CaseSnapshot.objects.filter(case=OuterRef("pk"))
+            .order_by("-created_at")
+            .values("id")[:1]
         )
 
-        cases = CourtCase.objects.filter(source=src, case_number__contains=options["contains"]).annotate(latest_snapshot=Subquery(latest_snapshot_ids))
-        
+        cases = CourtCase.objects.filter(
+            source=src, case_number__contains=options["contains"]
+        ).annotate(latest_snapshot=Subquery(latest_snapshot_ids))
+
         snapids = [c.latest_snapshot for c in cases]
 
         snaps = CaseSnapshot.objects.in_bulk(snapids)

@@ -2,7 +2,6 @@ from django.db import models
 
 from apps.geocode.models import Location
 
-
 # Create your models here.
 
 
@@ -74,7 +73,6 @@ class Event(models.Model):
         return f"{self.room} {self.start} {self.event} {self.result}"
 
 
-
 class Finance(models.Model):
     application = models.CharField()
     owed = models.DecimalField(null=True, max_digits=10, decimal_places=2)
@@ -82,6 +80,7 @@ class Finance(models.Model):
     dismissed = models.DecimalField(null=True, max_digits=10, decimal_places=2)
     balance = models.DecimalField(null=True, max_digits=10, decimal_places=2)
     snapshot = models.ForeignKey(CaseSnapshot, on_delete=models.CASCADE)
+
 
 class Disposition(models.Model):
     code = models.CharField()

@@ -14,6 +14,7 @@ if connection.vendor in "sqlite":
     CREATE_SQL = ""
     DROP_SQL = ""
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
