@@ -204,8 +204,8 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
         c.case_number
         for c in cases
         if (
-            c.latest_page_at is None
-            or (c.latest_snapshot_at and c.latest_page_at < c.latest_snapshot_at)
+            c.latest_page_at is None  # type: ignore[attr-defined]
+            or (c.latest_snapshot_at and c.latest_page_at < c.latest_snapshot_at)  # type: ignore[attr-defined]
         )
     ]
 

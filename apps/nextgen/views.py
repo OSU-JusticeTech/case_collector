@@ -21,6 +21,9 @@ class DownloadScanView(APIView):
         if not entry.scan:
             raise Http404("No scan attached")
 
+        if not entry.scan.name:
+            raise Http404("No scan attached")
+
         return FileResponse(
             entry.scan.open("rb"),
             as_attachment=True,

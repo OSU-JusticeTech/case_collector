@@ -125,6 +125,7 @@ def get_csv(day):
     response = sess.get(f"{BASE_URL}/permits/Cap/CapHome.aspx?module=Enforcement")
     soup = BeautifulSoup(response.content, "html.parser")
     form = soup.find("form")
+    assert form is not None
     form_data = {}
     for input_tag in form.find_all("input"):
         name = input_tag.get("name")
