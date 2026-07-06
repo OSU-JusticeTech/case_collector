@@ -14,5 +14,7 @@ class CheckinSheet(models.Model):
     processed = models.JSONField(null=True, blank=True)
     validated = models.BooleanField(default=False)
 
+    event_time = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         return self.filename
