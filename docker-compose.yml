@@ -14,7 +14,12 @@ services:
       POSTGRES_PASSWORD: <DB-PW>
       POSTGRES_DB: eviction
       POSTGRES_USER: postgres
-    # command: -c ssl=on -c ssl_cert_file=/var/lib/postgresql-tls/certificate.crt -c ssl_key_file=/var/lib/postgresql-tls/privatekey.key
+    #entrypoint:
+    #  - bash
+    #  - -c
+    #  - |
+    #    chown postgres:postgres /var/lib/postgresql-tls/certificate.crt /var/lib/postgresql-tls/privatekey.key
+    #    exec docker-entrypoint.sh postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql-tls/certificate.crt -c ssl_key_file=/var/lib/postgresql-tls/privatekey.key
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 60s
@@ -27,10 +32,23 @@ services:
     image: ghcr.io/osu-justicetech/case_collector:main
     command: ["sh","-c","uv run manage.py collectstatic --noinput && uv run manage.py createcachetable && uv run manage.py migrate && uv run uvicorn eviction_tool.asgi:application --host 0.0.0.0"]
     env_file: "django_env"
-    #environment:
+    volumes:
+      - ./caseimport:/caseimport
+      - pdfs:/scrape-storage
+    environment:
+      DJANGO_ALLOWED_HOSTS: "${DOMAIN},localhost,127.0.0.1"
+      DJANGO_TRUSTED_ORIGINS: "http://localhost:8000,https://${DOMAIN}"
       #DJANGO_DEBUG: "True"
-    ports:
-      - "8000:8000"
+    #ports:
+    #  - "8000:8000"
+    networks:
+      - web
+      - default
+    labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.scrape.rule=Host(`${DOMAIN}`)"
+        - "traefik.http.routers.scrape.service=scrape"
+        - "traefik.http.services.scrape.loadbalancer.server.port=8000"
     depends_on:
       db:
         condition: service_healthy
@@ -41,6 +59,61 @@ services:
       start_period: 30s
       timeout: 10s
       retries: 3
+
+  authelia:
+    image: authelia/authelia:latest
+    volumes:
+      - ./authelia:/config
+    networks:
+      - web
+      - default
+    labels:
+      - "traefik.enable=true"
+      # Catch anything intended for Authelia authentication under /authelia
+      - "traefik.http.routers.authelia.rule=Host(`${DOMAIN}`)  && PathPrefix(`/authelia`)"
+      - "traefik.http.services.authelia.loadbalancer.server.port=9091"
+
+  mcp:
+    image: ghcr.io/osu-justicetech/case_collector-mcp:main
+    restart: always
+    env_file: "mcp_env"
+    environment:
+      AUTH_JWKS_URI: "https://${DOMAIN}/authelia/jwks.json"
+      AUTH_AUDIENCE: "https://${DOMAIN}/"
+      #FASTMCP_LOG_LEVEL: DEBUG
+      #FASTMCP_DEBUG: true
+    depends_on:
+      - db
+    extra_hosts:
+      - "${DOMAIN}:<PUBLIC IP / reverse proxy name>"
+    networks:
+      - web
+      - default
+    labels:
+      - "traefik.enable=true"
+      # Catch anything intended for Authelia authentication under /authelia
+      - "traefik.http.routers.mcp.rule=Host(`${DOMAIN}`) && PathPrefix(`/mcp`)"
+      - "traefik.http.services.mcp.loadbalancer.server.port=8000"
+
+
+  mcp-metadata:
+    image: halverneus/static-file-server:latest
+    environment:
+      - FOLDER=/web
+    volumes:
+      - ./metadata:/web/.well-known
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      # Claude strictly looks for this at the base root of the domain
+      - "traefik.http.routers.mcp-meta.rule=Host(`${DOMAIN}`) && PathPrefix(`/.well-known`)"
+      - "traefik.http.services.mcp-meta.loadbalancer.server.port=8080"
+      # force correct content-type for the OAuth metadata endpoints
+      - "traefik.http.middlewares.mcp-meta-headers.headers.customResponseHeaders.Content-Type=application/json"
+      - "traefik.http.routers.mcp-meta.middlewares=mcp-meta-headers"
+
+
 
   geocoder:
     image: ghcr.io/osu-justicetech/case_collector:main
@@ -94,18 +167,10 @@ services:
         condition: service_healthy
         restart: true
 
-  metabase:
-    image: metabase/metabase:latest
-    restart: always
-    volumes:
-      - /dev/urandom:/dev/random:ro
-      - metabase-data:/metabase-data
-    environment:
-      MB_DB_FILE: "/metabase-data/metabase.db"
-    ports:
-      - 3000:3000
-
 volumes:
   db:
-  metabase-data:
   pdfs:
+
+networks:
+  web:
+    external: true
