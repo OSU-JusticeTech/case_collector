@@ -14,6 +14,8 @@ DB_CONFIG = {
 
 QUERY = "SELECT * FROM latest_overview;"
 OUTPUT_FILE = "output.csv"
+# QUERY = "select * from nextgen_magistrate_presence WHERE date > '2025-11-20';"
+# OUTPUT_FILE = "magdecs.csv"
 
 
 def export_query_to_csv(conn, query, output_file):
