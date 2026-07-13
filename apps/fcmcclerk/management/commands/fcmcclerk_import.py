@@ -39,10 +39,10 @@ class Command(BaseCommand):
                 case_number = get_case_number(soup)
                 # print(case_number)
 
-                parts = case_number.split(" ")
+                parts = case_number.strip().split(" ")
                 year = int(parts[0])
-                cat = parts[1]
-                number = int(parts[2])
+                cat = " ".join(parts[1:-1])
+                number = int(parts[-1])
                 pg, created = Page.objects.get_or_create(
                     year=year,
                     category=cat,

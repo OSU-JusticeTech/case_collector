@@ -18,7 +18,7 @@ class Page(models.Model):
     }
 
     year = models.IntegerField()
-    category = models.CharField(choices=CATEGORIES)
+    category = models.CharField()
     number = models.IntegerField()
     scraped_at = models.DateTimeField(auto_now_add=True)
     content = models.CharField(null=True)
