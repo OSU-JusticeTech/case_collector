@@ -9,6 +9,8 @@ The easiest way to deploy is using docker compose with the images built by the C
 
 To run it, copy the `docker-compose.yml` file and create a `django_env` file from the `django_env.sample` provided and replace the secrets with freshly generated ones.
 
+Create a `.env` file that contains the `DOMAIN` variable and set it to the public domain name. 
+
 If you have a nextgen account, edit the compose file environment to your email and password.
 Otherwise, delete the nextgen section.
 
