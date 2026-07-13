@@ -4,6 +4,7 @@ import math
 import os
 import re
 from collections import Counter
+from datetime import timezone, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -11,6 +12,7 @@ import pytesseract
 
 from PIL import Image, ImageOps
 from django.contrib.auth.decorators import login_required
+from django.db.models import OuterRef, Subquery, F, Count
 from django.http import Http404, FileResponse
 
 from django.shortcuts import render, get_object_or_404
@@ -22,6 +24,8 @@ from rest_framework.views import APIView
 from django.db import connection
 
 from apps.attending.models import CheckinSheet
+from apps.cases.models import CourtCase, CaseSnapshot, Event
+from apps.cases.serializers import GroupedEventCountSerializer
 
 # Create your views here.
 
@@ -348,3 +352,49 @@ class FileLoad(APIView):
                 "detected_date": None,
             }
         return Response(res)
+
+
+class AllCasesUpcomingEventCountsView(APIView):
+    """
+    GET /events/upcoming-event-counts/
+
+    For every case, takes only its most recent snapshot, then returns
+    events (start's date >= today, so today's earlier events are included)
+    grouped by start datetime with a count per group.
+    """
+
+    permission_classes = (DjangoModelPermissions,)
+
+    queryset = CheckinSheet.objects.all()
+
+    def get(self, request):
+        today = datetime.now().date()
+
+        # For each snapshot, find the id of the latest snapshot belonging
+        # to the same case (tie-broken by id for determinism).
+        latest_snapshot_subquery = (
+            CaseSnapshot.objects.filter(case=OuterRef("case"))
+            .order_by("-created_at", "-id")
+            .values("id")[:1]
+        )
+
+        latest_snapshot_ids = (
+            CaseSnapshot.objects.annotate(
+                latest_id=Subquery(latest_snapshot_subquery)
+            )
+            .filter(id=F("latest_id"))
+            .values_list("id", flat=True)
+        )
+
+        qs = (
+            Event.objects.filter(
+                snapshot_id__in=latest_snapshot_ids,
+                start__date__gte=today,
+            )
+            .values("start")
+            .annotate(count=Count("id"))
+            .order_by("start")
+        )
+
+        serializer = GroupedEventCountSerializer(qs, many=True)
+        return Response(serializer.data)

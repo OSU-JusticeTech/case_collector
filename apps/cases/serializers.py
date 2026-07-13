@@ -1,3 +1,5 @@
+from zoneinfo import ZoneInfo
+
 from rest_framework import serializers
 
 from apps.cases.models import (
@@ -58,3 +60,9 @@ class SnapshotSerializer(serializers.ModelSerializer):
     class Meta:
         model = CaseSnapshot
         fields = "__all__"
+
+tz_ohio = ZoneInfo("America/New_York")
+
+class GroupedEventCountSerializer(serializers.Serializer):
+    start = serializers.DateTimeField(default_timezone=tz_ohio)
+    count = serializers.IntegerField()

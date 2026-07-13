@@ -1,6 +1,6 @@
 from django.urls import path, re_path
 
-from apps.attending.views import base, FileList, FileLoad, data, Save
+from apps.attending.views import base, FileList, FileLoad, data, Save, AllCasesUpcomingEventCountsView
 
 app_name = "attending"
 urlpatterns = [
@@ -9,4 +9,9 @@ urlpatterns = [
     path("load/<str:filename>", FileLoad.as_view(), name="load"),
     path("data/<str:filename>", data, name="data"),
     path("save/<str:filename>", Save.as_view(), name="save"),
+    path(
+        "dates",
+        AllCasesUpcomingEventCountsView.as_view(),
+        name="upcoming-event",
+    ),
 ]
