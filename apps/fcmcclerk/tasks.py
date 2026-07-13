@@ -153,13 +153,24 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
         .values("status")[:1]
     )
 
+    latest_filed_sq = (
+        Page.objects.filter(
+            year=OuterRef("year"),
+            category=OuterRef("category"),
+            number=OuterRef("number"),
+        )
+        .order_by("-scraped_at")
+        .values("filed")[:1]
+    )
+
     qs = (
         Page.objects.filter(category="CVG", year__gte=now_year - 2)
-        .values("year", "category", "number", "filed")
+        .values("year", "category", "number")
         .annotate(
             latest_scraped_at=Max("scraped_at"),
             latest_return_code=Subquery(latest_return_code_sq),
             latest_status=Subquery(latest_status_sq),
+            latest_filed=Subquery(latest_filed_sq)
         )
         .filter(latest_return_code__lt=300)
         .exclude(latest_status="CLOSED")
@@ -167,8 +178,8 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
 
     for op in sorted(
         qs,
-        key=lambda x: CDF((datetime.now().date() - x["filed"]).days)
-        - CDF((x["latest_scraped_at"].date() - x["filed"]).days),
+        key=lambda x: CDF((datetime.now().date() - x["latest_filed"]).days)
+        - CDF((x["latest_scraped_at"].date() - x["latest_filed"]).days),
         reverse=True,
     )[:300]:
 
@@ -195,19 +206,20 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
 
     qs = (
         Page.objects.filter(category="CVG", year__gte=now_year - 2)
-        .values("year", "category", "number", "filed")
+        .values("year", "category", "number")
         .annotate(
             latest_scraped_at=Max("scraped_at"),
             latest_return_code=Subquery(latest_return_code_sq),
             latest_status=Subquery(latest_status_sq),
+            latest_filed=Subquery(latest_filed_sq),
         )
         .filter(latest_return_code__lt=300, latest_status="CLOSED")
     )
 
     for op in sorted(
         qs,
-        key=lambda x: CDF((datetime.now().date() - x["filed"]).days)
-        - CDF((x["latest_scraped_at"].date() - x["filed"]).days),
+        key=lambda x: CDF((datetime.now().date() - x["latest_filed"]).days)
+        - CDF((x["latest_scraped_at"].date() - x["latest_filed"]).days),
         reverse=True,
     )[:30]:
         logging.info(
