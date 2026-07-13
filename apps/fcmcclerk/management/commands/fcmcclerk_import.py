@@ -40,9 +40,13 @@ class Command(BaseCommand):
                 # print(case_number)
 
                 parts = case_number.strip().split(" ")
-                year = int(parts[0])
-                cat = " ".join(parts[1:-1])
-                number = int(parts[-1])
+                try:
+                    year = int(parts[0])
+                    cat = " ".join(parts[1:-1])
+                    number = int(parts[-1])
+                except Exception as e:
+                    logging.error("could not import %s, error %s", fn, e.__repr__())
+                    continue
                 pg, created = Page.objects.get_or_create(
                     year=year,
                     category=cat,

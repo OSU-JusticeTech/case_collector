@@ -114,8 +114,8 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
             )
 
         year = int(parts[0])
-        cat = parts[1]
-        number = int(parts[2])
+        cat = " ".join(parts[1:-1])
+        number = int(parts[-1])
         proced.add((year, cat, number))
 
         if (year, cat, number, case.digest) in existing_set:
@@ -271,7 +271,7 @@ def scrape_detail(instruction: ScrapeInstruction):
 
     parts = case_number.split(" ")
     year = int(parts[0])
-    cat = parts[1]
+    cat = " ".join(parts[1:-1])
     number = int(parts[2])
 
     if settings.SCRAPE_PROXIES:
