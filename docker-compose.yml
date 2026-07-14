@@ -46,6 +46,8 @@ services:
         - "traefik.http.routers.scrape.rule=Host(`${DOMAIN}`)"
         - "traefik.http.routers.scrape.service=scrape"
         - "traefik.http.services.scrape.loadbalancer.server.port=8000"
+        - "traefik.http.routers.scrape.tls=true"
+        - "traefik.http.routers.scrape.tls.certresolver=le"
     depends_on:
       db:
         condition: service_healthy
@@ -69,6 +71,8 @@ services:
       # Catch anything intended for Authelia authentication under /authelia
       - "traefik.http.routers.authelia.rule=Host(`${DOMAIN}`)  && PathPrefix(`/authelia`)"
       - "traefik.http.services.authelia.loadbalancer.server.port=9091"
+      - "traefik.http.routers.authelia.tls=true"
+      - "traefik.http.routers.authelia.tls.certresolver=le"
 
   mcp:
     image: ghcr.io/osu-justicetech/case_collector-mcp:main
@@ -81,8 +85,8 @@ services:
       #FASTMCP_DEBUG: true
     depends_on:
       - db
-    extra_hosts:
-      - "${DOMAIN}:<PUBLIC IP / reverse proxy name>"
+    #extra_hosts:
+    #  - "${DOMAIN}:<PUBLIC IP / reverse proxy name>"
     networks:
       - web
       - default
@@ -91,6 +95,8 @@ services:
       # Catch anything intended for Authelia authentication under /authelia
       - "traefik.http.routers.mcp.rule=Host(`${DOMAIN}`) && PathPrefix(`/mcp`)"
       - "traefik.http.services.mcp.loadbalancer.server.port=8000"
+      - "traefik.http.routers.mcp.tls=true"
+      - "traefik.http.routers.mcp.tls.certresolver=le"
 
 
   mcp-metadata:
@@ -109,6 +115,8 @@ services:
       # force correct content-type for the OAuth metadata endpoints
       - "traefik.http.middlewares.mcp-meta-headers.headers.customResponseHeaders.Content-Type=application/json"
       - "traefik.http.routers.mcp-meta.middlewares=mcp-meta-headers"
+      - "traefik.http.routers.mcp-meta.tls=true"
+      - "traefik.http.routers.mcp-meta.tls.certresolver=le"
 
 
 
