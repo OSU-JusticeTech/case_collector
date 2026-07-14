@@ -10,10 +10,7 @@ services:
     volumes:
       - db:/var/lib/postgresql
       # - ./certfolder:/var/lib/postgresql-tls
-    environment:
-      POSTGRES_PASSWORD: <DB-PW>
-      POSTGRES_DB: eviction
-      POSTGRES_USER: postgres
+    env_file: "db_env"
     #entrypoint:
     #  - bash
     #  - -c
@@ -119,7 +116,6 @@ services:
     image: ghcr.io/osu-justicetech/case_collector:main
     command: ["sh","-c","uv run manage.py geocode"]
     restart: always
-    #command: ["sleep", "10000"]
     env_file: "django_env"
 
     depends_on:
@@ -144,9 +140,6 @@ services:
     command: ["sh","-c","uv run manage.py nextgen"]
     restart: always
     env_file: "django_env"
-    environment:
-      NEXTGEN_PASSWORD: "nextgen-password" 
-      NEXTGEN_EMAIL: "nextgen-email@example.com"
     volumes:
       - pdfs:/scrape-storage
     depends_on:
@@ -158,7 +151,6 @@ services:
     image: ghcr.io/osu-justicetech/case_collector:main
     command: ["sh","-c","uv run manage.py nextgen_magdec"]
     restart: always
-    #command: ["sleep", "10000"]
     env_file: "django_env"
     volumes:
       - pdfs:/scrape-storage

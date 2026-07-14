@@ -1,0 +1,3 @@
+POSTGRES_PASSWORD: <DB-PW>
+POSTGRES_DB: eviction
+POSTGRES_USER: postgres
