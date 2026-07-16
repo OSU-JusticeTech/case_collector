@@ -10,7 +10,7 @@ from apps.nextgen.models import ScanDocketEntry, Page, MagdecAnalysis, RoiCount
 class ScanDocketEntryAdmin(admin.ModelAdmin):
     readonly_fields = ("case", "magdec_analyses", "filename", "download_link")
     list_display = ["case", "date", "text", "filename"]
-    search_fields = ["case", "date", "text", "filename"]
+    search_fields = ["case__case_number", "date", "text", "filename"]
 
     def download_link(self, obj):
         if obj and obj.scan:
@@ -26,7 +26,7 @@ class PageAdmin(admin.ModelAdmin):
     readonly_fields = ("case", "content_preview")
     list_display = ["case", "scraped_at", "return_code"]
     date_hierarchy = "scraped_at"
-    search_fields = ["case"]
+    search_fields = ["case__case_number"]
 
     def content_preview(self, obj):
         if obj.content:
