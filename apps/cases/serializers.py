@@ -2,6 +2,8 @@ from zoneinfo import ZoneInfo
 
 from rest_framework import serializers
 
+tz_ohio = ZoneInfo("America/New_York")
+
 from apps.cases.models import (
     CaseSnapshot,
     Party,
@@ -26,6 +28,8 @@ class FinanceSerializer(serializers.ModelSerializer):
 
 
 class EventSerializer(serializers.ModelSerializer):
+    start = serializers.DateTimeField(default_timezone=tz_ohio)
+    end = serializers.DateTimeField(default_timezone=tz_ohio)
     class Meta:
         model = Event
         fields = "__all__"
@@ -61,7 +65,15 @@ class SnapshotSerializer(serializers.ModelSerializer):
         model = CaseSnapshot
         fields = "__all__"
 
-tz_ohio = ZoneInfo("America/New_York")
+class SlimSnapshotSerializer(serializers.ModelSerializer):
+    case = CaseSerializer()
+    parties = PartySerializer(source="party_set", many=True)
+    events = EventSerializer(source="event_set", many=True)
+    dispositions = DispositionSerializer(source="disposition_set", many=True)
+
+    class Meta:
+        model = CaseSnapshot
+        fields = "__all__"
 
 class GroupedEventCountSerializer(serializers.Serializer):
     start = serializers.DateTimeField(default_timezone=tz_ohio)

@@ -16,7 +16,9 @@ from django.db.models import OuterRef, Subquery, F, Count
 from django.http import Http404, FileResponse
 
 from django.shortcuts import render, get_object_or_404
+from django.utils.dateparse import parse_datetime
 from pyarrow.lib import Date32Array
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -25,7 +27,7 @@ from django.db import connection
 
 from apps.attending.models import CheckinSheet
 from apps.cases.models import CourtCase, CaseSnapshot, Event
-from apps.cases.serializers import GroupedEventCountSerializer
+from apps.cases.serializers import GroupedEventCountSerializer, SnapshotSerializer, SlimSnapshotSerializer
 
 # Create your views here.
 
@@ -365,7 +367,7 @@ class AllCasesUpcomingEventCountsView(APIView):
 
     permission_classes = (DjangoModelPermissions,)
 
-    queryset = CheckinSheet.objects.all()
+    queryset = Event.objects.all()
 
     def get(self, request):
         today = datetime.now().date()
@@ -397,4 +399,45 @@ class AllCasesUpcomingEventCountsView(APIView):
         )
 
         serializer = GroupedEventCountSerializer(qs, many=True)
+        return Response(serializer.data)
+
+class EventsAtTimeView(APIView):
+    """
+    Returns all events at the given start datetime, restricted to each
+    case's latest snapshot.
+    """
+    permission_classes = (DjangoModelPermissions,)
+    queryset = Event.objects.all()
+
+    def get(self, request):
+        raw_start = request.query_params.get("start")
+        if not raw_start:
+            raise ValidationError({"start": "This query parameter is required."})
+
+        start = parse_datetime(raw_start)
+        if start is None:
+            raise ValidationError(
+                {"start": "Invalid datetime format. Use ISO 8601, e.g. 2026-07-13T09:00:00."}
+            )
+
+        latest_snapshot_subquery = CaseSnapshot.objects.filter(
+            case=OuterRef('case')
+        ).order_by('-created_at').values('created_at')[:1]
+
+        # 3. Query CaseSnapshots, filtering for those that match their case's latest timestamp
+        # AND have an event starting at your target time.
+        matching_snapshots = (
+            CaseSnapshot.objects.annotate(
+                latest_created_at=Subquery(latest_snapshot_subquery)
+            )
+            .filter(
+                created_at=F('latest_created_at'),
+                event__start=start
+            )
+            .select_related('case')  # Optimizes fetching the Case
+            .prefetch_related('party_set')  # Optimizes fetching all related Parties
+        )
+
+
+        serializer = SlimSnapshotSerializer(matching_snapshots, many=True)
         return Response(serializer.data)
