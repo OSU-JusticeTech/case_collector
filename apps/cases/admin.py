@@ -12,6 +12,7 @@ from apps.cases.models import (
     Disposition,
     Finance,
     DocketEntry,
+    LatestOverview,
 )
 
 # Register your models here.
@@ -20,7 +21,7 @@ admin.site.register(Source)
 
 
 class CaseAdmin(admin.ModelAdmin):
-    readonly_fields = ("snapshots",)
+    readonly_fields = ("snapshots", "scans")
     list_display = ["source", "case_number", "snapshot_count"]
     list_filter = ["source"]
     search_fields = ["case_number"]
@@ -40,6 +41,19 @@ class CaseAdmin(admin.ModelAdmin):
                 o,
             )
             for o in obj.casesnapshot_set.all()
+        ]
+        return (
+            format_html_join("", "<li>{}</li>", ((link,) for link in links)) or "(None)"
+        )
+
+    def scans(self, obj):
+        links = [
+            format_html(
+                '<a href="{}">{}</a>',
+                reverse("admin:nextgen_scandocketentry_change", args=[o.id]),
+                o,
+            )
+            for o in obj.scandocketentry_set.all()
         ]
         return (
             format_html_join("", "<li>{}</li>", ((link,) for link in links)) or "(None)"
@@ -91,7 +105,7 @@ admin.site.register(CaseSnapshot, SnapshotAdmin)
 
 
 class PartyAdmin(admin.ModelAdmin):
-    readonly_fields = ("snapshot","location")
+    readonly_fields = ("snapshot", "location")
     list_display = ["side", "role", "name", "address", "city", "state", "zip_code"]
     list_filter = ["side", "role", "state", "zip_code"]
     search_fields = ["name", "address", "city", "state"]
@@ -138,3 +152,33 @@ class DocketAdmin(admin.ModelAdmin):
 
 
 admin.site.register(DocketEntry, DocketAdmin)
+
+
+class LatestOverviewAdmin(admin.ModelAdmin):
+    list_filter = ["earliest_docket", "code", "stptfatt_name"]
+    search_fields = [
+        "case_number",
+        "stdef_name",
+        "stdef_address",
+        "full_address",
+        "stptf_name",
+        "stptf_address",
+        "stptfatt_name",
+        "stptfatt_address",
+    ]
+
+    def get_list_display(self, request):
+        return [field.name for field in self.model._meta.fields]
+
+    def get_readonly_fields(self, request, obj=None):
+        return [field.name for field in self.model._meta.fields]
+
+    # 2. Prevent adding or deleting
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+admin.site.register(LatestOverview, LatestOverviewAdmin)

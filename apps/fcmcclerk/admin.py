@@ -8,7 +8,7 @@ from apps.fcmcclerk.models import Page
 
 class PageAdmin(admin.ModelAdmin):
     date_hierarchy = "scraped_at"
-    readonly_fields = ("snapshot",'content_preview')
+    readonly_fields = ("snapshot", "content_preview")
     list_display = [
         "year",
         "category",
@@ -26,7 +26,7 @@ class PageAdmin(admin.ModelAdmin):
             # Using srcdoc inside an iframe keeps the HTML sandbox-isolated
             return format_html(
                 '<iframe srcdoc="{}" style="width: 800px; height: 500px; border: 1px solid #ccc; border-radius: 4px;"></iframe>',
-                obj.content
+                obj.content,
             )
         return "No content"
 

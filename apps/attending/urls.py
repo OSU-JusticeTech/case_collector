@@ -1,6 +1,14 @@
 from django.urls import path, re_path
 
-from apps.attending.views import base, FileList, FileLoad, data, Save, AllCasesUpcomingEventCountsView, EventsAtTimeView
+from apps.attending.views import (
+    base,
+    FileList,
+    FileLoad,
+    data,
+    Save,
+    AllCasesUpcomingEventCountsView,
+    EventsAtTimeView,
+)
 
 app_name = "attending"
 urlpatterns = [

@@ -170,7 +170,7 @@ def scrape_generator() -> Generator[ScrapeInstruction, None, None]:
             latest_scraped_at=Max("scraped_at"),
             latest_return_code=Subquery(latest_return_code_sq),
             latest_status=Subquery(latest_status_sq),
-            latest_filed=Subquery(latest_filed_sq)
+            latest_filed=Subquery(latest_filed_sq),
         )
         .filter(latest_return_code__lt=300)
         .exclude(latest_status="CLOSED")
