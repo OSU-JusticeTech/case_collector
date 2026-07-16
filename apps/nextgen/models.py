@@ -65,3 +65,53 @@ class Page(models.Model):
 
     def __str__(self):
         return f"{self.case} {self.scraped_at} {self.return_code}"
+
+
+class Presence(models.Model):
+    #analysis_id,
+    #id,
+    created_at = models.DateTimeField()
+
+    page_number = models.IntegerField()
+
+    good_matches = models.IntegerField()
+    diff_sum = models.BigIntegerField()
+
+    # transformation matrix
+    m11 = models.FloatField()
+    m12 = models.FloatField()
+    m13 = models.FloatField()
+    m21 = models.FloatField()
+    m22 = models.FloatField()
+    m23 = models.FloatField()
+
+    check_0_dismissed = models.IntegerField()
+    check_1_reassign = models.IntegerField()
+    check_2_only_defendant = models.IntegerField()
+    check_3_none = models.IntegerField()
+    check_4_both = models.IntegerField()
+    check_5_only_plaintiff = models.IntegerField()
+    top_roi_id = models.IntegerField()
+    top_count = models.IntegerField()
+    second_count = models.IntegerField()
+    top_to_second_ratio = models.FloatField()
+    entry = models.ForeignKey(ScanDocketEntry, on_delete=models.DO_NOTHING)
+    date = models.DateField()
+    text = models.CharField()
+    case = models.ForeignKey(CourtCase, on_delete=models.DO_NOTHING)
+    case_number = models.TextField()
+    # date, text, scan, case_id, filename, source_id, case_number)
+
+
+    class Meta:
+        managed = False
+        db_table = "nextgen_magistrate_presence"
+
+    # 1. Prevent saving/updating
+    def save(self, *args, **kwargs):
+        # You can either silently ignore the save, or raise an error to be safe:
+        raise NotImplementedError("This model is read-only.")
+
+    # 2. Prevent deleting
+    def delete(self, *args, **kwargs):
+        raise NotImplementedError("This model is read-only.")

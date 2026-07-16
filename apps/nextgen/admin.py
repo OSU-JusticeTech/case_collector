@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html, format_html_join
 
-from apps.nextgen.models import ScanDocketEntry, Page, MagdecAnalysis, RoiCount
+from apps.nextgen.models import ScanDocketEntry, Page, MagdecAnalysis, RoiCount, Presence
+
 
 # Register your models here.
 
@@ -80,3 +81,25 @@ class RoiCountAdmin(admin.ModelAdmin):
 
 
 admin.site.register(RoiCount, RoiCountAdmin)
+
+
+class PresenceAdmin(admin.ModelAdmin):
+    list_filter = ["date", "page_number","top_roi_id"]
+    search_fields = [
+        "case__case_number","entry__filename","text"
+    ]
+
+    def get_list_display(self, request):
+        return [field.name for field in self.model._meta.fields]
+
+    def get_readonly_fields(self, request, obj=None):
+        return [field.name for field in self.model._meta.fields]
+
+    # 2. Prevent adding or deleting
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+admin.site.register(Presence, PresenceAdmin)
