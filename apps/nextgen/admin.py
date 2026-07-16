@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import reverse
-from django.utils.html import format_html
+from django.utils.html import format_html, format_html_join
 
 from apps.nextgen.models import ScanDocketEntry, Page, MagdecAnalysis, RoiCount
 
@@ -8,9 +8,10 @@ from apps.nextgen.models import ScanDocketEntry, Page, MagdecAnalysis, RoiCount
 
 
 class ScanDocketEntryAdmin(admin.ModelAdmin):
-    readonly_fields = ("case", "magdec_analyses", "filename", "download_link")
+    readonly_fields = ("case", "analyses", "filename", "download_link")
     list_display = ["case", "date", "text", "filename"]
     search_fields = ["case__case_number", "date", "text", "filename"]
+    exclude = ("magdec_analyses",)
 
     def download_link(self, obj):
         if obj and obj.scan:
@@ -18,6 +19,18 @@ class ScanDocketEntryAdmin(admin.ModelAdmin):
             return format_html('<a class="button" href="{}">📥 Download Scan</a>', url)
         return "No File"
 
+    def analyses(self, obj):
+        links = [
+            format_html(
+                '<a href="{}">{}</a>',
+                reverse("admin:nextgen_magdecanalysis_change", args=[o.id]),
+                o,
+            )
+            for o in obj.magdec_analyses.all()
+        ]
+        return (
+            format_html_join("", "<li>{}</li>", ((link,) for link in links)) or "(None)"
+        )
 
 admin.site.register(ScanDocketEntry, ScanDocketEntryAdmin)
 
@@ -43,7 +56,20 @@ admin.site.register(Page, PageAdmin)
 
 class MagdecAnalysisAdmin(admin.ModelAdmin):
     list_display = ["page_number", "diff_sum", "good_matches", "created_at"]
+    readonly_fields = ("docket_entry",)
 
+    def docket_entry(self, obj):
+        links = [
+            format_html(
+                '<a href="{}">{}</a>',
+                reverse("admin:nextgen_scandocketentry_change", args=[o.id]),
+                o,
+            )
+            for o in obj.scandocketentry_set.all()
+        ]
+        return (
+            format_html_join("", "<li>{}</li>", ((link,) for link in links)) or "(None)"
+        )
 
 admin.site.register(MagdecAnalysis, MagdecAnalysisAdmin)
 
