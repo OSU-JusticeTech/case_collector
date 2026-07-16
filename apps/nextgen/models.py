@@ -22,6 +22,9 @@ class MagdecAnalysis(models.Model):
     m22 = models.FloatField()
     m23 = models.FloatField()
 
+    def __str__(self):
+        return f"{self.page_number}: {self.diff_sum} {self.good_matches}"
+
 
 class RoiCount(models.Model):
     result = models.ForeignKey(
@@ -34,6 +37,9 @@ class RoiCount(models.Model):
 
     class Meta:
         ordering = ["roi_id"]
+
+    def __str__(self):
+        return f"{self.result} {self.roi_id}: {self.count_nonwhite}"
 
 
 class ScanDocketEntry(models.Model):

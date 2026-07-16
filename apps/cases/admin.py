@@ -91,6 +91,7 @@ admin.site.register(CaseSnapshot, SnapshotAdmin)
 
 
 class PartyAdmin(admin.ModelAdmin):
+    readonly_fields = ("snapshot","location")
     list_display = ["side", "role", "name", "address", "city", "state", "zip_code"]
     list_filter = ["side", "role", "state", "zip_code"]
     search_fields = ["name", "address", "city", "state"]
@@ -100,6 +101,7 @@ admin.site.register(Party, PartyAdmin)
 
 
 class EventAdmin(admin.ModelAdmin):
+    readonly_fields = ("snapshot",)
     list_display = ["event", "start", "end", "room", "judge", "result"]
     date_hierarchy = "start"
     list_filter = ["result", "event"]
@@ -109,6 +111,7 @@ admin.site.register(Event, EventAdmin)
 
 
 class DispositionAdmin(admin.ModelAdmin):
+    readonly_fields = ("snapshot",)
     list_display = ["date", "code", "judge", "status", "status_date"]
     date_hierarchy = "date"
     list_filter = ["code", "status"]
@@ -118,6 +121,7 @@ admin.site.register(Disposition, DispositionAdmin)
 
 
 class FinanceAdmin(admin.ModelAdmin):
+    readonly_fields = ("snapshot",)
     list_display = ["application", "owed", "paid", "dismissed", "balance"]
     list_filter = ["application"]
 
@@ -126,6 +130,7 @@ admin.site.register(Finance, FinanceAdmin)
 
 
 class DocketAdmin(admin.ModelAdmin):
+    readonly_fields = ("snapshot",)
     list_display = ["snapshot__case__case_number", "date", "text"]
     search_fields = ["snapshot__case__case_number", "date", "text"]
     list_filter = ["text"]
