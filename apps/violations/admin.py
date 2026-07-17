@@ -51,7 +51,7 @@ class CodeAdmin(admin.ModelAdmin):
     ]
     list_filter = [RecordTypeFilter, "status", "scraped_at"]
     date_hierarchy = "date"
-    search_fields = ["date", "record_type", "address", "description", "status"]
+    search_fields = ["date","record_number", "record_type", "address", "description", "status"]
 
 
 admin.site.register(CodeViolation, CodeAdmin)

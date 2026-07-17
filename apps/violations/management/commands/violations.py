@@ -1,11 +1,12 @@
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 
 from django.core.management import BaseCommand
 
 from apps.fcmcclerk.tasks import ScrapeInstruction
 from apps.nextgen.tasks import scrape_pdfs, scrape_generator
+from apps.violations.models import CodeViolation
 from apps.violations.tasks import get_csv
 
 
@@ -18,18 +19,21 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         logging.info("start scraping")
 
-        get_csv(datetime(2026, 6, 1))
-        return
-        while True:
-            for cno in scrape_generator():
-                logging.info("next case %s", cno)
-                if cno.restart:
-                    logging.info("restart")
-                    break
-                if cno.earliest is not None:
-                    logging.info("done, resume at %s", cno.earliest)
-                    while datetime.now() < cno.earliest:
-                        time.sleep(10)
-                    break
+        #get_csv(datetime(2026, 6, 1))
 
-                scrape_pdfs(cno)
+        if CodeViolation.objects.count() == 0:
+            start = datetime(2025, 1, 1).date()
+        else:
+            latest = CodeViolation.objects.all().order_by("-date")[0]
+            start = latest.date
+        logging.info("start on day %s", start )
+        while True:
+            if start + timedelta(days=1) >= datetime.now().date():
+                logging.info("don't scrape today, wait")
+                time.sleep(100)
+                continue
+            start += timedelta(days=1)
+
+            logging.info("scrape %s", start)
+            get_csv(start)
+            time.sleep(12)
