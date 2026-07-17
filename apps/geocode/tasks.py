@@ -1,4 +1,5 @@
 import logging
+from dataclasses import dataclass
 
 from arcgis.geocoding import geocode, Geocoder, batch_geocode
 from pprint import pprint
@@ -9,9 +10,68 @@ from django.db.models import Model
 
 from apps.cases.models import Party
 from apps.geocode.models import Location
+from apps.violations.models import CodeViolation
 
 
-def geo(skip=None):
+@dataclass(frozen=True)
+class GeocodeAdapter:
+    # {geocoder API field name: model field name}, OR None for single-string mode
+    field_map: dict | None
+    address_field: str = "address"  # used only when field_map is None
+
+    def address_payload(self, obj):
+        """What gets sent to the geocoder for this object."""
+        if self.field_map is None:
+            return getattr(obj, self.address_field)
+        return {api: getattr(obj, model) for api, model in self.field_map.items()}
+
+    def match_kwargs(self, obj):
+        """How to find all rows sharing this same address."""
+        if self.field_map is None:
+            return {self.address_field: getattr(obj, self.address_field)}
+        return {model: getattr(obj, model) for model in self.field_map.values()}
+
+    def hashable(self, payload):
+        """A hashable dedupe/skip key for this address."""
+        if self.field_map is None:
+            return payload  # already a string, already hashable
+        return tuple(payload.values())
+
+
+ADAPTERS = {
+    Party: GeocodeAdapter(field_map={
+        "Address": "address",
+        "City": "city",
+        "Region": "state",
+        "Postal": "zip_code",
+    }),
+    CodeViolation: GeocodeAdapter(field_map=None, address_field="address"),
+}
+
+
+def get_addresses(cls, adapter, skip_list, batch_size):
+    addresses = []
+    uniq = set()
+    for p in cls.objects.filter(location__isnull=True):
+        payload = adapter.address_payload(p)
+        already_geocoded = cls.objects.filter(
+            location__isnull=False, **adapter.match_kwargs(p)
+        ).first()
+        if already_geocoded is not None:
+            p.location = already_geocoded.location
+            p.save()
+            continue
+
+        hashable = adapter.hashable(payload)
+        if hashable in uniq or hashable in skip_list:
+            continue
+        uniq.add(hashable)
+        addresses.append((payload, p))
+        if len(addresses) >= batch_size:
+            break
+    return addresses
+
+def geo(cls, skip=None):
 
     g = Geocoder(settings.GEOCODER_URL)
 
@@ -22,34 +82,9 @@ def geo(skip=None):
         pass
 
     skip_list = set() if skip is None else skip
-    addresses = []
-    uniq = set()
-    for p in Party.objects.filter(location__isnull=True):
-        already_geocoded = Party.objects.filter(
-            address=p.address,
-            city=p.city,
-            state=p.state,
-            zip_code=p.zip_code,
-            location__isnull=False,
-        ).first()
-        if already_geocoded is not None:
-            p.location = already_geocoded.location
-            p.save()
-            continue
-        addr = {
-            "Address": p.address,
-            "City": p.city,
-            "Region": p.state,
-            "Postal": p.zip_code,
-        }
-        hashable = tuple(addr.values())
-        if hashable not in uniq:
-            if hashable in skip_list:
-                continue
-            uniq.add(hashable)
-            addresses.append((addr, p))
-            if len(addresses) >= batch_size:
-                break
+
+    adapter = ADAPTERS[cls]
+    addresses = get_addresses(cls, adapter, skip_list, batch_size)
 
     print("len", len(addresses))
     res = batch_geocode(
@@ -94,20 +129,12 @@ def geo(skip=None):
                 raw_geocode=attrs,
             )
 
-            matching_parties = Party.objects.filter(
-                address=p_obj.address,
-                city=p_obj.city,
-                state=p_obj.state,
-                zip_code=p_obj.zip_code,
-            )
-
-            for m in matching_parties:
+            for m in cls.objects.filter(location__isnull=True, **ADAPTERS[cls].match_kwargs(p_obj)):
                 m.location = loc
                 m.save()
 
         except Exception as e:
-            hashable = tuple(p_addr.values())
-            unfindable.add(hashable)
+            unfindable.add(ADAPTERS[cls].hashable(p_addr))
             logging.error(
                 "could not geolocate %d: %s to %s because of %s",
                 p_obj.pk,

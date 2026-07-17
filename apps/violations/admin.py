@@ -46,9 +46,11 @@ class CodeAdmin(admin.ModelAdmin):
         "record_number",
         "record_type",
         "address",
+        "location",
         "status",
         "scraped_at",
     ]
+    readonly_fields = ("location",)
     list_filter = [RecordTypeFilter, "status", "scraped_at"]
     date_hierarchy = "date"
     search_fields = ["date","record_number", "record_type", "address", "description", "status"]
