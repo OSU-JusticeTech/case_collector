@@ -1,3 +1,5 @@
+import os
+
 from django.db import models
 
 from apps.cases.models import CourtCase
@@ -41,12 +43,18 @@ class RoiCount(models.Model):
     def __str__(self):
         return f"{self.result} {self.roi_id}: {self.count_nonwhite}"
 
+def nextgen_filenames(instance, filename):
+    parts = instance.case.case_number.split(" ")
+    year = int(parts[0])
+    cat = "_".join(parts[1:-1])
+    number = int(parts[-1])
+    return os.path.join('nextgen', str(year),str(cat),f"{number:06d}"[:2], filename)
 
 class ScanDocketEntry(models.Model):
     date = models.DateField()
     text = models.CharField()
     case = models.ForeignKey(CourtCase, on_delete=models.CASCADE)
-    scan = models.FileField(null=True, upload_to="nextgen")
+    scan = models.FileField(null=True, upload_to=nextgen_filenames)
     filename = models.CharField()
     magdec_analyses = models.ManyToManyField(MagdecAnalysis)
 
