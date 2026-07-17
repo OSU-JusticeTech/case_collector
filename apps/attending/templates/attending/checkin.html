@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Docket Grid Board</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    .spreadsheet-grid::-webkit-scrollbar { height: 8px; width: 8px; }
+    .spreadsheet-grid::-webkit-scrollbar-track { background: #f1f1f1; }
+    .spreadsheet-grid::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+    @media print {
+      body { background: white; color: black; }
+      .no-print { display: none !important; }
+      .print-area { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+      .print-card { page-break-inside: avoid; border: 1px solid #e2e8f0 !important; margin-bottom: 0.5rem; }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col">
+
+  <div id="app" class="flex flex-col flex-1 h-screen overflow-hidden">
+
+    <!-- STANDARD INTERFACE WRAPPER (HIDDEN DURING PRINT SELECTION VIEWS) -->
+    <div v-if="!printMode" class="flex flex-col flex-1 h-screen overflow-hidden no-print">
+      <!-- Top Control Bar -->
+      <header class="bg-white border-b border-gray-200 px-6 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shrink-0 shadow-sm z-10">
+        <div class="flex items-center gap-4">
+          <h1 class="text-xl font-bold text-gray-800">Spreadsheet Docket Board</h1>
+          <button
+            v-if="selectedTime && hasAnyAnnotations"
+            @click="printMode = true"
+            class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded transition-all flex items-center gap-1.5 shadow"
+          >
+            🖨️ Print Annotated Cases
+          </button>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <label for="time-select" class="text-sm font-semibold text-gray-600">Session Window:</label>
+          <select
+            id="time-select"
+            v-model="selectedTime"
+            @change="fetchEventsForTime"
+            class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 font-medium"
+          >
+            <option value="" disabled>-- Select Session --</option>
+            <option v-for="date in dates" :key="date.start" :value="date.start">
+              {{ formatDateTime(date.start) }} ({{ date.count }} cases)
+            </option>
+          </select>
+        </div>
+      </header>
+
+      <!-- Main Workspace Layout -->
+      <div class="flex flex-1 overflow-hidden relative">
+        <main class="flex-1 overflow-x-auto overflow-y-auto p-4 spreadsheet-grid bg-gray-50">
+          <div v-if="loading" class="flex flex-col justify-center items-center h-64">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+          </div>
+
+          <div v-else-if="!selectedTime" class="flex justify-center items-center h-full text-gray-400 border-4 border-dashed border-gray-200 rounded-xl m-4">
+            <p class="text-lg font-medium">Select a session window above to generate the spreadsheet layout.</p>
+          </div>
+
+          <!-- Dynamic Column Board Grid Layout -->
+          <div v-else class="flex items-start gap-0 border border-gray-300 rounded-lg bg-white shadow-sm min-w-max">
+            <div v-for="group in orderedGroupedCases" :key="group.attorneyName" class="w-56 border-r border-gray-200 last:border-r-0 flex flex-col shrink-0">
+
+              <!-- Column Header -->
+              <div class="bg-gray-200 border-b border-gray-300 px-3 py-2 flex flex-col items-center justify-between select-none shrink-0 h-[64px]">
+                <div class="flex items-center gap-2 w-full justify-center">
+                  <input
+                    v-if="group.attorneyName !== 'PRO SE'"
+                    type="checkbox"
+                    v-model="attorneyCheckStore[group.attorneyName]"
+                    @change="saveStateStore"
+                    class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  >
+                  <div class="text-xs font-black text-gray-700 tracking-wider uppercase truncate max-w-[150px]" :title="group.attorneyName">
+                    {{ getShortAttorneyName(group.attorneyName) }}
+                  </div>
+                </div>
+                <div class="text-[10px] font-bold text-gray-500 mt-0.5">{{ group.cases.length }} cases</div>
+              </div>
+
+              <!-- Case Cells Rows -->
+              <div class="min-h-[35rem] bg-white">
+                <div
+                  v-for="item in sortCasesByTierAndName(group.cases)"
+                  :key="item.id"
+                  @click="activeCase = { item, attorneyName: group.attorneyName }"
+                  :class="[
+                    'p-2 cursor-pointer text-left transition-all relative border-l-4 group select-none h-[56px] flex flex-col justify-center border-b border-gray-100',
+                    activeCase && activeCase.item.id === item.id ? 'bg-blue-50 border-l-blue-600 font-bold' :
+                    isCaseFullyCheckedIn(item) ? 'bg-green-50/70 border-l-green-500 text-green-900' :
+                    isCasePartiallyCheckedIn(item) ? 'bg-slate-100 border-l-slate-400' : 'border-l-transparent hover:bg-gray-50'
+                  ]"
+                >
+                  <div class="text-xs font-bold tracking-tight flex items-center justify-between">
+                    <span class="text-gray-900 flex items-center gap-1">
+                      {{ item.case.case_number }}
+                      <span v-if="hasDefendantAttorney(item)" class="text-[9px] bg-purple-100 text-purple-700 px-1 rounded font-extrabold scale-90">Atty</span>
+                    </span>
+                    <span v-if="isCaseFullyCheckedIn(item)" class="text-green-600 font-bold text-xs">✔</span>
+                  </div>
+                  <div class="text-[11px] font-semibold text-gray-500 truncate mt-0.5 flex justify-between items-center w-full">
+                    <span class="truncate pr-1">{{ getDefendantSummary(item) }}</span>
+                    <span v-if="caseNotesStore[item.id]" class="text-[9px] bg-amber-100 text-amber-800 px-1 rounded truncate max-w-[70px] font-bold">
+                      {{ caseNotesStore[item.id] }}
+                    </span>
+                  </div>
+                </div>
+                <div v-for="n in Math.max(0, 12 - group.cases.length)" :key="n" class="h-[56px] bg-gray-50/30 border-b border-gray-100/50"></div>
+              </div>
+
+            </div>
+          </div>
+        </main>
+
+        <!-- SLIDE-OUT PANEL FOR THE SELECTED CASE -->
+        <aside :class="['w-96 bg-white border-l border-gray-200 shadow-2xl flex flex-col z-20 transition-transform duration-200 shrink-0 h-full', activeCase ? 'translate-x-0' : 'translate-x-full absolute right-0']">
+          <div v-if="activeCase" class="flex flex-col h-full">
+            <div class="p-4 bg-gray-900 text-white flex justify-between items-start shrink-0">
+              <div>
+                <div class="text-xs uppercase font-bold tracking-wider text-gray-400">Case Details</div>
+                <h2 class="text-base font-mono font-bold">{{ activeCase.item.case.case_number }}</h2>
+              </div>
+              <button @click="activeCase = null" class="text-gray-400 hover:text-white text-xl font-bold p-1">&times;</button>
+            </div>
+
+            <div class="p-4 flex-1 overflow-y-auto space-y-5">
+              <!-- Free text Notes Input (Saves on blur/loss of focus or Enter key) -->
+              <div class="bg-gray-50 border border-gray-200 p-3 rounded-lg space-y-1.5">
+                <label :for="'notes-' + activeCase.item.id" class="text-xs font-bold text-gray-600 uppercase tracking-wide flex justify-between">
+                  <span>Language / Interpreter Notes</span>
+                </label>
+                <input
+                  :id="'notes-' + activeCase.item.id"
+                  type="text"
+                  v-model="caseNotesStore[activeCase.item.id]"
+                  @blur="saveStateStore"
+                  @keyup.enter="saveStateStore"
+                  placeholder="e.g., Spanish Translator Needed"
+                  class="w-full bg-white border border-gray-300 text-xs rounded-lg p-2 font-medium focus:ring-2 focus:ring-blue-500"
+                >
+              </div>
+
+              <!-- Roster Check-In Section -->
+              <div>
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Roster Check-In</h3>
+                <div class="space-y-2">
+                  <div
+                    v-for="party in getEligibleCheckInParties(activeCase.item.parties)" :key="party.id"
+                    @click="toggleCheckIn(party.id)"
+                    :class="['flex items-start gap-3 p-3 rounded-xl border cursor-pointer select-none transition-all', checkInStore[party.id] ? 'bg-green-50 border-green-300 text-green-900 font-medium' : 'bg-white border-gray-200 hover:border-gray-300']"
+                  >
+                    <input type="checkbox" v-model="checkInStore[party.id]" @click.stop @change="saveStateStore" class="w-4 h-4 text-blue-600 rounded border-gray-300 mt-0.5">
+                    <div class="text-xs">
+                      <div class="flex items-center gap-1.5 flex-wrap">
+                        <span :class="['font-bold text-sm', checkInStore[party.id] ? 'line-through text-green-800' : 'text-gray-900']">{{ party.name }}</span>
+                        <span :class="['text-[9px] px-1 rounded font-bold uppercase tracking-wide border', party.side === 'PLAINTIFF' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-orange-50 text-orange-700 border-orange-200']">{{ party.side }}</span>
+                        <span v-if="party.role" class="text-[9px] px-1 bg-purple-50 text-purple-700 border border-purple-200 rounded font-bold uppercase">{{ party.role }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="p-4 bg-gray-50 border-t border-gray-200 shrink-0">
+              <button @click="activeCase = null" class="w-full bg-gray-800 text-white font-bold text-xs py-2.5 rounded-lg uppercase tracking-wider">Done</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- CLEAN ISOLATED PRINT VIEW PREVIEW -->
+    <div v-if="printMode" class="print-area min-h-screen bg-white p-8 overflow-y-auto">
+      <div class="no-print mb-6 flex justify-between items-center bg-gray-100 p-4 rounded-xl border border-gray-300">
+        <div class="text-sm font-semibold text-gray-700">📄 <strong>Print Mode Preview</strong> (Displaying cases containing annotations or check-ins only)</div>
+        <div class="flex items-center gap-2">
+          <button @click="window.print()" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-4 py-2 rounded shadow">Execute Print</button>
+          <button @click="printMode = false" class="bg-gray-600 hover:bg-gray-700 text-white text-xs font-bold px-4 py-2 rounded shadow">Exit Preview</button>
+        </div>
+      </div>
+
+      <div class="border-b-2 border-gray-900 pb-3 mb-6">
+        <h1 class="text-2xl font-black uppercase tracking-tight text-gray-900">Annotated Session Docket Report</h1>
+        <p class="text-sm text-gray-600 font-medium mt-1">Session Calendar Reference: <strong>{{ formatDateTime(selectedTime) }}</strong></p>
+      </div>
+
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b-2 border-gray-400 text-xs font-black uppercase tracking-wider text-gray-600">
+            <th class="py-2 px-3 w-1/4">Case Number</th>
+            <th class="py-2 px-3 w-1/4">First Defendant</th>
+            <th class="py-2 px-3 w-1/4">Status Tiers</th>
+            <th class="py-2 px-3 w-1/4">Annotations / Requirements</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-300 text-sm">
+          <tr v-for="item in annotatedCasesOnly" :key="item.id" class="print-card">
+            <td class="py-3 px-3 font-mono font-bold text-gray-900">{{ item.case.case_number }}</td>
+            <td class="py-3 px-3 font-semibold text-gray-800">{{ getDefendantSummary(item) }}</td>
+            <td class="py-3 px-3">
+              <span v-if="isCaseFullyCheckedIn(item)" class="text-green-700 font-bold">● Defendant Present</span>
+              <span v-else-if="isCasePartiallyCheckedIn(item)" class="text-slate-600 font-medium">◒ Plaintiff/Atty Present</span>
+              <span v-else class="text-gray-400">-</span>
+            </td>
+            <td class="py-3 px-3 font-medium text-amber-900 bg-amber-50/40 rounded italic">
+              {{ caseNotesStore[item.id] || 'No specific annotation notes.' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    const { createApp, ref, computed, onMounted } = Vue;
+
+    createApp({
+      setup() {
+        const API_BASE = '';
+        const STATE_PERSIST_ENDPOINT = '/attending/checkin/persist/';
+        const DJANGO_ADMIN_LOGIN = '/admin/login/';
+
+        const dates = ref([]);
+        const cases = ref([]);
+        const selectedTime = ref('');
+        const activeCase = ref(null);
+        const loading = ref(false);
+        const printMode = ref(false);
+
+        const checkInStore = ref({});
+        const attorneyCheckStore = ref({});
+        const caseNotesStore = ref({});
+
+        const secureFetch = async (url, options = {}) => {
+          try {
+            const response = await fetch(url, options);
+            if (response.status === 403) {
+              window.location.href = `${DJANGO_ADMIN_LOGIN}?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+              return null;
+            }
+            return response;
+          } catch (err) { console.error(err); throw err; }
+        };
+
+        const fetchDates = async () => {
+          try {
+            const res = await secureFetch(`${API_BASE}/attending/dates`);
+            if (res && res.ok) dates.value = await res.json();
+          } catch (err) { console.error(err); }
+        };
+
+        const fetchEventsForTime = async () => {
+          if (!selectedTime.value) return;
+          loading.value = true;
+          activeCase.value = null;
+
+          try {
+            const caseRes = await secureFetch(`${API_BASE}/attending/events/?start=${encodeURIComponent(selectedTime.value)}`);
+            if (caseRes && caseRes.ok) cases.value = await caseRes.json();
+
+            const stateRes = await secureFetch(`${STATE_PERSIST_ENDPOINT}?start=${encodeURIComponent(selectedTime.value)}`);
+            if (stateRes && stateRes.ok) {
+              const stateData = await stateRes.json();
+              checkInStore.value = stateData.check_in_store || {};
+              attorneyCheckStore.value = stateData.attorney_check_store || {};
+              caseNotesStore.value = stateData.case_notes_store || {};
+            }
+          } catch (err) { console.error(err); }
+          finally { loading.value = false; }
+        };
+
+        const saveStateStore = async () => {
+          if (!selectedTime.value) return;
+          try {
+            await secureFetch(STATE_PERSIST_ENDPOINT, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+              body: JSON.stringify({
+                session_start: selectedTime.value,
+                check_in_store: checkInStore.value,
+                attorney_check_store: attorneyCheckStore.value,
+                case_notes_store: caseNotesStore.value
+              })
+            });
+          } catch (err) { console.error("Persistence failed:", err); }
+        };
+
+        const getCookie = (name) => {
+          let cookieValue = null;
+          if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+              }
+            }
+          }
+          return cookieValue;
+        };
+
+        const hasDefendantAttorney = (item) => item.parties.some(p => p.side === 'DEFENDANT' && p.role === 'PRIMARY ATTORNEY');
+        const getEligibleCheckInParties = (parties) => parties.filter(p => !(p.side === 'PLAINTIFF' && p.role === 'PRIMARY ATTORNEY'));
+
+        const toggleCheckIn = (id) => {
+          checkInStore.value[id] = !checkInStore.value[id];
+          saveStateStore();
+        };
+
+        const isCaseFullyCheckedIn = (item) => {
+          const defendants = item.parties.filter(p => p.side === 'DEFENDANT' && p.role !== 'PRIMARY ATTORNEY');
+          if (defendants.length === 0) return false;
+          return defendants.some(d => checkInStore.value[d.id] === true);
+        };
+
+        const isCasePartiallyCheckedIn = (item) => {
+          if (isCaseFullyCheckedIn(item)) return false;
+          const checkables = getEligibleCheckInParties(item.parties);
+          return checkables.some(p => checkInStore.value[p.id] === true);
+        };
+
+        const isCaseAnnotated = (item) => {
+          if (caseNotesStore.value[item.id] && caseNotesStore.value[item.id].trim() !== '') return true;
+          if (isCaseFullyCheckedIn(item) || isCasePartiallyCheckedIn(item)) return true;
+          return false;
+        };
+
+        const hasAnyAnnotations = computed(() => cases.value.some(item => isCaseAnnotated(item)));
+        const annotatedCasesOnly = computed(() => cases.value.filter(item => isCaseAnnotated(item)));
+
+        const sortCasesByTierAndName = (caseList) => {
+          return [...caseList].sort((a, b) => {
+            const getTierScore = (item) => {
+              if (isCaseFullyCheckedIn(item)) return 1;
+              if (isCasePartiallyCheckedIn(item)) return 2;
+              return 3;
+            };
+            const scoreA = getTierScore(a), scoreB = getTierScore(b);
+            if (scoreA !== scoreB) return scoreA - scoreB;
+            return getDefendantSummary(a).toUpperCase().localeCompare(getDefendantSummary(b).toUpperCase());
+          });
+        };
+
+        const getShortAttorneyName = (name) => name === 'PRO SE' ? 'PRO SE' : name.split(/,|\s/)[0].toUpperCase();
+        const getDefendantSummary = (item) => {
+          const defs = item.parties.filter(p => p.side === 'DEFENDANT' && p.role !== 'PRIMARY ATTORNEY');
+          return defs.length === 0 ? 'UNKNOWN DEFENDANT' : defs[0].name;
+        };
+
+        const orderedGroupedCases = computed(() => {
+          const groups = {};
+          cases.value.forEach(c => {
+            const primaryAtt = c.parties.find(p => p.role === 'PRIMARY ATTORNEY' && p.side === 'PLAINTIFF');
+            const nameKey = primaryAtt ? primaryAtt.name : 'PRO SE';
+            if (!groups[nameKey]) groups[nameKey] = [];
+            groups[nameKey].push(c);
+          });
+          return Object.keys(groups).map(name => ({ attorneyName: name, cases: groups[name] })).sort((a, b) => b.cases.length - a.cases.length);
+        });
+
+        const formatDateTime = (iso) => {
+          try { return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { return iso; }
+        };
+
+        onMounted(fetchDates);
+
+        return {
+          dates, cases, selectedTime, activeCase, loading, checkInStore, attorneyCheckStore, caseNotesStore, printMode,
+          orderedGroupedCases, toggleCheckIn, isCaseFullyCheckedIn, isCasePartiallyCheckedIn, hasDefendantAttorney,
+          sortCasesByTierAndName, getShortAttorneyName, getDefendantSummary, saveStateStore, hasAnyAnnotations, annotatedCasesOnly,
+          fetchEventsForTime, formatDateTime, getEligibleCheckInParties
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

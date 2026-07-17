@@ -19,3 +19,16 @@ class CheckinSheet(models.Model):
 
     def __str__(self):
         return self.filename
+
+class DocketSessionState(models.Model):
+    """
+    Persists session-wide docket configurations, check-ins, and local annotations.
+    """
+    session_start = models.DateTimeField(unique=True, help_text="ISO Start Timestamp of the Session Window")
+    check_in_store = models.JSONField(default=dict, blank=True, help_text="Map of party.id -> boolean")
+    attorney_check_store = models.JSONField(default=dict, blank=True, help_text="Map of attorneyName -> boolean")
+    case_notes_store = models.JSONField(default=dict, blank=True, help_text="Map of item.id -> freetext note string")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Docket State for Session: {self.session_start}"

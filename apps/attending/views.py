@@ -11,6 +11,7 @@ from zoneinfo import ZoneInfo
 import pytesseract
 
 from PIL import Image, ImageOps
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db.models import OuterRef, Subquery, F, Count
 from django.http import Http404, FileResponse
@@ -18,6 +19,7 @@ from django.http import Http404, FileResponse
 from django.shortcuts import render, get_object_or_404
 from django.utils.dateparse import parse_datetime
 from pyarrow.lib import Date32Array
+from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from rest_framework.response import Response
@@ -25,7 +27,8 @@ from rest_framework.views import APIView
 
 from django.db import connection
 
-from apps.attending.models import CheckinSheet
+from apps.attending.models import CheckinSheet, DocketSessionState
+from apps.attending.serializers import DocketSessionStateSerializer
 from apps.cases.models import CourtCase, CaseSnapshot, Event
 from apps.cases.serializers import (
     GroupedEventCountSerializer,
@@ -40,6 +43,12 @@ DATA_DIR = Path("/home/felix/Dokumente/osu/eviction/court-extracted/checkin/data
 
 def base(request):
     return render(request, "attending/base.html")
+
+def checkin(request):
+    return FileResponse(
+        open(settings.BASE_DIR / "apps/attending/templates/attending/checkin.html", "rb"),
+        content_type="text/html",
+    )
 
 
 class FileList(APIView):
@@ -374,7 +383,7 @@ class AllCasesUpcomingEventCountsView(APIView):
     queryset = Event.objects.all()
 
     def get(self, request):
-        today = datetime.now().date()
+        today = datetime(2026,5,6).date() # datetime.now().date()
 
         # For each snapshot, find the id of the latest snapshot belonging
         # to the same case (tie-broken by id for determinism).
@@ -445,3 +454,31 @@ class EventsAtTimeView(APIView):
 
         serializer = SlimSnapshotSerializer(matching_snapshots, many=True)
         return Response(serializer.data)
+
+
+class DocketSessionStateView(APIView):
+    permission_classes = (DjangoModelPermissions,)
+    queryset = DocketSessionState.objects.all()
+
+    def get(self, request):
+        session_start = request.query_params.get('start')
+        if not session_start:
+            return Response({"error": "Missing 'start' timestamp query parameter"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Fetch existing state, or gracefully return a structured empty schema
+        state, created = DocketSessionState.objects.get_or_create(session_start=session_start)
+        serializer = DocketSessionStateSerializer(state)
+        return Response(serializer.data)
+
+    def post(self, request):
+        session_start = request.data.get('session_start')
+        if not session_start:
+            return Response({"error": "Missing 'session_start' field"}, status=status.HTTP_400_BAD_REQUEST)
+
+        state, _ = DocketSessionState.objects.get_or_create(session_start=session_start)
+        serializer = DocketSessionStateSerializer(state, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
