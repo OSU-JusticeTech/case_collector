@@ -4,7 +4,7 @@ import math
 import os
 import re
 from collections import Counter
-from datetime import timezone, datetime
+from datetime import timezone, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -383,7 +383,7 @@ class AllCasesUpcomingEventCountsView(APIView):
     queryset = Event.objects.all()
 
     def get(self, request):
-        today = datetime(2026,5,6).date() # datetime.now().date()
+        today = (datetime.now()-timedelta(days=10)).date() # datetime.now().date()
 
         # For each snapshot, find the id of the latest snapshot belonging
         # to the same case (tie-broken by id for determinism).
