@@ -1,7 +1,9 @@
 from django.db import models
 
-# Create your models here.
+from apps.cases.models import CourtCase
 
+
+# Create your models here.
 
 class CheckinSheet(models.Model):
     photo = models.ImageField(null=True, upload_to="checkin")
@@ -19,6 +21,14 @@ class CheckinSheet(models.Model):
 
     def __str__(self):
         return self.filename
+
+class PresenceCase(models.Model):
+    sheet = models.ForeignKey(CheckinSheet, on_delete=models.CASCADE)
+    case = models.ForeignKey(CourtCase,on_delete=models.SET_NULL, null=True, blank=True)
+
+    raw_number = models.CharField()
+    note = models.CharField()
+
 
 class DocketSessionState(models.Model):
     """
