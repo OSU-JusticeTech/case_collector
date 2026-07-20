@@ -1,7 +1,12 @@
 # Data Structure Improver
 
-This project aims to improve access to strctured data.
+This project aims to improve access to structured data.
 It supports different data sources as modules.
+
+## Prerequisites
+
+* Docker Engine and the Docker Compose plugin (`docker compose version`)
+* A DNS record for your chosen `DOMAIN` pointing at the host, already resolving before you bring up the reverse proxy (required for Let's Encrypt/ACME to succeed)
 
 ## Deployment
 
@@ -37,9 +42,13 @@ Exports the latest case snapshot for each case where the case number contains th
 
 ## Backup & Restore
 
-To back up the database, run
+To back up the database in custom format (required for `pg_restore`), run
 
-    docker compose exec -T db pg_dump eviction -U postgres > backup/database.sql
+    docker compose exec -T db pg_dump -Fc eviction -U postgres > backup/database.dump
+
+To restore that dump into an empty database, run
+
+    docker compose exec -T db pg_restore -U postgres -d eviction < backup/database.dump
 
 
 ## Deployment on `as-cura-server.asc.ohio-state.edu`
@@ -195,7 +204,7 @@ curl -O https://raw.githubusercontent.com/OSU-JusticeTech/case_collector/refs/he
 
 To correctly run in this environment, it requires a few additional variables provided through environment files.
 
-Create tie file `/opt/cura/case_scraper/.env` with content
+Create the file `/opt/cura/case_scraper/.env` with content
 
 ```text
 DOMAIN=as-cura-server.asc.ohio-state.edu
@@ -205,12 +214,12 @@ to specify the publicly available URL
 Then create the `django_env` file with
 
 ```text
-DJANGO_SECRET: "django-insecure-ydtr_#%%p3g188$cptutqw9s7f5b-rjmvgi^l@o^s(*&ob53fh-replaceme"
-DB_NAME: "eviction"
-DB_PASS: "<DB-PW>"
-DB_HOST: "db"
-NEXTGEN_PASSWORD: "nextgen-password"
-NEXTGEN_EMAIL: "nextgen-email@example.com"
+DJANGO_SECRET=django-insecure-ydtr_#%%p3g188$cptutqw9s7f5b-rjmvgi^l@o^s(*&ob53fh-replaceme
+DB_NAME=eviction
+DB_PASS=<DB-PW>
+DB_HOST=db
+NEXTGEN_PASSWORD=nextgen-password
+NEXTGEN_EMAIL=nextgen-email@example.com
 ```
 
 replace the `django-insecure-ydtr_...` and `<DB-PW>` with two freshly generated randomnesses, got from: 
@@ -224,15 +233,15 @@ Also set the nextgen password and email to scrape the PDFs.
 Create a `/opt/cura/case_scraper/mcp_env` file with the content of the public read only database user `read_user`:
 
 ```text
-DB_DSN="postgresql://read_user:<PASSWORD HERE>@db:5432/eviction?sslmode=require"
+DB_DSN=postgresql://read_user:<PASSWORD HERE>@db:5432/eviction?sslmode=require
 ```
 
 Create a `/opt/cura/case_scraper/db_env` with the following content:
 
 ```text
-POSTGRES_PASSWORD: <DB-PW>
-POSTGRES_DB: eviction
-POSTGRES_USER: postgres
+POSTGRES_PASSWORD=<DB-PW>
+POSTGRES_DB=eviction
+POSTGRES_USER=postgres
 ```
 
 where DB-PW is the *same* as the `DB_PASS` variable in the `django_env` file.
@@ -242,6 +251,13 @@ With these 4 files (`.env`, `django_env`, `db_env`, `mcp_env`) in place, check t
 ```console
 $ docker compose ps
 ```
+
+| File         | Key variable(s)                                  | Notes                                              |
+|--------------|---------------------------------------------------|-----------------------------------------------------|
+| `.env`       | `DOMAIN`                                           | Public hostname, must already resolve via DNS       |
+| `django_env` | `DJANGO_SECRET`, `DB_PASS`, `NEXTGEN_EMAIL/PASSWORD` | `DB_PASS` must match `POSTGRES_PASSWORD` in `db_env` |
+| `db_env`     | `POSTGRES_PASSWORD`, `POSTGRES_DB`, `POSTGRES_USER` | `POSTGRES_PASSWORD` must match `DB_PASS` above       |
+| `mcp_env`    | `DB_DSN`                                           | Uses the `read_user` role created later, not `postgres` |
 
 ### Storage
 
@@ -446,10 +462,6 @@ To reload changes for the read_user, execute
 $ docker compose exec -T -u postgres db psql < read_user.sql
 ```
 
-### Scrapers
-
-Now everything is prepared to run the scrapers. Each scraper runs the same image, but with different commands.
-
 ### MCP Server
 
 To expose the mcp server safely with authentication requires multiple services to work together and expose an OIDC flow.
@@ -473,16 +485,16 @@ You also need to generate a RSA 2048 secret key with
 ```console
 openssl genrsa -out tempkey.pem 2048
 ```
-to a `temkey.pem` file.
-Copy the content of this file to identity_providers.oidc.hmac_secret.jwks.0.key
+to a `tempkey.pem` file.
+Copy the content of this file to identity_providers.oidc.jwks[0].key
 but watch out that all lines have the same and correct indentation.
 
 Finally generate a client secret with
 
 ```console
-# docker run --rm authelia/authelia:latest authelia crypto hash generate pbkdf2 --variant sha512 --random --random.length 72 --random.charset rfc3986
+# docker run --rm authelia/authelia:latest authelia crypto hash generate argon2 --variant argon2id --random --random.length 72 --random.charset rfc3986
 Random Password: pZ...
-Digest: $pbkdf2-sha512$310000$...
+Digest: $argon2id$v=19$m=65536,t=3,p=4$...
 ```
 
 ```yaml
@@ -493,22 +505,18 @@ server:
 log:
   level: info
 
-# FIX: Added required system secrets
 identity_validation:
   reset_password:
     jwt_secret: 'secret 1 from openssl'
 
-# FIX: Configured the required authentication backend
 authentication_backend:
   file:
     path: /config/users_database.yml
     watch: true
 
-# FIX: Added required baseline access control policy
 access_control:
   default_policy: 'one_factor' # Change to 'one_factor' if you don't want 2FA enforced by default
 
-# FIX: Added required cookie configuration
 session:
   name: authelia_session
   secret: 'secret 2'
@@ -516,13 +524,11 @@ session:
     - domain: 'as-cura-server.asc.ohio-state.edu'
       authelia_url: 'https://as-cura-server.asc.ohio-state.edu/authelia'
 
-# FIX: Configured required database storage (SQLite is best for a quick file-based setup)
 storage:
   encryption_key: 'secret 3'
   local:
     path: /config/db.sqlite3
 
-# 2. FIXED: Proper indentation for local testing notification logs
 notifier:
   disable_startup_check: false
   filesystem:
@@ -531,7 +537,7 @@ notifier:
 identity_providers:
   oidc:
     hmac_secret: 'secret 4'
-    # FIX: Added required JWKS configuration for signing tokens
+    # required JWKS configuration for signing tokens
     jwks:
       - key_id: 'mcp-key'
         algorithm: 'RS256'
@@ -550,15 +556,15 @@ identity_providers:
         redirect_uris:
           - https://claude.ai/mcp/callback
           - https://claude.ai/api/mcp/auth_callback
-          
-        # 🛠 THE FIX: Force Authelia to issue JWT access tokens instead of opaque strings
+
+        # issue JWT access tokens instead of opaque strings
         access_token_signed_response_alg: 'RS256'
 
         response_types:
           - code
-        # 🛠 THE FIX: Allow Claude to authenticate using POST body parameters
+        # allow Claude to authenticate using POST body parameters
         token_endpoint_auth_method: 'client_secret_post'
-        # 🛠 FIX 1: Add all scopes Claude requests (including offline_access, groups, etc.)
+        # scopes Claude requests (including offline_access, groups, etc.)
         scopes: 
           - openid
           - profile
@@ -568,7 +574,7 @@ identity_providers:
           - address
           - phone
         
-        # 🛠 FIX 2: Ensure Authelia allows Refresh Token generation for offline_access
+        # allows Refresh Token generation for offline_access
         grant_types:
           - authorization_code
           - refresh_token
@@ -679,6 +685,14 @@ Start the metadata server and the mcp server:
 
 Verify that the files are present at https://as-cura-server.asc.ohio-state.edu/.well-known/oauth-authorization-server
 
+#### Connecting Claude.ai
+
+Once the metadata and MCP containers are running, add a custom connector in Claude.ai using:
+
+* MCP server URL: https://as-cura-server.asc.ohio-state.edu/mcp
+* Client ID: `claude-mcp` (or whatever `client_id` you set above)
+* Client secret: the plaintext secret generated above — **not** the hashed `client_secret` value stored in the Authelia config
+
 ### Scrapers
 
 Now you can start the scrapers:
@@ -775,4 +789,9 @@ case_scraper-scraper_public-1    ghcr.io/osu-justicetech/case_collector:main    
 case_scraper-ui-1                ghcr.io/osu-justicetech/case_collector:main       "sh -c 'uv run manag…"   ui                5 days ago       Up 5 days (healthy)       
 ```
 
+## Updating
 
+To pull the latest images built by CI and recreate the containers, run
+
+    docker compose pull
+    docker compose up -d
