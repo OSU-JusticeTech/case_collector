@@ -29,6 +29,9 @@ class PresenceCase(models.Model):
     raw_number = models.CharField()
     note = models.CharField()
 
+    def __str__(self):
+        return f"{self.sheet.event_time} {self.case} {self.raw_number} {self.note}"
+
 
 class DocketSessionState(models.Model):
     """
