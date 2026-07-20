@@ -386,3 +386,393 @@ If you forgot the `root` password, you can change it with
 ```console
 $ docker compose exec ui uv run manage.py changepassword root
 ```
+
+The files are still missing, but docker has created a pdfs volume at `/var/geo-cura-project/volumes/pdfs`.
+Move all the folders of files there and make sure that they belong to root:
+
+```console
+# chown 0:0 -R /var/geo-cura-project/volumes/pdfs/*
+```
+
+### Read Only User
+
+To safely expose the database to external uses, we create a read only user that cannot change the database and can't read sensitive tables
+
+For that, create a file `/opt/cura/case_scraper/read_user.sql` with a strong READUSER PW
+
+```sql
+
+\c eviction
+
+REASSIGN OWNED BY read_user TO postgres;
+DROP OWNED BY read_user;
+
+DROP ROLE IF EXISTS read_user;
+
+CREATE ROLE read_user
+    LOGIN
+    PASSWORD '<READUSER PW>';
+
+GRANT CONNECT ON DATABASE eviction TO read_user;
+GRANT USAGE ON SCHEMA public TO read_user;
+
+
+GRANT SELECT ON 
+   public.attending_checkinsheet ,
+     public.cases_casesnapshot     ,
+ public.cases_courtcase        ,
+ public.cases_disposition      ,
+ public.cases_docketentry      ,
+ public.cases_event            ,
+ public.cases_finance          ,
+ public.cases_party            ,
+ public.cases_source           ,
+ public.fcmcclerk_page         ,
+ public.nextgen_page           ,
+ public.nextgen_scandocketentry ,
+ public.geocode_location,
+  public.latest_overview ,
+  public.latest_snapshot,
+ public.nextgen_magistrate_presence,
+ public.nextgen_roicount,
+ public.nextgen_magdecanalysis,
+ public.nextgen_scandocketentry_magdec_analyses
+TO read_user;
+```
+
+To reload changes for the read_user, execute 
+
+```console
+$ docker compose exec -T -u postgres db psql < read_user.sql
+```
+
+### Scrapers
+
+Now everything is prepared to run the scrapers. Each scraper runs the same image, but with different commands.
+
+### MCP Server
+
+To expose the mcp server safely with authentication requires multiple services to work together and expose an OIDC flow.
+
+We use authelia as IDP. It requires the following configuration in `/opt/cura/case_scraper/authelia/configuration.yml`
+
+More details are available at https://www.authelia.com/configuration/prologue/introduction/
+
+Create 4 different, fresh secrets with
+```console
+# openssl rand -base64 45
+qq...
+```
+for the following positions:
+* identity_validation.reset_password.jwt_secret
+* session.secret
+* storage.encryption_key
+* identity_providers.oidc.hmac_secret
+
+You also need to generate a RSA 2048 secret key with
+```console
+openssl genrsa -out tempkey.pem 2048
+```
+to a `temkey.pem` file.
+Copy the content of this file to identity_providers.oidc.hmac_secret.jwks.0.key
+but watch out that all lines have the same and correct indentation.
+
+Finally generate a client secret with
+
+```console
+# docker run --rm authelia/authelia:latest authelia crypto hash generate pbkdf2 --variant sha512 --random --random.length 72 --random.charset rfc3986
+Random Password: pZ...
+Digest: $pbkdf2-sha512$310000$...
+```
+
+```yaml
+server:
+  # Tell Authelia to listen on the subpath context
+  address: 'tcp://0.0.0.0:9091/authelia'
+
+log:
+  level: info
+
+# FIX: Added required system secrets
+identity_validation:
+  reset_password:
+    jwt_secret: 'secret 1 from openssl'
+
+# FIX: Configured the required authentication backend
+authentication_backend:
+  file:
+    path: /config/users_database.yml
+    watch: true
+
+# FIX: Added required baseline access control policy
+access_control:
+  default_policy: 'one_factor' # Change to 'one_factor' if you don't want 2FA enforced by default
+
+# FIX: Added required cookie configuration
+session:
+  name: authelia_session
+  secret: 'secret 2'
+  cookies:
+    - domain: 'as-cura-server.asc.ohio-state.edu'
+      authelia_url: 'https://as-cura-server.asc.ohio-state.edu/authelia'
+
+# FIX: Configured required database storage (SQLite is best for a quick file-based setup)
+storage:
+  encryption_key: 'secret 3'
+  local:
+    path: /config/db.sqlite3
+
+# 2. FIXED: Proper indentation for local testing notification logs
+notifier:
+  disable_startup_check: false
+  filesystem:
+    filename: /config/notification.txt
+
+identity_providers:
+  oidc:
+    hmac_secret: 'secret 4'
+    # FIX: Added required JWKS configuration for signing tokens
+    jwks:
+      - key_id: 'mcp-key'
+        algorithm: 'RS256'
+        use: 'sig'
+        # Authelia can auto-generate a key pair if you pass a file path
+        key: |
+                -----BEGIN PRIVATE KEY-----
+                MIIE...
+                -----END PRIVATE KEY-----
+    clients:
+      - client_id: claude-mcp
+        client_secret: "$argon2id$v=19$m=65536,t=3,p...."
+        client_name: "Claude.ai Integration"
+        public: false 
+        authorization_policy: one_factor
+        redirect_uris:
+          - https://claude.ai/mcp/callback
+          - https://claude.ai/api/mcp/auth_callback
+          
+        # 🛠 THE FIX: Force Authelia to issue JWT access tokens instead of opaque strings
+        access_token_signed_response_alg: 'RS256'
+
+        response_types:
+          - code
+        # 🛠 THE FIX: Allow Claude to authenticate using POST body parameters
+        token_endpoint_auth_method: 'client_secret_post'
+        # 🛠 FIX 1: Add all scopes Claude requests (including offline_access, groups, etc.)
+        scopes: 
+          - openid
+          - profile
+          - email
+          - offline_access
+          - groups
+          - address
+          - phone
+        
+        # 🛠 FIX 2: Ensure Authelia allows Refresh Token generation for offline_access
+        grant_types:
+          - authorization_code
+          - refresh_token
+        audience: ["https://as-cura-server.asc.ohio-state.edu"]
+
+```
+
+After the configuration file is done, start the authelia container once:
+
+```console
+# docker compose up authelia
+[+] Running 1/1
+ ✔ Container case_scraper-authelia-1  Created                                                                                                                                     0.0s 
+Attaching to authelia-1
+authelia-1  | time="2026-07-20T14:34:44Z" level=warning msg="Configuration: access_control: no rules have been specified so the 'default_policy' of 'one_factor' is going to be applied to all requests"
+authelia-1  | time="2026-07-20T14:34:44Z" level=info msg="Authelia v4.39.20 is starting"
+authelia-1  | time="2026-07-20T14:34:44Z" level=info msg="Log severity set to info"
+authelia-1  | time="2026-07-20T14:34:44Z" level=info msg="Storage schema is being checked for updates"
+authelia-1  | time="2026-07-20T14:34:44Z" level=info msg="Storage schema migration from 0 to 24 is being attempted"
+authelia-1  | time="2026-07-20T14:34:44Z" level=info msg="Storage schema migration from 0 to 24 is complete"
+authelia-1  | time="2026-07-20T14:34:44Z" level=error msg="Error checking user authentication YAML database" error="user authentication database file doesn't exist at path '/config/users_database.yml' and has been generated"
+authelia-1  | time="2026-07-20T14:34:44Z" level=error msg="Error occurred running a startup check" error="one or more errors occurred checking the authentication database" provider=user
+authelia-1  | time="2026-07-20T14:34:49Z" level=warning msg="Could not determine the clock offset due to an error" error="error occurred reading ntp packet response to the connection: read udp 172.18.0.4:46010->...:123: i/o timeout"
+authelia-1  | time="2026-07-20T14:34:49Z" level=fatal msg="One or more providers had fatal failures performing startup checks, for more details check the error level logs" providers="[user]" stack="github.com/authelia/authelia/v4/internal/commands/root.go:93 (*CmdCtx).RootRunE\ngithub.com/spf13/cobra@v1.10.2/command.go:1015               (*Command).execute\ngithub.com/spf13/cobra@v1.10.2/command.go:1148               (*Command).ExecuteC\ngithub.com/spf13/cobra@v1.10.2/command.go:1071               (*Command).Execute\ngithub.com/authelia/authelia/v4/cmd/authelia/main.go:11      main\ninternal/runtime/atomic/types.go:194                         (*Uint32).Load\nruntime/asm_amd64.s:1771                                     goexit"
+```
+
+After this first run, the user database is created at `authelia/users_database.yml`
+
+Edit the file to create users, remove the Test User:
+
+```yaml
+# yamllint disable rule:line-length
+---
+###############################################################
+#                         Users Database                      #
+###############################################################
+
+# This file can be used if you do not have an LDAP set up.
+
+users:
+  justicetech:
+    displayname: "JusticeTech"
+    password: "$argon2id$v=19$m=65536,t=3,p=4$..." 
+    email: "jt@usu.edu"
+    groups:
+      - admins
+      - mcp-users
+...
+# yamllint enable rule:line-length
+
+```
+
+You can generate the password hash with 
+
+```console
+# docker run --rm -it authelia/authelia:latest authelia crypto hash generate pbkdf2 --variant sha512 
+```
+and have to enter the password twice.
+
+Start the container again with
+
+```console
+# docker compose up -d authelia
+```
+
+Then you should have a login view at https://as-cura-server.asc.ohio-state.edu/authelia
+The password for justicetech should work with an *Authenticated* page
+
+#### Metadata
+
+The OIDC relying party needs to know a few endpoints and other information.
+This is served at a `.well-known` location.
+
+Create the folder `metadata` and the two files that must have no file extension:
+
+`/opt/cura/case_scraper/metadata/oauth-authorization-server` 
+
+```json
+{
+  "issuer": "https://as-cura-server.asc.ohio-state.edu/authelia",
+  "authorization_endpoint": "https://as-cura-server.asc.ohio-state.edu/authelia/api/oidc/authorization",
+  "token_endpoint": "https://as-cura-server.asc.ohio-state.edu/authelia/api/oidc/token",
+  "userinfo_endpoint": "https://as-cura-server.asc.ohio-state.edu/authelia/api/oidc/userinfo",
+  "jwks_uri": "https://as-cura-server.asc.ohio-state.edu/authelia/jwks.json",
+  "response_types_supported": ["code"],
+  "subject_types_supported": ["public"],
+  "id_token_signing_alg_values_supported": ["RS256"],
+  "scopes_supported": ["openid", "profile", "email"]
+}
+```
+
+`/opt/cura/case_scraper/metadata/oauth-protected-resource`
+
+```json
+{
+  "resource": "https://as-cura-server.asc.ohio-state.edu",
+  "authorization_servers": [
+    "https://as-cura-server.asc.ohio-state.edu/authelia"
+  ]
+}
+```
+
+Start the metadata server and the mcp server:
+
+```console
+# docker compose up -d mcp-metadata mcp
+```
+
+Verify that the files are present at https://as-cura-server.asc.ohio-state.edu/.well-known/oauth-authorization-server
+
+### Scrapers
+
+Now you can start the scrapers:
+
+```console
+# docker compose up -d scraper_public
+```
+
+When looking at the logs, it should refresh the materialized and then fetch the reports:
+
+```console
+# docker compose logs scraper_public
+scraper_public-1  | start scraping
+scraper_public-1  | refresh materialized
+scraper_public-1  | refreshing CSVs
+scraper_public-1  | fetching csv <a href="/storage/shared/civil-fed/FCMC Civil F.E.D. (Eviction) Case List 2026-07-01 to 2026-07-31.csv?678971" target="_blank">FCMC Civil F.E.D. (Eviction) Case List 2026-07-01 to 2026-07-31.csv</a>
+scraper_public-1  | fetching csv <a href="/storage/shared/civil-fed/FCMC Civil F.E.D. (Eviction) Case List 2026-06-01 to 2026-06-30.csv?287790" target="_blank">FCMC Civil F.E.D. (Eviction) Case List 2026-06-01 to 2026-06-30.csv</a>
+```
+
+Proceed similarely with the other scrapers:
+
+```console
+# docker compose up -d scraper_nextgen
+```
+
+```console
+# docker compose logs scraper_nextgen
+scraper_nextgen-1  | start scraping
+scraper_nextgen-1  | still 10 cases to scrape
+scraper_nextgen-1  | next case case_number='2026 CVG 0...' digest=None earliest=None restart=False
+scraper_nextgen-1  | skip download, exists: DISMISSED BY PLAINTI...
+scraper_nextgen-1  | skip download, exists: BAILIFF RETURN FILED...
+scraper_nextgen-1  | skip download, exists: IMAGE OF COMPLAINT...
+```
+
+And any other scraper defined in the compose file.
+
+### Analysis
+
+There are also analysis jobs running in containers:
+
+The magdec extracts the checkboxes from Magistrate Decisions:
+
+```console
+# docker compose up -d magdec_analysis
+
+# docker compose logs magdec_analysis
+magdec_analysis-1  | start extracting
+magdec_analysis-1  | process 2025 CVG 0... ###- DMAGDEC - CV Docket -###.pdf
+magdec_analysis-1  | page number 0
+magdec_analysis-1  | all done, sleep 6h
+
+```
+
+The geocoder fetches coordinates for addresses in the data:
+
+```console
+# docker compose up -d geocoder 
+
+# docker compose logs geocoder 
+geocoder-1  | start geocoding
+geocoder-1  | could not geolocate 106301: DEF ...  /  to {'address': '', 'score': 0, 'attributes': {'ResultID': 1, 'Status': 'U', 'Score': 0, 'Match_addr': '', 'LongLabel': '', 'ShortLabel': '', 'Addr_type': '', 'Type': '', 'PlaceName': '', 'Place_addr': '', 'Phone': '', 'URL': '', 'Rank': 0, 'AddBldg': '', 'AddNum': '', 'AddNumFrom': '', 'AddNumTo': '', 'AddRange': '', 'Side': '', 'StPreDir': '', 'StPreType': '', 'StName': '', 'StType': '', 'StDir': '', 'BldgType': '', 'BldgName': '', 'LevelType': '', 'LevelName': '', 'UnitType': '', 'UnitName': '', 'SubAddr': '', 'StAddr': '', 'Block': '', 'Sector': '', 'Nbrhd': '', 'District': '', 'City': '', 'MetroArea': '', 'Subregion': '', 'Region': '', 'RegionAbbr': '', 'Territory': '', 'Zone': '', 'Postal': '', 'PostalExt': '', 'Country': '', 'LangCode': '', 'Distance': 0, 'X': 0, 'Y': 0, 'DisplayX': 0, 'DisplayY': 0, 'Xmin': 0, 'Xmax': 0, 'Ymin': 0, 'Ymax': 0, 'ExInfo': ''}} because of KeyError('location')
+```
+
+There will be a few undecodable addresses, which is fine.
+
+### Verify
+
+All services are configured and can be started together as well:
+
+```console
+# docker compose up -d
+[+] Running 9/9
+ ✔ Container case_scraper-mcp-metadata-1     Running                                                                                                                              0.0s 
+ ✔ Container case_scraper-db-1               Healthy                                                                                                                              0.5s 
+ ✔ Container case_scraper-authelia-1         Running                                                                                                                              0.0s 
+ ✔ Container case_scraper-mcp-1              Running                                                                                                                              0.0s 
+ ✔ Container case_scraper-ui-1               Healthy                                                                                                                              1.0s 
+ ✔ Container case_scraper-scraper_nextgen-1  Started                                                                                                                              1.3s 
+ ✔ Container case_scraper-magdec_analysis-1  Started                                                                                                                              1.2s 
+ ✔ Container case_scraper-geocoder-1         Started                                                                                                                              0.7s 
+ ✔ Container case_scraper-scraper_public-1   Started                                                                                                                              1.1s 
+
+# docker compose ps
+NAME                             IMAGE                                             COMMAND                  SERVICE           CREATED          STATUS                    PORTS
+case_scraper-authelia-1          authelia/authelia:latest                          "/app/entrypoint.sh"     authelia          43 minutes ago   Up 23 minutes (healthy)   9091/tcp
+case_scraper-db-1                postgis/postgis:18-3.6                            "docker-entrypoint.s…"   db                5 days ago       Up 5 days (healthy)       5432/tcp
+case_scraper-geocoder-1          ghcr.io/osu-justicetech/case_collector:main       "sh -c 'uv run manag…"   geocoder          3 minutes ago    Up 8 seconds              
+case_scraper-magdec_analysis-1   ghcr.io/osu-justicetech/case_collector:main       "sh -c 'uv run manag…"   magdec_analysis   5 minutes ago    Up 8 seconds              
+case_scraper-mcp-1               ghcr.io/osu-justicetech/case_collector-mcp:main   "uv run server.py"       mcp               11 minutes ago   Up 11 minutes             8000/tcp
+case_scraper-mcp-metadata-1      halverneus/static-file-server:latest              "/serve"                 mcp-metadata      14 minutes ago   Up 14 minutes             8080/tcp
+case_scraper-scraper_nextgen-1   ghcr.io/osu-justicetech/case_collector:main       "sh -c 'uv run manag…"   scraper_nextgen   7 minutes ago    Up 8 seconds              
+case_scraper-scraper_public-1    ghcr.io/osu-justicetech/case_collector:main       "sh -c 'uv run manag…"   scraper_public    5 days ago       Up 8 seconds              
+case_scraper-ui-1                ghcr.io/osu-justicetech/case_collector:main       "sh -c 'uv run manag…"   ui                5 days ago       Up 5 days (healthy)       
+```
+
+
