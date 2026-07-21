@@ -16,7 +16,7 @@ else:
 
 CREATE_SQL = f"""
 {drop_index}
-DROP VIEW latest_overview; 
+DROP {is_materialized} VIEW latest_overview; 
 
 CREATE {is_materialized} VIEW latest_overview AS
 SELECT
@@ -197,7 +197,7 @@ LEFT JOIN (
 """
 
 DROP_SQL = f"""{drop_index}
-DROP VIEW latest_overview;"""
+DROP {is_materialized} VIEW latest_overview;"""
 
 class Migration(migrations.Migration):
 
