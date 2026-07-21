@@ -5,11 +5,17 @@ from django.db import migrations
 from django.db import connection
 
 is_materialized = "MATERIALIZED"
+create_index = ""
+drop_index = ""
 if connection.vendor in "sqlite":
     is_materialized = ""
+else:
+    create_index = "CREATE UNIQUE INDEX latest_overview_uidx ON public.latest_overview (id);"
+    drop_index = "DROP INDEX latest_overview_uidx;"
+
 
 CREATE_SQL = f"""
-DROP INDEX latest_overview_uidx;
+{drop_index}
 DROP VIEW latest_overview; 
 
 CREATE {is_materialized} VIEW latest_overview AS
@@ -187,10 +193,10 @@ LEFT JOIN (
 ) plaintiff_primary_attorney
     ON plaintiff_primary_attorney.snapshot_id = s.id
 ;
-CREATE UNIQUE INDEX latest_overview_uidx ON public.latest_overview (id);
+{create_index}
 """
 
-DROP_SQL = """DROP INDEX latest_overview_uidx;
+DROP_SQL = f"""{drop_index}
 DROP VIEW latest_overview;"""
 
 class Migration(migrations.Migration):

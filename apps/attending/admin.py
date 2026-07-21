@@ -9,5 +9,7 @@ admin.site.register(DocketSessionState)
 
 class PresenceCaseAdmin(admin.ModelAdmin):
     readonly_fields = ("case",)
+    list_display = ["case","sheet","note","raw_number"]
+    list_filter = ["note"]
 
 admin.site.register(PresenceCase, PresenceCaseAdmin)
