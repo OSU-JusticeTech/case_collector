@@ -5,18 +5,22 @@ import csv
 from tqdm import tqdm
 
 DB_CONFIG = {
-    "host": "eviction.felix.nlogn.org",
+    "host": "as-cura-server.asc.ohio-state.edu",
     "dbname": "eviction",
     "user": "read_user",
     "password": os.getenv("PASSWORD"),
-    "port": 15432,
+    "port": 5432,
 }
 
 QUERY = "SELECT * FROM latest_overview;"
 OUTPUT_FILE = "output.csv"
 # QUERY = "select * from nextgen_magistrate_presence WHERE date > '2025-11-20';"
 # OUTPUT_FILE = "magdecs.csv"
-
+#QUERY = """select pc.*,cs.filename,cs.event_time,c.* from attending_presencecase pc JOIN attending_checkinsheet cs ON pc.sheet_id = cs.id
+# JOIN cases_courtcase c ON c.id = pc.case_id"""
+#OUTPUT_FILE = "presence.csv"
+QUERY = "select * from attending_presencecase p WHERE p.case_id is NULL"
+OUTPUT_FILE = "rubbish.csv"
 
 def export_query_to_csv(conn, query, output_file):
     with conn.cursor() as cur:
