@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class TmcclerkConfig(AppConfig):
-    name = "tmcclerk"
+    name = "apps.tmcclerk"

@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "apps.violations.apps.ViolationsConfig",
     "apps.violations_mock.apps.ViolationsMockConfig",
     "apps.attending.apps.AttendingConfig",
+    "apps.tmcclerk.apps.TmcclerkConfig"
 ]
 
 MIDDLEWARE = [
