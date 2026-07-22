@@ -76,7 +76,7 @@ def link_listing(objs, revname, attr=("title",)):
 
 
 class SnapshotAdmin(admin.ModelAdmin):
-    readonly_fields = ("case", "parties", "events", "docket")
+    readonly_fields = ("case", "parties", "events", "docket","disposition","finance")
     date_hierarchy = "created_at"
 
     def parties(self, obj):
@@ -99,6 +99,21 @@ class SnapshotAdmin(admin.ModelAdmin):
             "admin:cases_docketentry_change",
             attr=("date", "text"),
         )
+
+    def disposition(self, obj):
+        return link_listing(
+            obj.disposition_set.all(),
+            "admin:cases_disposition_change",
+            attr=("date","code","status_date","status"),
+        )
+
+    def finance(self, obj):
+        return link_listing(
+            obj.finance_set.all(),
+            "admin:cases_finance_change",
+            attr=("application","owed","dismissed"),
+        )
+
 
 
 admin.site.register(CaseSnapshot, SnapshotAdmin)
