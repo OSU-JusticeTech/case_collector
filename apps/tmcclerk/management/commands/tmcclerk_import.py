@@ -20,7 +20,6 @@ class Command(BaseCommand):
         fn = options["archive"]
         print(fn)
         tar = tarfile.open(fn, "r")
-        i = 0
         for tarinfo in tqdm(tar):
             if tarinfo.name.endswith("printable.html"):
 
