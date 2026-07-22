@@ -181,6 +181,9 @@ def get_cases(dest, start, end):
 class Command(BaseCommand):
     help = "Scrapes Toledo cases"
 
+    # The majority of file size comes from the viewstate that we can't derypt anyways, so we can delete it:
+    # find data20-25 -type f -exec sed -i '/type="hidden" name="__VIEWSTATE" id="__VIEWSTATE"/d' {} +
+
     def add_arguments(self, parser):
         parser.add_argument("destination", type=pathlib.Path)
         parser.add_argument("start_date", type=str,help="start date in YYYY-MM-DD")
