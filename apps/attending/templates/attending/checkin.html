@@ -90,11 +90,11 @@
               <div class="min-h-[35rem] bg-white">
                 <div
                   v-for="item in sortCasesByTierAndName(group.cases)"
-                  :key="item.id"
+                  :key="getCaseKey(item)"
                   @click="activeCase = { item, attorneyName: group.attorneyName }"
                   :class="[
                     'p-2 cursor-pointer text-left transition-all relative border-l-4 group select-none h-[56px] flex flex-col justify-center border-b border-gray-100',
-                    activeCase && activeCase.item.id === item.id ? 'bg-blue-50 border-l-blue-600 font-bold' :
+                    activeCase && getCaseKey(activeCase.item) === getCaseKey(item) ? 'bg-blue-50 border-l-blue-600 font-bold' :
                     isCaseFullyCheckedIn(item) ? 'bg-green-50/70 border-l-green-500 text-green-900' :
                     isCasePartiallyCheckedIn(item) ? 'bg-slate-100 border-l-slate-400' : 'border-l-transparent hover:bg-gray-50'
                   ]"
@@ -108,8 +108,8 @@
                   </div>
                   <div class="text-[11px] font-semibold text-gray-500 truncate mt-0.5 flex justify-between items-center w-full">
                     <span class="truncate pr-1">{{ getDefendantSummary(item) }}</span>
-                    <span v-if="caseNotesStore[item.id]" class="text-[9px] bg-amber-100 text-amber-800 px-1 rounded truncate max-w-[70px] font-bold">
-                      {{ caseNotesStore[item.id] }}
+                    <span v-if="caseNotesStore[getCaseKey(item)]" class="text-[9px] bg-amber-100 text-amber-800 px-1 rounded truncate max-w-[70px] font-bold">
+                      {{ caseNotesStore[getCaseKey(item)] }}
                     </span>
                   </div>
                 </div>
@@ -134,13 +134,13 @@
             <div class="p-4 flex-1 overflow-y-auto space-y-5">
               <!-- Free text Notes Input (Saves on blur/loss of focus or Enter key) -->
               <div class="bg-gray-50 border border-gray-200 p-3 rounded-lg space-y-1.5">
-                <label :for="'notes-' + activeCase.item.id" class="text-xs font-bold text-gray-600 uppercase tracking-wide flex justify-between">
+                <label :for="'notes-' + getCaseKey(activeCase.item)" class="text-xs font-bold text-gray-600 uppercase tracking-wide flex justify-between">
                   <span>Language / Interpreter Notes</span>
                 </label>
                 <input
-                  :id="'notes-' + activeCase.item.id"
+                  :id="'notes-' + getCaseKey(activeCase.item)"
                   type="text"
-                  v-model="caseNotesStore[activeCase.item.id]"
+                  v-model="caseNotesStore[getCaseKey(activeCase.item)]"
                   @blur="saveStateStore"
                   @keyup.enter="saveStateStore"
                   placeholder="e.g., Spanish Translator Needed"
@@ -153,14 +153,21 @@
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Roster Check-In</h3>
                 <div class="space-y-2">
                   <div
-                    v-for="party in getEligibleCheckInParties(activeCase.item.parties)" :key="party.id"
-                    @click="toggleCheckIn(party.id)"
-                    :class="['flex items-start gap-3 p-3 rounded-xl border cursor-pointer select-none transition-all', checkInStore[party.id] ? 'bg-green-50 border-green-300 text-green-900 font-medium' : 'bg-white border-gray-200 hover:border-gray-300']"
+                    v-for="party in getEligibleCheckInParties(activeCase.item.parties)" 
+                    :key="getPartyKey(activeCase.item, party)"
+                    @click="toggleCheckIn(activeCase.item, party)"
+                    :class="['flex items-start gap-3 p-3 rounded-xl border cursor-pointer select-none transition-all', checkInStore[getPartyKey(activeCase.item, party)] ? 'bg-green-50 border-green-300 text-green-900 font-medium' : 'bg-white border-gray-200 hover:border-gray-300']"
                   >
-                    <input type="checkbox" v-model="checkInStore[party.id]" @click.stop @change="saveStateStore" class="w-4 h-4 text-blue-600 rounded border-gray-300 mt-0.5">
+                    <input 
+                      type="checkbox" 
+                      v-model="checkInStore[getPartyKey(activeCase.item, party)]" 
+                      @click.stop 
+                      @change="saveStateStore" 
+                      class="w-4 h-4 text-blue-600 rounded border-gray-300 mt-0.5"
+                    >
                     <div class="text-xs">
                       <div class="flex items-center gap-1.5 flex-wrap">
-                        <span :class="['font-bold text-sm', checkInStore[party.id] ? 'line-through text-green-800' : 'text-gray-900']">{{ party.name }}</span>
+                        <span :class="['font-bold text-sm', checkInStore[getPartyKey(activeCase.item, party)] ? 'line-through text-green-800' : 'text-gray-900']">{{ party.name }}</span>
                         <span :class="['text-[9px] px-1 rounded font-bold uppercase tracking-wide border', party.side === 'PLAINTIFF' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-orange-50 text-orange-700 border-orange-200']">{{ party.side }}</span>
                         <span v-if="party.role" class="text-[9px] px-1 bg-purple-50 text-purple-700 border border-purple-200 rounded font-bold uppercase">{{ party.role }}</span>
                       </div>
@@ -202,7 +209,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-300 text-sm">
-          <tr v-for="item in annotatedCasesOnly" :key="item.id" class="print-card">
+          <tr v-for="item in annotatedCasesOnly" :key="getCaseKey(item)" class="print-card">
             <td class="py-3 px-3 font-mono font-bold text-gray-900">{{ item.case.case_number }}</td>
             <td class="py-3 px-3 font-semibold text-gray-800">{{ getDefendantSummary(item) }}</td>
             <td class="py-3 px-3">
@@ -211,7 +218,7 @@
               <span v-else class="text-gray-400">-</span>
             </td>
             <td class="py-3 px-3 font-medium text-amber-900 bg-amber-50/40 rounded italic">
-              {{ caseNotesStore[item.id] || 'No specific annotation notes.' }}
+              {{ caseNotesStore[getCaseKey(item)] || 'No specific annotation notes.' }}
             </td>
           </tr>
         </tbody>
@@ -239,6 +246,10 @@
         const checkInStore = ref({});
         const attorneyCheckStore = ref({});
         const caseNotesStore = ref({});
+
+        // Stable Composite Key Helpers
+        const getCaseKey = (item) => item.case.case_number;
+        const getPartyKey = (item, party) => `${item.case.case_number}|${party.side}|${party.name}`;
 
         const secureFetch = async (url, options = {}) => {
           try {
@@ -312,25 +323,27 @@
         const hasDefendantAttorney = (item) => item.parties.some(p => p.side === 'DEFENDANT' && p.role === 'PRIMARY ATTORNEY');
         const getEligibleCheckInParties = (parties) => parties.filter(p => !(p.side === 'PLAINTIFF' && p.role === 'PRIMARY ATTORNEY'));
 
-        const toggleCheckIn = (id) => {
-          checkInStore.value[id] = !checkInStore.value[id];
+        const toggleCheckIn = (item, party) => {
+          const key = getPartyKey(item, party);
+          checkInStore.value[key] = !checkInStore.value[key];
           saveStateStore();
         };
 
         const isCaseFullyCheckedIn = (item) => {
           const defendants = item.parties.filter(p => p.side === 'DEFENDANT' && p.role !== 'PRIMARY ATTORNEY');
           if (defendants.length === 0) return false;
-          return defendants.some(d => checkInStore.value[d.id] === true);
+          return defendants.some(d => checkInStore.value[getPartyKey(item, d)] === true);
         };
 
         const isCasePartiallyCheckedIn = (item) => {
           if (isCaseFullyCheckedIn(item)) return false;
           const checkables = getEligibleCheckInParties(item.parties);
-          return checkables.some(p => checkInStore.value[p.id] === true);
+          return checkables.some(p => checkInStore.value[getPartyKey(item, p)] === true);
         };
 
         const isCaseAnnotated = (item) => {
-          if (caseNotesStore.value[item.id] && caseNotesStore.value[item.id].trim() !== '') return true;
+          const caseKey = getCaseKey(item);
+          if (caseNotesStore.value[caseKey] && caseNotesStore.value[caseKey].trim() !== '') return true;
           if (isCaseFullyCheckedIn(item) || isCasePartiallyCheckedIn(item)) return true;
           return false;
         };
@@ -378,7 +391,7 @@
           dates, cases, selectedTime, activeCase, loading, checkInStore, attorneyCheckStore, caseNotesStore, printMode,
           orderedGroupedCases, toggleCheckIn, isCaseFullyCheckedIn, isCasePartiallyCheckedIn, hasDefendantAttorney,
           sortCasesByTierAndName, getShortAttorneyName, getDefendantSummary, saveStateStore, hasAnyAnnotations, annotatedCasesOnly,
-          fetchEventsForTime, formatDateTime, getEligibleCheckInParties
+          fetchEventsForTime, formatDateTime, getEligibleCheckInParties, getCaseKey, getPartyKey
         };
       }
     }).mount('#app');
