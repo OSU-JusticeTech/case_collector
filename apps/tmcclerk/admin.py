@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from apps.tmcclerk.models import Page
+from apps.tmcclerk.models import Page, SearchResult
 
 
 # Register your models here.
@@ -29,3 +29,26 @@ class PageAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Page, PageAdmin)
+
+class SearchResultAdmin(admin.ModelAdmin):
+    date_hierarchy = "search_start"
+    readonly_fields = ("content_preview",)
+    list_display = [
+        "search_start",
+        "scraped_at",
+        "return_code",
+    ]
+    list_filter = ["return_code", "search_start"]
+    search_fields = ["content", "search_start"]
+
+    def content_preview(self, obj):
+        if obj.content:
+            # Using srcdoc inside an iframe keeps the HTML sandbox-isolated
+            return format_html(
+                '<iframe srcdoc="{}" style="width: 800px; height: 500px; border: 1px solid #ccc; border-radius: 4px;"></iframe>',
+                obj.content,
+            )
+        return "No content"
+
+
+admin.site.register(SearchResult, SearchResultAdmin)
