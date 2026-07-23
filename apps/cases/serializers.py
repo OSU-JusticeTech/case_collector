@@ -11,7 +11,7 @@ from apps.cases.models import (
     Event,
     Finance,
     Disposition,
-    CourtCase,
+    CourtCase, DailyEvents,
 )
 
 
@@ -81,3 +81,9 @@ class SlimSnapshotSerializer(serializers.ModelSerializer):
 class GroupedEventCountSerializer(serializers.Serializer):
     start = serializers.DateTimeField(default_timezone=tz_ohio)
     count = serializers.IntegerField()
+
+
+class DailyEventsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DailyEvents
+        fields = "__all__"
