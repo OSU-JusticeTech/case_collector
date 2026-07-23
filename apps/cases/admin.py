@@ -12,7 +12,7 @@ from apps.cases.models import (
     Disposition,
     Finance,
     DocketEntry,
-    LatestOverview,
+    LatestOverview, DailyEvents,
 )
 
 # Register your models here.
@@ -197,3 +197,16 @@ class LatestOverviewAdmin(admin.ModelAdmin):
 
 
 admin.site.register(LatestOverview, LatestOverviewAdmin)
+
+class DailyEventsAdmin(admin.ModelAdmin):
+    def get_list_display(self, request):
+        return [field.name for field in self.model._meta.fields]
+
+    # 2. Prevent adding or deleting
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+admin.site.register(DailyEvents, DailyEventsAdmin)

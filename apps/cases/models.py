@@ -179,3 +179,26 @@ class LatestOverview(models.Model):
     # 2. Prevent deleting
     def delete(self, *args, **kwargs):
         raise NotImplementedError("This model is read-only.")
+
+class DailyEvents(models.Model):
+    date = models.DateField(editable=False, primary_key=True)
+    cases_filed = models.IntegerField(editable=False)
+    writs_issued = models.IntegerField(editable=False)
+    setouts_processed = models.IntegerField(editable=False)
+    setouts_completed = models.IntegerField(editable=False)
+
+    def __str__(self):
+        return f"{self.date}"
+
+    class Meta:
+        managed = False
+        db_table = "daily_events"
+
+    # 1. Prevent saving/updating
+    def save(self, *args, **kwargs):
+        # You can either silently ignore the save, or raise an error to be safe:
+        raise NotImplementedError("This model is read-only.")
+
+    # 2. Prevent deleting
+    def delete(self, *args, **kwargs):
+        raise NotImplementedError("This model is read-only.")

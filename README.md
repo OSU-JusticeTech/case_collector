@@ -515,7 +515,7 @@ authentication_backend:
     watch: true
 
 access_control:
-  default_policy: 'one_factor' # Change to 'one_factor' if you don't want 2FA enforced by default
+  default_policy: 'one_factor' # change to 'two_factor' if you want 2FA enforced by default
 
 session:
   name: authelia_session
@@ -573,8 +573,8 @@ identity_providers:
           - groups
           - address
           - phone
-        
-        # allows Refresh Token generation for offline_access
+
+        # allow refresh token issuance for offline_access
         grant_types:
           - authorization_code
           - refresh_token
