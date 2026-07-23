@@ -88,7 +88,7 @@ class Disposition(models.Model):
     date = models.DateField(null=True)
     judge = models.CharField()
     status = models.CharField()
-    status_date = models.DateField()
+    status_date = models.DateField(null=True)
     snapshot = models.ForeignKey(CaseSnapshot, on_delete=models.CASCADE)
 
     class Meta:
