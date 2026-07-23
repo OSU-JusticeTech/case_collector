@@ -347,13 +347,15 @@ def compute_state_hash(obj: Case) -> bytes:
 
 
 def create_snapshot_if_changed(
-    source: Source, scraped_at: datetime, parse_case: Case
+    source: Source, scraped_at: datetime, parse_case: Case, forced_hash: bytes | None = None
 ) -> tuple[CaseSnapshot, bool]:  # or int epoch
     """
     Returns (snapshot_id, created_new).
     Creates a new snapshot ONLY if its hash differs from the latest snapshot's hash.
     """
     new_hash = compute_state_hash(parse_case)
+    if forced_hash is not None:
+        new_hash = forced_hash
 
     current_case, _ = CourtCase.objects.get_or_create(
         case_number=parse_case.case_number, source=source
