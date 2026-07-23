@@ -2,6 +2,7 @@ import csv
 import logging
 import pathlib
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from django.core.management import BaseCommand
 from tqdm import tqdm
@@ -39,8 +40,11 @@ class Command(BaseCommand):
             break
         print(fieldnames)
 
-        clerk_cases = {}
-        latest_dates = {}
+        #clerk_cases = {}
+        #latest_dates = {}
+
+        src, _ = Source.objects.get_or_create(name="FCMC")
+        tz_ohio = ZoneInfo("America/New_York")
 
         with open(fn) as f:
             f.readline()  # discard existing header
@@ -73,16 +77,13 @@ class Command(BaseCommand):
                               events=[],
                               dispositions=[Disposition(code=case['DISP DEF'], judge="", date=case.get("disp"),
                                                         status="CLOSED" if "disp" in case else "OPEN")])
-                if parsed.case_number in clerk_cases:
-                    assert clerk_cases[parsed.case_number].model_dump() == parsed.model_dump()
+                # If you have enough RAM, you can first make sure that there are no weird things in the CSV file
+                #if parsed.case_number in clerk_cases:
+                #    assert clerk_cases[parsed.case_number].model_dump() == parsed.model_dump()
 
-                clerk_cases[parsed.case_number] = parsed
-                latest_dates[parsed.case_number] = latest_date
+                #clerk_cases[parsed.case_number] = parsed
+                #latest_dates[parsed.case_number] = latest_date
+
+                create_snapshot_if_changed(src, datetime(latest_date.year, latest_date.month, latest_date.day, tzinfo=tz_ohio), parsed, purefile.encode())
 
                 #break
-
-        print(len(clerk_cases))
-
-        src, _ = Source.objects.get_or_create(name="FCMC")
-        for case in tqdm(clerk_cases.values()):
-            create_snapshot_if_changed(src,latest_dates[case.case_number],case,purefile.encode())
