@@ -80,7 +80,7 @@ services:
     env_file: "mcp_env"
     environment:
       AUTH_JWKS_URI: "https://${DOMAIN}/authelia/jwks.json"
-      AUTH_AUDIENCE: "https://${DOMAIN}/"
+      AUTH_AUDIENCE: "https://${DOMAIN}"
       #FASTMCP_LOG_LEVEL: DEBUG
       #FASTMCP_DEBUG: true
     depends_on:
