@@ -791,7 +791,29 @@ case_scraper-ui-1                ghcr.io/osu-justicetech/case_collector:main    
 
 ## Updating
 
+After the CI was successful (https://github.com/OSU-JusticeTech/case_collector/actions) in building the image, you need to redeploy.
+
+    ssh -m hmac-sha2-512  osu.#@jump.asc.ohio-state.edu
+
+Use your normal osu account and password for the jump host and authenticate with duo
+
+You should get a prompt like
+
+    [name.#@jump ~]$
+
+From there continue on with
+
+    ssh name.#a@as-cura-server.asc.ohio-state.edu
+
+And use your `#a` password.
+
+Change to the case scraper directory
+
+    cd /opt/cura/case_scraper/
+
 To pull the latest images built by CI and recreate the containers, run
 
-    docker compose pull
-    docker compose up -d
+    sudo docker compose pull
+    sudo docker compose up -d
+
+When prompted for a password, use your name.#a password.
