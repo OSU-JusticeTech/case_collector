@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Eviction Monitor</title>
+
+    <!-- Pico CSS
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+    -->
+
+    <!-- Leaflet -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="/static/cases/css/style.css"
+    >
+</head>
+
+<body>
+
+<header class="report-header">
+    <div class="container">
+        <p class="eyebrow">FRANKLIN COUNTY, OHIO</p>
+        <h1>Eviction Monitor</h1>
+        <p>
+            Tracking eviction filings, court proceedings,
+            and housing instability.
+        </p>
+    </div>
+</header>
+
+<main class="container">
+
+    <!-- Introduction --
+    <section class="report-section">
+        <h2>Understanding eviction activity</h2>
+        <p>
+            Explore historical eviction activity and its
+            geographic distribution across the county.
+        </p>
+
+        <div class="statistics">
+            <div>
+                <span id="total-filings">—</span>
+                <small>Total filings</small>
+            </div>
+
+            <div>
+                <span id="total-writs">—</span>
+                <small>Writs issued</small>
+            </div>
+
+            <div>
+                <span id="total-setouts">—</span>
+                <small>Completed setouts</small>
+            </div>
+        </div>
+    </section>-->
+
+
+    <!-- Historical activity -->
+    <section class="report-section">
+        <h2>Eviction activity over time</h2>
+
+        <p>
+            Franklin County Eviction Filings by Month
+        </p>
+
+        <div class="chart-container">
+                <canvas id="casesFiledChart"></canvas>
+        </div>
+    </section>
+
+
+    <!-- Geographic distribution -->
+    <section class="report-section">
+        <h2>Geographic distribution</h2>
+
+        <p>
+            Explore the spatial distribution of eviction activity.
+
+            <div class="toolbar">
+    <label for="yearSelect">Select year:</label>
+    <select id="yearSelect">
+        <option value="">Loading...</option>
+    </select>
+    <span id="status" class="loading"></span>
+</div>
+
+        </p>
+
+
+
+        <div id="hex-map"></div>
+    </section>
+
+
+    <!-- Writs and setouts -->
+    <section class="report-section">
+        <h2>Rolling 12-Month Eviction Trends</h2>
+
+        <p id="trend-label">
+
+        </p>
+
+        <div class="chart-container">
+              <canvas id="comparisonChart"></canvas>
+        </div>
+    </section>
+
+</main>
+
+<footer class="container">
+    <hr>
+    <small>Eviction Monitor · Franklin County, Ohio</small>
+</footer>
+
+
+<!-- Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script src="https://unpkg.com/chroma-js@2.4.2/chroma.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/gh/timwis/leaflet-choropleth@master/dist/choropleth.js"></script>
+
+<!-- Application -->
+<script src="/static/cases/js/file-charts.js"></script>
+<script src="/static/cases/js/geo.js"></script>
+
+
+<script>
+async function initializeCharts() {
+
+    try {
+        await Promise.all([
+            createCasesFiledChart(),
+            createRollingChart()
+        ]);
+
+        loadYears();
+
+    } catch (error) {
+        console.error("Error initializing charts:", error);
+    }
+}
+
+initializeCharts();
+</script>
+</body>
+</html>
