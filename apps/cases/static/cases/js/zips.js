@@ -1,5 +1,5 @@
 
-const API_URL = "/api/zip-counts";
+const API_URL = "/api/zip-counts/";
 
 let reportData = [];
 let historyChart = null;
