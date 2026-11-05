@@ -279,6 +279,47 @@ tbody tr:last-child td {
     margin-top: 2rem;
 }
 
+#zip-map {
+    height: 600px;
+    width: 100%;
+    margin-top: 2rem;
+}
+
+.zip-map-legend {
+    padding: 0.65rem 0.8rem;
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    border-radius: 5px;
+    color: var(--report-dark);
+    font-size: 0.8rem;
+}
+
+.zip-map-legend .zero-cases {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+}
+
+.zip-map-legend .zero-swatch {
+    width: 14px;
+    height: 14px;
+    background: #f1f5f9;
+    border: 1px solid #475569;
+}
+
+.zip-map-legend .color-scale {
+    width: 150px;
+    height: 12px;
+    margin: 0.4rem 0 0.2rem 1.15rem;
+    background: linear-gradient(to right, #deebf7, #08519c);
+}
+
+.zip-map-legend .scale-labels {
+    display: flex;
+    justify-content: space-between;
+}
+
 footer {
     padding: 2rem 1rem;
     color: var(--report-muted);
@@ -327,6 +368,10 @@ footer {
     }
 
     #hex-map {
+        height: 400px;
+    }
+
+    #zip-map {
         height: 400px;
     }
 

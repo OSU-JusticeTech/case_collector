@@ -38,6 +38,8 @@ function initializeReport() {
     // Render the three annual ranking tables
     renderTopZips(currentYear);
 
+    initializeZipMap(reportData);
+
     // Populate ZIP dropdown, sorted by total cases
     populateZipFilter();
 

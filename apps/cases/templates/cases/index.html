@@ -104,6 +104,22 @@
         <div id="hex-map"></div>
     </section>
 
+    <!-- ZIP code distribution -->
+    <section class="report-section">
+        <h2>Eviction activity by ZIP code</h2>
+        <p>Compare annual case counts across ZIP code boundaries.</p>
+
+        <div class="toolbar">
+            <label for="zip-map-year">Select year:</label>
+            <select id="zip-map-year">
+                <option value="">Loading...</option>
+            </select>
+            <span id="zip-map-status" role="status" aria-live="polite"></span>
+        </div>
+
+        <div id="zip-map" aria-label="Map of eviction cases by ZIP code"></div>
+    </section>
+
 
 <section class="report-section">
     <span class="eyebrow">ANNUAL DISTRIBUTION</span>
@@ -183,6 +199,7 @@
 <script src="/static/cases/js/file-charts.js"></script>
 <script src="/static/cases/js/geo.js"></script>
 <script src="/static/cases/js/zips.js"></script>
+<script src="/static/cases/js/zip-map.js"></script>
 
 
 <script>
