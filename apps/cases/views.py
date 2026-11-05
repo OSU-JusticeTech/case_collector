@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from collections import defaultdict
 
 from django.db import connection
 from django.shortcuts import render
@@ -9,7 +10,10 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from apps.cases.models import DailyEvents
+from django.db.models import Count
+from django.db.models.functions import ExtractMonth, ExtractYear
+
+from apps.cases.models import DailyEvents, LatestOverview
 from apps.cases.serializers import DailyEventsSerializer
 
 
@@ -114,3 +118,62 @@ class HexGridView(viewsets.ViewSet):
             "type": "FeatureCollection",
             "features": features
         })
+
+
+
+
+
+
+class CasesPerMonthByDefendantZipViewSet(viewsets.ViewSet):
+
+    @method_decorator(cache_page(60 * 60 * 12))
+    def list(self, request):
+        queryset = (
+            LatestOverview.objects
+            .exclude(date__isnull=True)
+            .exclude(stdef_zip_code__isnull=True)
+            .exclude(stdef_zip_code="")
+        )
+
+        data = (
+            queryset
+            .annotate(
+                year=ExtractYear("date"),
+                month=ExtractMonth("date"),
+            )
+            .values("year", "month", "stdef_zip_code")
+            .annotate(case_count=Count("pk"))
+            .order_by("year", "stdef_zip_code", "month")
+        )
+
+        years = defaultdict(lambda: defaultdict(lambda: [0] * 12))
+
+        for item in data:
+            year = item["year"]
+            zip_code = item["stdef_zip_code"]
+            month = item["month"]
+
+            years[year][zip_code][month - 1] = item["case_count"]
+
+        result = []
+
+        for year, zips in sorted(years.items()):
+            zip_results = []
+
+            for zip_code, months in zips.items():
+                zip_results.append({
+                    "zip_code": zip_code,
+                    "total": sum(months),
+                    "months": months,
+                })
+
+            zip_results.sort(
+                key=lambda item: (-item["total"], item["zip_code"])
+            )
+
+            result.append({
+                "year": year,
+                "zips": zip_results,
+            })
+
+        return Response(result)

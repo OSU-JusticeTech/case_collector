@@ -1,13 +1,14 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from apps.cases.views import DailyEventsViewSet, HexGridView, index
+from apps.cases.views import DailyEventsViewSet, HexGridView, index, CasesPerMonthByDefendantZipViewSet
 
 app_name = "cases"
 
 router = DefaultRouter()
 router.register(r'daily-events', DailyEventsViewSet, basename='daily-events')
 router.register(r'hexgrids', HexGridView, basename='hexgrids')
+router.register(r'zip-counts', CasesPerMonthByDefendantZipViewSet, basename='zips')
 
 urlpatterns = [
     path('api/', include(router.urls)),

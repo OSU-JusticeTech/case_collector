@@ -150,7 +150,7 @@
 
             const data = await response.json();
 
-            const select = document.getElementById("yearSelect");
+            const select = document.getElementById("mapyearSelect");
 
             select.innerHTML = "";
 

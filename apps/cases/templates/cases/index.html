@@ -90,8 +90,8 @@
             Explore the spatial distribution of eviction activity.
 
             <div class="toolbar">
-    <label for="yearSelect">Select year:</label>
-    <select id="yearSelect">
+    <label for="mapyearSelect">Select year:</label>
+    <select id="mapyearSelect">
         <option value="">Loading...</option>
     </select>
     <span id="status" class="loading"></span>
@@ -103,6 +103,48 @@
 
         <div id="hex-map"></div>
     </section>
+
+
+<section class="report-section">
+    <span class="eyebrow">ANNUAL DISTRIBUTION</span>
+    <h2>Top 20 ZIP Codes</h2>
+    <p>Highest reported case counts for the current (YTD) and previous two years.</p>
+
+    <div id="year-tables"></div>
+</section>
+
+<section class="report-section">
+    <span class="eyebrow">MONTHLY TRENDS</span>
+    <h2>ZIP Code History by Month</h2>
+    <p>Explore monthly case counts for an individual ZIP code across all available years.</p>
+
+<div class="toolbar">
+    <label for="zip-filter">Select ZIP code</label>
+    <select id="zip-filter">
+        <option value="">Select a ZIP code</option>
+    </select>
+</div>
+
+<div class="statistics">
+    <div>
+        <small>Total cases</small>
+        <span id="zip-total">—</span>
+    </div>
+    <div>
+        <small>Highest monthly cases</small>
+        <span id="zip-peak">—</span>
+    </div>
+    <div>
+        <small>Average monthly cases</small>
+        <span id="zip-average">—</span>
+    </div>
+</div>
+
+<div class="chart-container">
+    <canvas id="zip-history-chart"></canvas>
+</div>
+
+</section>
 
 
     <!-- Writs and setouts -->
@@ -140,6 +182,7 @@
 <!-- Application -->
 <script src="/static/cases/js/file-charts.js"></script>
 <script src="/static/cases/js/geo.js"></script>
+<script src="/static/cases/js/zips.js"></script>
 
 
 <script>
@@ -159,6 +202,8 @@ async function initializeCharts() {
 }
 
 initializeCharts();
+loadReport();
+
 </script>
 </body>
 </html>
