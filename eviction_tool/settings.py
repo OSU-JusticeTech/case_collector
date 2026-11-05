@@ -34,6 +34,7 @@ CSRF_TRUSTED_ORIGINS = os.environ.get(
     "DJANGO_TRUSTED_ORIGINS", "http://localhost:8000"
 ).split(",")
 
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Application definition
 
