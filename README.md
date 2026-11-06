@@ -220,6 +220,7 @@ DB_PASS=<DB-PW>
 DB_HOST=db
 NEXTGEN_PASSWORD=nextgen-password
 NEXTGEN_EMAIL=nextgen-email@example.com
+ACS_API_KEY=12345
 ```
 
 replace the `django-insecure-ydtr_...` and `<DB-PW>` with two freshly generated randomnesses, got from: 

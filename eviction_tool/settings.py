@@ -57,7 +57,8 @@ INSTALLED_APPS = [
     "apps.violations.apps.ViolationsConfig",
     "apps.violations_mock.apps.ViolationsMockConfig",
     "apps.attending.apps.AttendingConfig",
-    "apps.tmcclerk.apps.TmcclerkConfig"
+    "apps.tmcclerk.apps.TmcclerkConfig",
+    "apps.acsurvey.apps.AcsurveyConfig",
 ]
 
 MIDDLEWARE = [
@@ -184,6 +185,7 @@ NEXTGEN_PASSWORD = os.environ.get("NEXTGEN_PASSWORD")
 
 GEOCODER_URL = os.environ.get("GEOCODER_URL","https://cura-gis-web.asc.ohio-state.edu/arcgis/rest/services/geocoding/USA/GeocodeServer/")
 
+ACS_API_KEY = os.environ.get("ACS_API_KEY")
 
 GRAPH_MODELS = {
     "app_labels": ["cases", "fcmcclerk"],
