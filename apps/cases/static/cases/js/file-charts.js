@@ -301,7 +301,7 @@ async function createCasesFiledChart() {
     const years = Object.keys(monthlyTotals)
         .map(Number)
         .sort((a, b) => b - a)
-        .slice(0, 7);
+        .slice(0, 9);
 
     const yearColors = [
         "#2563EB",

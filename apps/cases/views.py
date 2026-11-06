@@ -30,7 +30,7 @@ class DailyEventsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = DailyEvents.objects.all()
     serializer_class = DailyEventsSerializer
 
-    @method_decorator(cache_page(60 * 15))
+    @method_decorator(cache_page(60 * 60 * 12))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
@@ -58,7 +58,7 @@ class HexGridView(viewsets.ViewSet):
             "results": years
         })
 
-    @method_decorator(cache_page(60 * 15))
+    @method_decorator(cache_page(60 * 60 *12))
     def retrieve(self, request, pk=None):
         year = int(pk)
         print("load year", year)

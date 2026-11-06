@@ -209,18 +209,23 @@ function getZipMonthlyHistory(zipCode) {
     const history = [];
 
     // Generate every month between the first and last year
-    for (let year = years[0]; year <= years[years.length - 1]; year++) {
-        const months = yearMap[year] || Array(12).fill(0);
+    const currentYear = new Date().getFullYear();
 
-        for (let month = 0; month < 12; month++) {
-            history.push({
-                year,
-                month,
-                label: `${MONTHS[month]} ${year}`,
-                cases: months[month] ?? 0
-            });
-        }
-    }
+		const firstYear = Math.max(2000, years[0]);
+		const lastYear = Math.min(currentYear, years[years.length - 1]);
+
+		for (let year = firstYear; year <= lastYear; year++) {
+				const months = yearMap[year] || Array(12).fill(0);
+
+				for (let month = 0; month < 12; month++) {
+						history.push({
+								year,
+								month,
+								label: `${MONTHS[month]} ${year}`,
+								cases: months[month] ?? 0
+						});
+				}
+		}
 
     return history;
 }
@@ -270,6 +275,9 @@ function renderZipHistory() {
 function renderMonthlyChart(zipCode, history) {
     const ctx = document.getElementById("zip-history-chart");
 
+    document.getElementById("reset-zoom")
+    .onclick = () => historyChart.resetZoom();
+
     if (historyChart) {
         historyChart.destroy();
     }
@@ -317,6 +325,25 @@ function renderMonthlyChart(zipCode, history) {
                 legend: {
                     display: false
                 },
+
+                zoom: {
+										pan: {
+												enabled: true,
+												mode: "x"
+										},
+										zoom: {
+												wheel: {
+														enabled: true
+												},
+												pinch: {
+														enabled: true
+												},
+												drag: {
+														enabled: true
+												},
+												mode: "x"
+										}
+								},
 
                 tooltip: {
                     callbacks: {

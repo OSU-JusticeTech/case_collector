@@ -156,6 +156,12 @@
     </div>
 </div>
 
+ <div class="chart-toolbar">
+    <button id="reset-zoom" type="button">
+        ↺ Reset Zoom
+    </button>
+</div>
+
 <div class="chart-container">
     <canvas id="zip-history-chart"></canvas>
 </div>
@@ -195,6 +201,8 @@
 
 <script src="https://cdn.jsdelivr.net/gh/timwis/leaflet-choropleth@master/dist/choropleth.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.2.0/dist/chartjs-plugin-zoom.min.js"></script>
+
 <!-- Application -->
 <script src="/static/cases/js/file-charts.js"></script>
 <script src="/static/cases/js/geo.js"></script>
@@ -218,6 +226,7 @@ async function initializeCharts() {
     }
 }
 
+    Chart.register(ChartZoom);
 initializeCharts();
 loadReport();
 

@@ -27,7 +27,10 @@ function initializeZipMap(data) {
         return;
     }
 
-    [...data].reverse().forEach(yearData => {
+    [...data]
+    .filter(yearData => yearData.year >= 2000 && yearData.year <= new Date().getFullYear())
+    .reverse()
+    .forEach(yearData => {
         select.add(new Option(yearData.year, yearData.year));
     });
 
@@ -141,5 +144,5 @@ function renderZipMap() {
     }
 
     document.getElementById("zip-map-status").textContent =
-        `${counts.size.toLocaleString()} ZIP codes with case data`;
+    	`${[...counts.values()].reduce((total, count) => total + count, 0).toLocaleString()} total cases in ${year}`;
 }

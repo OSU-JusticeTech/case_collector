@@ -392,3 +392,32 @@ footer {
         font-size: 0.85rem;
     }
 }
+
+.chart-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+}
+
+#reset-zoom {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+
+    background: #245b85;
+    color: white;
+
+    border: none;
+    border-radius: 6px;
+
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+
+    transition: background 0.2s ease;
+}
+
+#reset-zoom:hover {
+    background: #194568;
+}
