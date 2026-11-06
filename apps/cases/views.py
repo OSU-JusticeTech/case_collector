@@ -13,6 +13,7 @@ from rest_framework.reverse import reverse
 from django.db.models import Count
 from django.db.models.functions import ExtractMonth, ExtractYear
 
+from apps.acsurvey.models import RenterOccupiedZip
 from apps.cases.models import DailyEvents, LatestOverview
 from apps.cases.serializers import DailyEventsSerializer
 
@@ -157,15 +158,30 @@ class CasesPerMonthByDefendantZipViewSet(viewsets.ViewSet):
 
         result = []
 
+        acs_years = list(RenterOccupiedZip.objects.values_list("year", flat=True).distinct())
+
         for year, zips in sorted(years.items()):
             zip_results = []
 
+            closest_year = min(acs_years, key=lambda y: abs(y - year))
+            
+            acs_zips = RenterOccupiedZip.objects.filter(year=closest_year, zip_code__in=list(zips.keys())).values_list('zip_code', 'estimate', 'margin')
+            acs_dict = {
+                zip_code: (estimate, margin)
+                for zip_code, estimate, margin in acs_zips
+            }
+
             for zip_code, months in zips.items():
-                zip_results.append({
+                zip_res = {
                     "zip_code": zip_code,
                     "total": sum(months),
                     "months": months,
-                })
+                }
+                if renters := acs_dict.get(zip_code):
+                    zip_res.update({"acs_year": closest_year,
+                                    "acs_renters_estimate": renters[0],
+                                    "acs_renters_margin": renters[1]})
+                zip_results.append(zip_res)
 
             zip_results.sort(
                 key=lambda item: (-item["total"], item["zip_code"])
